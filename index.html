@@ -857,27 +857,36 @@
 
         // ===== 锚点导航跟踪 =====
         let currentFile = null;
-        let pendingAnchor = null;
 
-        // iframe 加载完成后处理锚点跳转
+        // iframe 加载完成后处理锚点跳转（hash 方式兜底）
         specFrame.addEventListener('load', function() {
-            if (pendingAnchor) {
-                navigateToAnchor(pendingAnchor);
-                pendingAnchor = null;
+            try {
+                const hash = specFrame.contentWindow.location.hash;
+                if (hash) {
+                    const el = specFrame.contentDocument.getElementById(hash.slice(1));
+                    if (el && el.offsetHeight > 0) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            } catch(e) {
+                // file:// 协议下 contentDocument 不可访问，浏览器 hash 已自动滚动，忽略
             }
         });
 
         function navigateToAnchor(anchorId) {
             try {
                 const doc = specFrame.contentDocument;
-                if (!doc) return;
+                if (!doc) return false;
                 const el = doc.getElementById(anchorId);
-                if (el) {
+                // 元素存在且可见（非 display:none 容器内）才可滚动
+                if (el && el.offsetHeight > 0) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    return true;
                 }
             } catch(e) {
-                // 同源策略无问题，忽略
+                // file:// 协议下 contentDocument 被阻止
             }
+            return false;
         }
 
         // ===== 折叠状态持久化 =====
@@ -922,16 +931,18 @@
             emptyState.style.display = 'none';
             currentTitle.textContent = '📄 ' + title;
 
-            // 同一文件内切换锚点 → 直接滚动，不重载 iframe
+            // 同一文件内切换锚点 → 先尝试直接滚动，失败则强制重载
             if (currentFile === file && anchor) {
-                navigateToAnchor(anchor);
+                if (!navigateToAnchor(anchor)) {
+                    // file:// 下仅改 hash 可能不触发重载 → 加时间戳参数确保唯一 URL
+                    specFrame.src = file + '?_r=' + Date.now() + '#' + anchor;
+                }
                 return;
             }
 
-            // 不同文件，或首次加载 → 设置 src 重新加载
+            // 不同文件，或首次加载 → 带 hash 加载（query 参数确保每次都完整加载）
             currentFile = file;
-            pendingAnchor = anchor || null;
-            specFrame.src = file;
+            specFrame.src = anchor ? (file + '?_r=' + Date.now() + '#' + anchor) : (file + '?_r=' + Date.now());
         }
 
         // 子项标签点击：切换到对应文件并定位锚点

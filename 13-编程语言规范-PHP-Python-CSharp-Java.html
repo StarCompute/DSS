@@ -1010,15 +1010,36 @@ public class UserRepositoryImpl implements UserRepository {
 </div><!-- container -->
 
 <script>
-// 语言标签切换
+// ===== 语言标签切换 =====
+function activateLang(lang) {
+    document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('show'));
+    var tab = document.querySelector('.lang-tab[data-lang="' + lang + '"]');
+    if (tab) tab.classList.add('active');
+    var panel = document.getElementById('panel-' + lang);
+    if (panel) panel.classList.add('show');
+}
 document.querySelectorAll('.lang-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('show'));
-        tab.classList.add('active');
-        document.getElementById('panel-' + tab.dataset.lang).classList.add('show');
+    tab.addEventListener('click', function() {
+        activateLang(this.dataset.lang);
     });
 });
+
+// ===== URL hash 自动激活对应语言面板（解决 iframe 内锚点不可见问题） =====
+(function() {
+    var hash = window.location.hash;
+    if (!hash) return;
+    var langMap = { 'sec-php':'php', 'sec-python':'python', 'sec-csharp':'csharp', 'sec-java':'java' };
+    var lang = langMap[hash.slice(1)];
+    if (lang) {
+        activateLang(lang);
+        // 激活后面板可见，再滚动到目标元素
+        setTimeout(function() {
+            var el = document.getElementById(hash.slice(1));
+            if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+        }, 50);
+    }
+})();
 </script>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
