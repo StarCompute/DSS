@@ -1,0 +1,670 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身份认证与安全规范 | 登录 · 权限 · JWT · CSRF · XSS · 密码策略</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+    --primary:#DC2626; --primary-hover:#B91C1C; --primary-light:#FEF2F2; --primary-border:#FECACA;
+}
+
+        /* ===== 代码块 ===== */
+        .code-block {
+            background:#1E293B; color:#E2E8F0; border-radius:8px;
+            overflow:hidden; margin:12px 0; position:relative;
+        }
+        .code-block pre {
+            padding:20px; margin:0; overflow-x:auto;
+            font-family:'Fira Code','Cascadia Code',Consolas,monospace;
+            font-size:13px; line-height:1.7; white-space:pre;
+        }
+        .code-block .code-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 16px; background:rgba(255,255,255,.04);
+            border-bottom:1px solid rgba(255,255,255,.06);
+        }
+        .code-block .code-header .code-title {
+            font-size:12px; color:#94A3B8; font-weight:600;
+        }
+        .code-block .copy-btn {
+            font-size:12px; padding:3px 10px;
+            border:1px solid rgba(255,255,255,.12); border-radius:4px;
+            color:#94A3B8; cursor:pointer; background:transparent;
+            transition:all .15s;
+        }
+        .code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+        .code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+        .code-block .hljs { background:transparent; padding:0; }
+
+        /* ===== 流程步骤 ===== */
+        .flow-steps {
+            display:flex; gap:0; align-items:flex-start; flex-wrap:wrap;
+            margin:16px 0;
+        }
+        .flow-step {
+            flex:1; min-width:140px; text-align:center; position:relative;
+            padding:16px 12px; background:var(--gray-50); border-radius:var(--radius);
+            margin-right:-8px;
+        }
+        .flow-step .step-num {
+            width:28px; height:28px; border-radius:50%; background:var(--primary);
+            color:#fff; display:inline-flex; align-items:center; justify-content:center;
+            font-size:13px; font-weight:700; margin-bottom:8px;
+        }
+        .flow-step .step-title { font-size:13px; font-weight:600; margin-bottom:4px; }
+        .flow-step .step-desc { font-size:11px; color:var(--text-secondary); }
+
+        /* ===== 设计令牌 ===== */
+        .token-item .token-name { font-family:monospace; font-size:12px; color:var(--primary); font-weight:500; }
+        .token-item .token-value { color:var(--text-secondary); font-size:12px; }
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">内容与交互</a>
+        <span class="sep">›</span>
+        <span class="current">19-身份认证与安全规范</span>
+    </div>
+
+    <!-- ==================== 页面头部 ==================== -->
+    <div class="page-header">
+        <h1><span class="icon">🔐</span>身份认证与安全规范</h1>
+        <div class="subtitle">
+            <span>登录注册</span><span>JWT</span><span>RBAC权限</span><span>CSRF</span><span>XSS</span><span>密码策略</span><span>审计日志</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 19</span><span>🎨 主题色: #DC2626</span><span>📂 分类: 内容与交互</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义身份认证与安全防护的完整规范，涵盖登录注册流程、JWT令牌管理、RBAC权限模型、CSRF/XSS防护、密码安全策略、会话管理和审计日志，确保系统的安全性和合规性。
+        </div>
+    </div>
+
+    <!-- ==================== 一、认证机制选型 ==================== -->
+    <div class="card" id="sec-auth-mechanism">
+        <h2><span class="section-icon">🔑</span>一、认证机制选型</h2>
+
+        <table class="spec-table">
+            <thead><tr><th>机制</th><th>原理</th><th>优点</th><th>缺点</th><th>推荐场景</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>JWT (推荐)</strong></td>
+                    <td>服务端签发签名的JSON令牌，客户端存储并在请求头携带</td>
+                    <td>无状态、可扩展、适合分布式</td>
+                    <td>无法主动失效（需配合黑名单）</td>
+                    <td><strong>中后台系统首选</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Session + Cookie</strong></td>
+                    <td>服务端存储会话，客户端Cookie携带SessionID</td>
+                    <td>可主动失效、成熟稳定</td>
+                    <td>有状态、扩展需共享存储</td>
+                    <td>传统单体应用</td>
+                </tr>
+                <tr>
+                    <td><strong>OAuth 2.0 / OIDC</strong></td>
+                    <td>第三方授权，获取Access Token访问资源</td>
+                    <td>无需存储密码、支持SSO</td>
+                    <td>配置复杂、依赖第三方</td>
+                    <td>第三方登录、微服务SSO</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-info">
+            <strong>推荐方案：</strong>中后台系统统一使用 <strong>JWT (Access Token + Refresh Token)</strong>。
+            Access Token 短期有效（15-30分钟），Refresh Token 长期有效（7-30天），兼顾安全与体验。
+        </div>
+    </div>
+
+    <!-- ==================== 二、JWT 设计规范 ==================== -->
+    <div class="card" id="sec-jwt">
+        <h2><span class="section-icon">🎫</span>二、JWT 设计规范</h2>
+
+        <h3>JWT Payload 标准结构</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">JWT Payload 标准结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== Access Token Payload =====
+{
+  "sub": "user_12345",        // 用户唯一标识（Subject）
+  "name": "张三",             // 用户显示名
+  "roles": ["admin","editor"],// 角色列表
+  "perm": ["user:read",       // 权限编码列表（细粒度）
+           "user:write",
+           "report:export"],
+  "iat": 1718178600,          // 签发时间（Unix时间戳）
+  "exp": 1718179500,          // 过期时间（15分钟后）
+  "iss": "system-name",       // 签发者
+  "jti": "unique-token-id"    // Token唯一ID（用于黑名单）
+}
+
+// ===== Refresh Token Payload =====
+{
+  "sub": "user_12345",
+  "type": "refresh",
+  "iat": 1718178600,
+  "exp": 1720770600,          // 30天后过期
+  "jti": "unique-refresh-id"
+}</code></pre>
+</div>
+
+        <h3>Token 存储策略（前端）</h3>
+        <table class="spec-table">
+            <thead><tr><th>存储位置</th><th>安全性</th><th>XSS风险</th><th>CSRF风险</th><th>推荐</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><code>localStorage</code></td>
+                    <td>⚠️ 低</td>
+                    <td>❌ 高（JS可读）</td>
+                    <td>✅ 安全</td>
+                    <td>❌ 不推荐</td>
+                </tr>
+                <tr>
+                    <td><code>sessionStorage</code></td>
+                    <td>⚠️ 低</td>
+                    <td>❌ 高（JS可读）</td>
+                    <td>✅ 安全</td>
+                    <td>❌ 不推荐</td>
+                </tr>
+                <tr>
+                    <td><code>httpOnly Cookie</code></td>
+                    <td>✅ 高</td>
+                    <td>✅ 安全（JS不可读）</td>
+                    <td>⚠️ 需配合CSRF防护</td>
+                    <td><strong>✅ 推荐</strong></td>
+                </tr>
+                <tr>
+                    <td><code>内存变量（闭包）</code></td>
+                    <td>✅ 高</td>
+                    <td>✅ 安全</td>
+                    <td>✅ 安全</td>
+                    <td>⚠️ 刷新丢失</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-warn">
+            <strong>🚫 绝对禁止：</strong>将 Token 存储在 <code>localStorage</code> 中！任何 XSS 攻击都可直接读取并窃取 Token。
+            推荐方案：Access Token 存内存（变量闭包），Refresh Token 存 <strong>httpOnly + Secure + SameSite=Strict Cookie</strong>。
+        </div>
+
+        <h3>Token 无感刷新流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-title">请求API</div>
+                <div class="step-desc">携带Access Token</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-title">返回401</div>
+                <div class="step-desc">Access Token过期</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-title">刷新Token</div>
+                <div class="step-desc">用Refresh Token换新</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-title">重放请求</div>
+                <div class="step-desc">用新Token重试</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">5</div>
+                <div class="step-title">失败→登录</div>
+                <div class="step-desc">刷新也失败则跳登录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 三、登录注册规范 ==================== -->
+    <div class="card" id="sec-login">
+        <h2><span class="section-icon">🚪</span>三、登录注册规范</h2>
+
+        <h3>登录安全策略</h3>
+        <table class="spec-table">
+            <thead><tr><th>策略</th><th>参数</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>失败锁定</strong></td><td>5次/15分钟 → 锁定30分钟</td><td>防止暴力破解</td></tr>
+                <tr><td><strong>验证码</strong></td><td>失败3次后要求输入图形验证码</td><td>区分人机</td></tr>
+                <tr><td><strong>会话管理</strong></td><td>同账号最多3个设备同时在线</td><td>超出则踢出最早会话</td></tr>
+                <tr><td><strong>异常登录检测</strong></td><td>新设备/新IP/异地登录 → 二次验证</td><td>发送短信/邮件验证码</td></tr>
+                <tr><td><strong>密码传输</strong></td><td>HTTPS + 前端SHA256哈希一次 → 后端bcrypt</td><td>双重保障，防止明文传输</td></tr>
+            </tbody>
+        </table>
+
+        <h3>注册流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-title">填写信息</div>
+                <div class="step-desc">用户名/手机/密码</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-title">发送验证码</div>
+                <div class="step-desc">短信/邮箱验证</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-title">校验验证码</div>
+                <div class="step-desc">60秒有效期，3次机会</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-title">创建账号</div>
+                <div class="step-desc">密码bcrypt哈希存储</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">5</div>
+                <div class="step-title">自动登录</div>
+                <div class="step-desc">签发Token</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 四、权限模型（RBAC） ==================== -->
+    <div class="card" id="sec-rbac">
+        <h2><span class="section-icon">🛂</span>四、权限模型（RBAC）</h2>
+
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>权限控制必须<strong>前后端双重校验</strong>。
+            前端控制 UI 显隐（提升体验），后端控制接口访问（安全保障）。<strong>后端权限校验不可被绕过。</strong>
+        </div>
+
+        <h3>三级权限粒度</h3>
+        <table class="spec-table">
+            <thead><tr><th>粒度</th><th>控制对象</th><th>示例</th><th>实现方式</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>页面级</strong></td>
+                    <td>菜单/路由可见性</td>
+                    <td>无「用户管理」权限则不显示菜单</td>
+                    <td>前端路由守卫 + 后端菜单接口过滤</td>
+                </tr>
+                <tr>
+                    <td><strong>按钮级</strong></td>
+                    <td>操作按钮显隐</td>
+                    <td>无「删除」权限则隐藏删除按钮</td>
+                    <td>前端 v-permission 指令 + 后端接口鉴权</td>
+                </tr>
+                <tr>
+                    <td><strong>数据级</strong></td>
+                    <td>数据可见范围</td>
+                    <td>部门经理只看本部门数据</td>
+                    <td>后端 SQL 注入数据范围条件</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>前端权限指令</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">Vue 3 权限指令与路由守卫</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== Vue 3 权限指令示例 =====
+// v-permission="'user:delete'"
+app.directive('permission', {
+  mounted(el, binding) {
+    const permissions = store.state.user.permissions;
+    if (!permissions.includes(binding.value)) {
+      el.parentNode?.removeChild(el);  // 无权限则移除DOM
+    }
+  }
+});
+
+// ===== 路由守卫 =====
+router.beforeEach((to, from, next) => {
+  const requiredPerm = to.meta.permission;
+  if (requiredPerm && !hasPermission(requiredPerm)) {
+    next('/403');  // 无权限跳转403页
+  } else {
+    next();
+  }
+});</code></pre>
+</div>
+
+        <h3>后端权限中间件</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">PHP 权限中间件</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-php">// ===== PHP 中间件示例 =====
+class PermissionMiddleware {
+  public function handle($request, $next, $permission) {
+    $user = auth()->user();
+    if (!$user || !$user->hasPermission($permission)) {
+      return response()->json([
+        'code' => 2003,
+        'message' => '无权限执行此操作'
+      ], 403);
+    }
+    return $next($request);
+  }
+}
+// 路由中使用
+Route::delete('/api/users/{id}', [UserController::class, 'destroy'])
+     ->middleware('permission:user:delete');</code></pre>
+</div>
+    </div>
+
+    <!-- ==================== 五、CSRF 防护 ==================== -->
+    <div class="card" id="sec-csrf">
+        <h2><span class="section-icon">🛡️</span>五、CSRF 防护规范</h2>
+
+        <div class="tip-block tip-info">
+            <strong>CSRF（跨站请求伪造）：</strong>攻击者诱导用户在已登录的站点执行非预期的操作。
+            如果使用 <strong>Cookie 存储认证信息</strong>，则必须启用 CSRF 防护。
+            如果使用 <strong>Authorization Header 传递 Token</strong>（非Cookie），则天然免疫 CSRF。
+        </div>
+
+        <h3>防护措施（至少启用两项）</h3>
+        <table class="spec-table">
+            <thead><tr><th>措施</th><th>优先级</th><th>实现</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>SameSite Cookie</strong></td>
+                    <td>🔴 必选</td>
+                    <td><code>Set-Cookie: token=xxx; SameSite=Strict; Secure; HttpOnly</code></td>
+                </tr>
+                <tr>
+                    <td><strong>CSRF Token</strong></td>
+                    <td>🟡 推荐</td>
+                    <td>服务端生成随机Token，前端在请求头 <code>X-CSRF-Token</code> 中回传</td>
+                </tr>
+                <tr>
+                    <td><strong>Origin/Referer 校验</strong></td>
+                    <td>🟡 推荐</td>
+                    <td>服务端校验请求来源是否在白名单中</td>
+                </tr>
+                <tr>
+                    <td><strong>自定义请求头</strong></td>
+                    <td>🟢 辅助</td>
+                    <td>前端添加 <code>X-Requested-With: XMLHttpRequest</code>（触发浏览器预检）</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 六、XSS 防护 ==================== -->
+    <div class="card" id="sec-xss">
+        <h2><span class="section-icon">🧹</span>六、XSS 防护规范</h2>
+
+        <h3>防护矩阵</h3>
+        <table class="spec-table">
+            <thead><tr><th>防护层</th><th>措施</th><th>负责方</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>输入层</strong></td>
+                    <td>所有用户输入进行白名单校验，拒绝非法字符</td>
+                    <td>前端 + 后端</td>
+                </tr>
+                <tr>
+                    <td><strong>输出层</strong></td>
+                    <td>HTML上下文：<code>&amp;lt; &amp;gt; &amp;quot; &amp;#x27; &amp;amp;</code> 转义</td>
+                    <td>后端（模板引擎自动转义）</td>
+                </tr>
+                <tr>
+                    <td><strong>富文本</strong></td>
+                    <td>DOMPurify 白名单过滤，仅保留安全标签</td>
+                    <td>前端</td>
+                </tr>
+                <tr>
+                    <td><strong>CSP 头</strong></td>
+                    <td>Content-Security-Policy 限制脚本来源</td>
+                    <td>Nginx / 后端</td>
+                </tr>
+                <tr>
+                    <td><strong>前端框架</strong></td>
+                    <td>Vue/React 默认转义插值表达式 <code>{ }</code> 和 <code>{{ }}</code></td>
+                    <td>前端框架</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>危险操作红线</h3>
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 禁止</div>
+                <div style="font-size:12px;text-align:left;line-height:2;color:#991B1B;">
+                    <code>v-html="userInput"</code><br>
+                    <code>dangerouslySetInnerHTML</code><br>
+                    <code>document.write(userInput)</code><br>
+                    <code>eval(userInput)</code><br>
+                    <code>new Function(userInput)</code>
+                </div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 安全做法</div>
+                <div style="font-size:12px;text-align:left;line-height:2;color:#065F46;">
+                    <code>{{ userInput }}</code> (Vue自动转义)<br>
+                    <code>DOMPurify.sanitize(html)</code>（富文本）<br>
+                    <code>textContent</code> (替代innerHTML)<br>
+                    模板引擎自动转义<br>
+                    后端输出前转义
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 七、密码安全策略 ==================== -->
+    <div class="card" id="sec-password">
+        <h2><span class="section-icon">🔒</span>七、密码安全策略</h2>
+
+        <h3>密码复杂度规范</h3>
+        <table class="spec-table">
+            <thead><tr><th>参数</th><th>最低要求</th><th>推荐值</th></tr></thead>
+            <tbody>
+                <tr><td><strong>最小长度</strong></td><td>8 位</td><td>12 位</td></tr>
+                <tr><td><strong>字符类型</strong></td><td>至少包含 3 种：大写、小写、数字、特殊字符</td><td>4 种全部</td></tr>
+                <tr><td><strong>不允许</strong></td><td>连续字符（1234/abcd）、键盘序列（qwerty）、常见密码（password123）</td><td>—</td></tr>
+                <tr><td><strong>过期策略</strong></td><td>90 天强制修改</td><td>—</td></tr>
+                <tr><td><strong>历史限制</strong></td><td>不能与最近 5 次密码相同</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h3>密码哈希算法</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">密码哈希算法 (bcrypt / argon2id)</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== bcrypt (推荐) =====
+// PHP
+$hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+// cost=12 → 约0.3秒/次，平衡安全与性能
+
+// Python
+import bcrypt
+hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))
+
+// Node.js
+const bcrypt = require('bcrypt');
+const hash = await bcrypt.hash(password, 12);
+
+// ===== argon2id (更高安全需求) =====
+// 抗GPU/ASIC破解，内存硬性消耗
+// PHP: password_hash($p, PASSWORD_ARGON2ID)</code></pre>
+</div>
+
+        <div class="tip-block tip-warn">
+            <strong>🚫 绝对禁止：</strong>使用 <code>MD5</code>、<code>SHA1</code>、<code>SHA256（未加盐）</code> 存储密码！
+            这些算法设计用于快速计算，极易被彩虹表或暴力破解。必须使用 <strong>bcrypt</strong> 或 <strong>argon2id</strong>。
+        </div>
+
+        <h3>密码重置流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-title">发起重置</div>
+                <div class="step-desc">输入邮箱/手机号</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-title">发送链接</div>
+                <div class="step-desc">一次性Token（15分钟有效）</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-title">验证Token</div>
+                <div class="step-desc">校验有效性+未过期</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-title">设置新密码</div>
+                <div class="step-desc">强制复杂度校验</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">5</div>
+                <div class="step-title">失效旧Token</div>
+                <div class="step-desc">所有设备需重新登录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 八、敏感数据保护 ==================== -->
+    <div class="card" id="sec-sensitive">
+        <h2><span class="section-icon">🔏</span>八、敏感数据保护</h2>
+
+        <table class="spec-table">
+            <thead><tr><th>数据类型</th><th>传输</th><th>存储</th><th>展示</th><th>日志</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>密码</strong></td>
+                    <td>HTTPS + 前端哈希</td>
+                    <td>bcrypt 哈希，不可逆</td>
+                    <td>不展示</td>
+                    <td>不记录</td>
+                </tr>
+                <tr>
+                    <td><strong>手机号</strong></td>
+                    <td>HTTPS</td>
+                    <td>AES-256 加密</td>
+                    <td>138****1234</td>
+                    <td>脱敏后记录</td>
+                </tr>
+                <tr>
+                    <td><strong>身份证号</strong></td>
+                    <td>HTTPS</td>
+                    <td>AES-256 加密</td>
+                    <td>320***********1234</td>
+                    <td>不记录</td>
+                </tr>
+                <tr>
+                    <td><strong>银行卡号</strong></td>
+                    <td>HTTPS</td>
+                    <td>AES-256 加密</td>
+                    <td>****1234</td>
+                    <td>不记录</td>
+                </tr>
+                <tr>
+                    <td><strong>Token/密钥</strong></td>
+                    <td>HTTPS</td>
+                    <td>不存储明文（仅哈希）</td>
+                    <td>不展示</td>
+                    <td>不记录</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-warn">
+            <strong>⚠️ 日志安全红线：</strong>绝对不在日志中记录密码、Token、身份证号、银行卡号等敏感信息的明文。
+            日志系统必须具备<strong>自动脱敏</strong>能力，匹配敏感字段名（password/token/secret/idCard）自动替换为 ***。
+        </div>
+    </div>
+
+    <!-- ==================== 九、安全审计日志 ==================== -->
+    <div class="card" id="sec-audit">
+        <h2><span class="section-icon">📋</span>九、安全审计日志</h2>
+
+        <h3>必须记录的操作</h3>
+        <table class="spec-table">
+            <thead><tr><th>事件类型</th><th>记录字段</th><th>保留期限</th></tr></thead>
+            <tbody>
+                <tr><td><strong>登录/登出</strong></td><td>用户ID、IP、设备UA、时间、结果（成功/失败+原因）</td><td>90天</td></tr>
+                <tr><td><strong>权限变更</strong></td><td>操作人、被操作人、变更前权限、变更后权限、时间</td><td>永久</td></tr>
+                <tr><td><strong>敏感操作</strong></td><td>删除数据、导出数据、修改关键配置</td><td>180天</td></tr>
+                <tr><td><strong>异常行为</strong></td><td>频繁失败登录、越权尝试、SQL注入探测</td><td>180天</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 十、设计令牌速查 ==================== -->
+    <div class="card" id="sec-tokens" style="background:var(--gray-50);">
+        <h2><span class="section-icon">📌</span>身份认证与安全 · 设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">jwt.algorithm</span><span class="token-value">RS256 (推荐) / HS256</span></div>
+            <div class="token-item"><span class="token-name">jwt.accessExpiry</span><span class="token-value">15-30 分钟</span></div>
+            <div class="token-item"><span class="token-name">jwt.refreshExpiry</span><span class="token-value">7-30 天</span></div>
+            <div class="token-item"><span class="token-name">password.minLength</span><span class="token-value">8（推荐12）</span></div>
+            <div class="token-item"><span class="token-name">password.hashAlgo</span><span class="token-value">bcrypt (cost=12)</span></div>
+            <div class="token-item"><span class="token-name">password.expireDays</span><span class="token-value">90天</span></div>
+            <div class="token-item"><span class="token-name">login.maxFailures</span><span class="token-value">5次/15分钟</span></div>
+            <div class="token-item"><span class="token-name">login.lockDuration</span><span class="token-value">30分钟</span></div>
+            <div class="token-item"><span class="token-name">session.maxDevices</span><span class="token-value">3个</span></div>
+            <div class="token-item"><span class="token-name">token.storage</span><span class="token-value">内存+httpOnly Cookie</span></div>
+            <div class="token-item"><span class="token-name">csrf.protection</span><span class="token-value">SameSite=Strict + Token</span></div>
+            <div class="token-item"><span class="token-name">xss.filter</span><span class="token-value">DOMPurify (前端) + 转义 (后端)</span></div>
+        </div>
+    </div>
+
+    <!-- ==================== 十一、检查清单 ==================== -->
+    <div class="card" id="sec-checklist">
+        <h2><span class="section-icon">✅</span>身份认证与安全 · 检查清单</h2>
+        <div style="font-size:13px;color:var(--text);line-height:2;padding:16px;background:var(--gray-50);border-radius:var(--radius);">
+            ✅ 是否使用 <strong>JWT (Access + Refresh Token)</strong> 双令牌机制？<br>
+            ✅ Access Token 是否<strong>不超过30分钟</strong>过期？<br>
+            ✅ Token 是否存储在 <strong>httpOnly Cookie</strong>（而非 localStorage）？<br>
+            ✅ 是否实现了 <strong>Token 无感刷新</strong>（401→刷新→重放）？<br>
+            ✅ 密码是否使用 <strong>bcrypt (cost≥12)</strong> 哈希存储？<br>
+            ✅ 密码是否满足<strong>8位+3种字符类型</strong>的最低复杂度？<br>
+            ✅ 是否实现了<strong>登录失败锁定</strong>（5次/15分钟）？<br>
+            ✅ 权限控制是否<strong>前后端双重校验</strong>（前端UI显隐+后端接口鉴权）？<br>
+            ✅ 是否启用了 <strong>SameSite=Strict Cookie</strong> 防御 CSRF？<br>
+            ✅ 所有用户输入是否做了<strong>HTML转义</strong>（防XSS）？<br>
+            ✅ 富文本是否使用 <strong>DOMPurify 白名单过滤</strong>？<br>
+            ✅ 是否配置了 <strong>Content-Security-Policy</strong> 响应头？<br>
+            ✅ 敏感数据（手机号/身份证/银行卡）是否<strong>传输加密+存储加密+展示脱敏</strong>？<br>
+            ✅ 日志中是否<strong>不包含密码/Token/身份证</strong>等敏感信息？<br>
+            ✅ 是否记录了<strong>登录、权限变更、敏感操作</strong>的审计日志？
+        </div>
+    </div>
+
+<div class="page-footer">
+    <a href="index.html">← 返回总览</a>
+    <span>|</span>
+    <span>设计系统规范库 · 身份认证与安全规范 v2.0</span>
+    <span>|</span>
+    <a href="18-数据交互规范-API请求响应格式与错误处理.html">← 上一章</a>
+    <span>|</span>
+    <span>最后更新: 2026-06-12</span>
+</div>
+
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+hljs.highlightAll();
+});
+
+function copyCode(btn) {
+    const block = btn.closest('.code-block');
+    const pre = block.querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+</script>
+</body>
+</html>

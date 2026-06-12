@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据交互规范 | API请求 · 响应格式 · 错误处理 · 文件上传</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#0EA5E9; --primary-hover:#0284C7; --primary-light:#F0F9FF; --primary-border:#BAE6FD;
+        }
+
+        /* ===== 代码块 ===== */
+        .code-block {
+            background:#1E293B; color:#E2E8F0; border-radius:8px;
+            overflow:hidden; margin:12px 0; position:relative;
+        }
+        .code-block pre {
+            padding:20px; margin:0; overflow-x:auto;
+            font-family:'Fira Code','Cascadia Code',Consolas,monospace;
+            font-size:13px; line-height:1.7; white-space:pre;
+        }
+        .code-block .code-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 16px; background:rgba(255,255,255,.04);
+            border-bottom:1px solid rgba(255,255,255,.06);
+        }
+        .code-block .code-header .code-title {
+            font-size:12px; color:#94A3B8; font-weight:600;
+        }
+        .code-block .copy-btn {
+            font-size:12px; padding:3px 10px;
+            border:1px solid rgba(255,255,255,.12); border-radius:4px;
+            color:#94A3B8; cursor:pointer; background:transparent;
+            transition:all .15s;
+        }
+        .code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+        .code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+        .code-block .hljs { background:transparent; padding:0; }
+
+        /* ===== HTTP 方法标签 ===== */
+        .method-tag {
+            display:inline-block; padding:2px 8px; border-radius:4px;
+            font-size:11px; font-weight:700; font-family:monospace;
+        }
+        .method-get { background:#DCFCE7; color:#166534; }
+        .method-post { background:#DBEAFE; color:#1E40AF; }
+        .method-put { background:#FEF3C7; color:#92400E; }
+        .method-delete { background:#FEE2E2; color:#991B1B; }
+
+        /* ===== 状态码色块 ===== */
+        .status-2xx { background:#DCFCE7; color:#166534; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
+        .status-3xx { background:#DBEAFE; color:#1E40AF; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
+        .status-4xx { background:#FEF3C7; color:#92400E; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
+        .status-5xx { background:#FEE2E2; color:#991B1B; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
+
+        /* ===== 设计令牌 ===== */
+        .token-grid {
+            display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:10px;
+        }
+        .token-item {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:6px; padding:10px 14px;
+            display:flex; justify-content:space-between; align-items:center;
+            font-size:13px;
+        }
+        .token-item .token-name { font-family:monospace; font-size:12px; color:var(--primary); font-weight:500; }
+        .token-item .token-value { color:var(--text-secondary); font-size:12px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">内容与交互</a>
+        <span class="sep">›</span>
+        <span class="current">18-数据交互规范</span>
+    </div>
+
+    <!-- ==================== 页面头部 ==================== -->
+    <div class="page-header">
+        <h1><span class="icon">🔌</span>数据交互规范</h1>
+        <div class="subtitle">
+            <span>API请求</span><span>响应格式</span><span>错误处理</span><span>文件上传</span><span>序列化</span><span>重试策略</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 18</span><span>🎨 主题色: #0EA5E9</span><span>📂 分类: 内容与交互</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义前后端数据交互的完整规范，包括API请求格式、统一响应结构、分页与筛选参数、错误码体系、文件上传规范、数据序列化约定和重试策略，确保接口设计的一致性和可靠性。
+        </div>
+    </div>
+
+    <!-- ==================== 一、HTTP客户端统一封装 ==================== -->
+    <div class="card" id="sec-client">
+        <h2><span class="section-icon">📡</span>一、HTTP 客户端统一封装</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>项目中<strong>禁止直接使用原生 fetch/XMLHttpRequest</strong>。必须通过统一封装的 HTTP 客户端发起所有请求，
+            以确保：统一的认证令牌注入、统一的错误拦截、统一的请求/响应日志、统一的超时和重试策略。
+        </div>
+
+        <h3>框架选型</h3>
+        <table class="spec-table">
+            <thead><tr><th>框架</th><th>推荐场景</th><th>拦截器</th><th>取消请求</th><th>进度回调</th></tr></thead>
+            <tbody>
+                <tr><td><strong>axios</strong></td><td>通用首选，浏览器+Node.js 双端支持</td><td>✅ request/response interceptor</td><td>✅ AbortController / CancelToken</td><td>✅ onUploadProgress</td></tr>
+                <tr><td><strong>fetch (封装)</strong></td><td>轻量项目，仅需简单请求</td><td>⚠️ 需手动封装 wrapper</td><td>✅ AbortController</td><td>❌ 不支持</td></tr>
+                <tr><td><strong>ofetch (ohmyfetch)</strong></td><td>Nuxt/现代前端项目</td><td>✅ interceptor</td><td>✅ AbortController</td><td>❌ 有限</td></tr>
+            </tbody>
+        </table>
+
+        <h3>axios 统一封装模板</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">utils/request.js — axios 统一封装</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== utils/request.js =====
+import axios from 'axios';
+import { getToken, refreshToken, redirectToLogin } from './auth';
+import { ElMessage } from 'element-plus'; // 或其他UI库
+
+const request = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || '/api',
+  timeout: 15000,                        // 15秒超时
+  headers: { 'Content-Type': 'application/json' }
+});
+
+// ===== 请求拦截器 =====
+request.interceptors.request.use(config => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  // 注入追踪ID
+  config.headers['X-Request-ID'] = crypto.randomUUID();
+  return config;
+}, error => Promise.reject(error));
+
+// ===== 响应拦截器 =====
+request.interceptors.response.use(
+  response => {
+    const { code, data, message } = response.data;
+    if (code === 0) return data;           // 成功 → 直接返回 data
+    if (code === 401) {                    // Token过期
+      return refreshToken().then(() => request(response.config));
+    }
+    ElMessage.error(message || '请求失败');
+    return Promise.reject(new Error(message));
+  },
+  error => {
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401) redirectToLogin();
+      if (status === 403) ElMessage.error('无权限访问');
+      if (status >= 500) ElMessage.error('服务器异常，请稍后重试');
+    } else if (error.code === 'ECONNABORTED') {
+      ElMessage.error('请求超时，请检查网络');
+    } else {
+      ElMessage.error('网络异常，请检查连接');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default request;</code></pre>
+</div>
+    </div>
+
+    <!-- ==================== 二、请求格式规范 ==================== -->
+    <div class="card" id="sec-request">
+        <h2><span class="section-icon">📤</span>二、请求格式规范</h2>
+
+        <h3>RESTful 约定</h3>
+        <table class="spec-table">
+            <thead><tr><th>方法</th><th>语义</th><th>幂等</th><th>请求体</th><th>URL 示例</th></tr></thead>
+            <tbody>
+                <tr><td><span class="method-tag method-get">GET</span></td><td>查询/读取</td><td>✅</td><td>无（参数在 URL Query）</td><td><code>/api/users?page=1&amp;size=20</code></td></tr>
+                <tr><td><span class="method-tag method-post">POST</span></td><td>新增/创建</td><td>❌</td><td>JSON body</td><td><code>/api/users</code></td></tr>
+                <tr><td><span class="method-tag method-put">PUT</span></td><td>全量更新</td><td>✅</td><td>JSON body（完整对象）</td><td><code>/api/users/123</code></td></tr>
+                <tr><td><span class="method-tag method-delete">DELETE</span></td><td>删除</td><td>✅</td><td>无</td><td><code>/api/users/123</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>URL 设计规范</h3>
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 禁止</div>
+                <div style="font-size:12px;font-family:monospace;text-align:left;line-height:2;color:#991B1B;">
+                    /api/getUserList<br>
+                    /api/createNewUser<br>
+                    /api/deleteUserById?id=123<br>
+                    /api/update_user_status<br>
+                    /api/GetAllProducts
+                </div>
+                <div style="font-size:11px;color:var(--error);margin-top:6px;">动词在URL中 / 驼峰混合 / 大小写混乱</div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 正确</div>
+                <div style="font-size:12px;font-family:monospace;text-align:left;line-height:2;color:#065F46;">
+                    GET&nbsp;&nbsp;&nbsp;&nbsp;/api/users<br>
+                    POST&nbsp;&nbsp;&nbsp;/api/users<br>
+                    DELETE&nbsp;/api/users/123<br>
+                    PUT&nbsp;&nbsp;&nbsp;&nbsp;/api/users/123/status
+                </div>
+                <div style="font-size:11px;color:var(--success);margin-top:6px;">名词复数 / 层级资源 / 全小写短横线</div>
+            </div>
+        </div>
+
+        <h3>Content-Type 使用场景</h3>
+        <table class="spec-table">
+            <thead><tr><th>Content-Type</th><th>使用场景</th><th>数据格式</th></tr></thead>
+            <tbody>
+                <tr><td><code>application/json</code></td><td><strong>默认，99% 的请求</strong></td><td>JSON 字符串</td></tr>
+                <tr><td><code>multipart/form-data</code></td><td>文件上传（含文件+其他字段）</td><td>FormData 对象</td></tr>
+                <tr><td><code>application/x-www-form-urlencoded</code></td><td>传统表单提交、OAuth2 密码模式</td><td>key=value&amp;key=value</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 三、响应格式规范 ==================== -->
+    <div class="card" id="sec-response">
+        <h2><span class="section-icon">📥</span>三、统一响应格式规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>所有 API 响应必须遵循<strong>统一的数据结构</strong>。
+            前端拦截器依赖此结构做统一的成功/失败判断，<strong>不允许各接口自定义响应格式</strong>。
+        </div>
+
+        <h3>标准响应结构</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">标准响应结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "操作成功",
+  "data": {},
+  "requestId": "550e8400-e29b-41d4-a716-446655440000"
+}</code></pre>
+</div>
+
+        <h3>分页响应结构</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">分页响应结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "查询成功",
+  "data": {
+    "list": [],
+    "pagination": {
+      "page": 1,
+      "size": 20,
+      "total": 156,
+      "totalPages": 8
+    }
+  }
+}</code></pre>
+</div>
+
+        <h3>业务错误码体系</h3>
+        <table class="spec-table">
+            <thead><tr><th>code 范围</th><th>含义</th><th>示例</th></tr></thead>
+            <tbody>
+                <tr><td><code>0</code></td><td>成功</td><td>正常响应</td></tr>
+                <tr><td><code>1000-1999</code></td><td>参数校验错误</td><td>1001=必填项缺失，1002=格式不正确</td></tr>
+                <tr><td><code>2000-2999</code></td><td>认证授权错误</td><td>2001=未登录，2002=Token过期，2003=无权限</td></tr>
+                <tr><td><code>3000-3999</code></td><td>业务规则错误</td><td>3001=库存不足，3002=订单状态不允许</td></tr>
+                <tr><td><code>4000-4999</code></td><td>资源不存在</td><td>4001=用户不存在，4002=文件不存在</td></tr>
+                <tr><td><code>9000-9999</code></td><td>系统内部错误</td><td>9001=数据库异常，9002=第三方服务异常</td></tr>
+            </tbody>
+        </table>
+
+        <h3>HTTP 状态码使用规范</h3>
+        <table class="spec-table">
+            <thead><tr><th>状态码</th><th>使用场景</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><span class="status-2xx">200</span></td><td>GET/PUT 成功、POST 创建成功</td><td>最常用</td></tr>
+                <tr><td><span class="status-2xx">201</span></td><td>POST 创建资源成功</td><td>推荐用于创建操作，返回新资源URL</td></tr>
+                <tr><td><span class="status-2xx">204</span></td><td>DELETE 成功（无响应体）</td><td>删除操作推荐</td></tr>
+                <tr><td><span class="status-4xx">400</span></td><td>请求参数错误（校验失败）</td><td>携带具体校验错误信息</td></tr>
+                <tr><td><span class="status-4xx">401</span></td><td>未认证（未登录/Token无效）</td><td>前端拦截器自动跳转登录页</td></tr>
+                <tr><td><span class="status-4xx">403</span></td><td>无权限（已登录但权限不足）</td><td>与401区别：403=身份已知但无权限</td></tr>
+                <tr><td><span class="status-4xx">404</span></td><td>资源不存在</td><td></td></tr>
+                <tr><td><span class="status-4xx">422</span></td><td>语义错误（请求格式正确但业务逻辑不通过）</td><td>推荐用于复杂业务校验</td></tr>
+                <tr><td><span class="status-4xx">429</span></td><td>请求频率超限</td><td>配合 Retry-After 头</td></tr>
+                <tr><td><span class="status-5xx">500</span></td><td>服务器内部错误</td><td>不暴露具体错误信息给客户端</td></tr>
+                <tr><td><span class="status-5xx">502</span></td><td>网关错误（上游服务不可用）</td><td></td></tr>
+                <tr><td><span class="status-5xx">503</span></td><td>服务暂不可用（维护/过载）</td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 四、请求头管理规范 ==================== -->
+    <div class="card" id="sec-headers">
+        <h2><span class="section-icon">🏷️</span>四、请求头管理规范</h2>
+
+        <table class="spec-table">
+            <thead><tr><th>Header</th><th>必选</th><th>值示例</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><code>Authorization</code></td>
+                    <td>✅</td>
+                    <td><code>Bearer eyJhbGciOi...</code></td>
+                    <td>JWT 认证令牌，由拦截器自动注入</td>
+                </tr>
+                <tr>
+                    <td><code>Content-Type</code></td>
+                    <td>✅</td>
+                    <td><code>application/json</code></td>
+                    <td>请求体类型</td>
+                </tr>
+                <tr>
+                    <td><code>X-Request-ID</code></td>
+                    <td>推荐</td>
+                    <td><code>550e8400-e29b-...</code></td>
+                    <td>请求追踪ID（UUID v4），贯穿前后端日志</td>
+                </tr>
+                <tr>
+                    <td><code>X-Client-Version</code></td>
+                    <td>推荐</td>
+                    <td><code>2.1.0</code></td>
+                    <td>前端版本号，用于灰度发布/兼容性判断</td>
+                </tr>
+                <tr>
+                    <td><code>Accept-Language</code></td>
+                    <td>可选</td>
+                    <td><code>zh-CN</code></td>
+                    <td>国际化语言偏好</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-warn">
+            <strong>⚠️ 禁止：</strong>不要在请求头中传递业务参数（如用户ID、部门ID等）。业务参数应放在 URL Path/Query 或 Request Body 中。请求头仅用于协议级元数据。
+        </div>
+    </div>
+
+    <!-- ==================== 五、全局错误处理 ==================== -->
+    <div class="card" id="sec-error">
+        <h2><span class="section-icon">🛡️</span>五、全局错误拦截与处理</h2>
+
+        <h3>错误分类与处理策略</h3>
+        <table class="spec-table">
+            <thead><tr><th>错误类型</th><th>识别方式</th><th>前端处理</th><th>用户提示</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>网络断开</strong></td>
+                    <td><code>error.message === 'Network Error'</code></td>
+                    <td>全局提示 + 暂停后续请求</td>
+                    <td>"网络连接失败，请检查网络"</td>
+                </tr>
+                <tr>
+                    <td><strong>请求超时</strong></td>
+                    <td><code>error.code === 'ECONNABORTED'</code></td>
+                    <td>提示 + 可重试</td>
+                    <td>"请求超时，请重试"</td>
+                </tr>
+                <tr>
+                    <td><strong>401 未认证</strong></td>
+                    <td><code>status === 401</code></td>
+                    <td>尝试 Refresh Token → 失败则跳登录</td>
+                    <td>无提示（静默跳转）</td>
+                </tr>
+                <tr>
+                    <td><strong>403 无权限</strong></td>
+                    <td><code>status === 403</code></td>
+                    <td>提示 + 可跳转首页</td>
+                    <td>"您没有权限执行此操作"</td>
+                </tr>
+                <tr>
+                    <td><strong>404 不存在</strong></td>
+                    <td><code>status === 404</code></td>
+                    <td>按接口决定：提示或跳404页</td>
+                    <td>"请求的资源不存在"</td>
+                </tr>
+                <tr>
+                    <td><strong>422 校验失败</strong></td>
+                    <td><code>status === 422</code></td>
+                    <td>将字段错误映射到表单控件</td>
+                    <td>各字段下方显示错误</td>
+                </tr>
+                <tr>
+                    <td><strong>5xx 服务端错误</strong></td>
+                    <td><code>status >= 500</code></td>
+                    <td>全局提示 + 不重试（避免雪崩）</td>
+                    <td>"服务器繁忙，请稍后重试"</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>全局 Loading 管理</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">请求计数器 — 全局 Loading 管理</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== 请求计数器模式（避免多个请求闪烁Loading） =====
+let loadingCount = 0;
+
+request.interceptors.request.use(config => {
+  if (config.showLoading !== false) {
+    loadingCount++;
+    if (loadingCount === 1) showGlobalLoading();
+  }
+  return config;
+});
+
+request.interceptors.response.use(
+  response => {
+    if (response.config.showLoading !== false) {
+      loadingCount--;
+      if (loadingCount === 0) hideGlobalLoading();
+    }
+    return response;
+  },
+  error => {
+    loadingCount--;
+    if (loadingCount <= 0) { loadingCount = 0; hideGlobalLoading(); }
+    return Promise.reject(error);
+  }
+);</code></pre>
+</div>
+    </div>
+
+    <!-- ==================== 六、文件上传规范 ==================== -->
+    <div class="card" id="sec-upload">
+        <h2><span class="section-icon">📎</span>六、文件上传规范</h2>
+
+        <h3>上传流程</h3>
+        <table class="spec-table">
+            <thead><tr><th>步骤</th><th>客户端</th><th>服务端</th></tr></thead>
+            <tbody>
+                <tr><td><strong>1. 前置校验</strong></td><td>校验文件类型（扩展名+MIME）、大小</td><td>—</td></tr>
+                <tr><td><strong>2. 构建请求</strong></td><td>FormData 封装文件+附加参数</td><td>—</td></tr>
+                <tr><td><strong>3. 上传</strong></td><td>显示进度条（onUploadProgress）</td><td>接收文件流</td></tr>
+                <tr><td><strong>4. 服务端校验</strong></td><td>—</td><td>校验 MIME 魔数、大小、类型白名单</td></tr>
+                <tr><td><strong>5. 存储</strong></td><td>—</td><td>存储文件，返回访问URL</td></tr>
+                <tr><td><strong>6. 完成</strong></td><td>更新UI，展示预览</td><td>—</td></tr>
+            </tbody>
+        </table>
+
+        <h3>前端上传封装</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">带进度的文件上传封装</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== 带进度的文件上传 =====
+export function uploadFile(file, onProgress) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('category', 'document');  // 附加业务参数
+
+  return request.post('/api/files/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,                          // 上传超时2分钟
+    onUploadProgress: (progressEvent) => {
+      const percent = Math.round(
+        (progressEvent.loaded / progressEvent.total) * 100
+      );
+      onProgress?.(percent);
+    }
+  });
+}
+
+// ===== 使用示例 =====
+const handleUpload = async (file) => {
+  if (file.size > 10 * 1024 * 1024) {        // 10MB限制
+    ElMessage.error('文件大小不能超过10MB');
+    return;
+  }
+  try {
+    const result = await uploadFile(file, (p) => {
+      console.log(`上传进度: ${p}%`);
+    });
+    console.log('上传成功:', result.url);
+  } catch (err) {
+    ElMessage.error('上传失败');
+  }
+};</code></pre>
+</div>
+
+        <h3>分片上传（大文件 &gt; 50MB）</h3>
+        <div class="tip-block tip-info">
+            <strong>分片上传策略：</strong>大文件（&gt;50MB）必须使用分片上传。
+            将文件切为 5MB/片，并发上传（最多3片并发），全部完成后调用合并接口。
+            断点续传：记录已上传分片序号，重传时跳过已完成分片。
+        </div>
+    </div>
+
+    <!-- ==================== 七、数据序列化约定 ==================== -->
+    <div class="card" id="sec-serialization">
+        <h2><span class="section-icon">🔄</span>七、数据序列化约定</h2>
+
+        <h3>字段命名转换：camelCase ↔ snake_case</h3>
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 禁止：前后端字段名不一致</div>
+                <div style="font-size:12px;text-align:left;line-height:2;color:#991B1B;">
+                    前端发送：<code>{ userName: "张三" }</code><br>
+                    后端期望：<code>{ user_name: "张三" }</code><br>
+                    → 后端收到 undefined
+                </div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 方案：拦截器统一转换</div>
+                <div style="font-size:12px;text-align:left;line-height:2;color:#065F46;">
+                    前端内部：camelCase<br>
+                    发送请求前：转为 snake_case<br>
+                    收到响应后：转为 camelCase<br>
+                    <strong>对业务代码透明</strong>
+                </div>
+            </div>
+        </div>
+
+        <h3>日期时间序列化</h3>
+        <table class="spec-table">
+            <thead><tr><th>场景</th><th>格式</th><th>示例</th></tr></thead>
+            <tbody>
+                <tr><td><strong>API 传输</strong></td><td>ISO 8601 (UTC)</td><td><code>"2026-06-12T08:30:00Z"</code></td></tr>
+                <tr><td><strong>仅日期</strong></td><td>ISO 8601 日期</td><td><code>"2026-06-12"</code></td></tr>
+                <tr><td><strong>前端展示</strong></td><td>本地化格式</td><td><code>"2026年6月12日 16:30"</code></td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-warn">
+            <strong>⚠️ 禁止：</strong>不要在 JSON 中使用时间戳数字（如 <code>1718178600</code>），人类不可读，调试困难。统一使用 ISO 8601 字符串。
+        </div>
+    </div>
+
+    <!-- ==================== 八、超时、重试、取消 ==================== -->
+    <div class="card" id="sec-resilience">
+        <h2><span class="section-icon">⏱️</span>八、超时、重试与取消策略</h2>
+
+        <h3>超时配置</h3>
+        <table class="spec-table">
+            <thead><tr><th>请求类型</th><th>超时时间</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>普通查询</td><td>10s</td><td>列表/详情查询</td></tr>
+                <tr><td>提交/保存</td><td>15s</td><td>新增/编辑操作</td></tr>
+                <tr><td>文件上传</td><td>120s</td><td>大文件按需延长</td></tr>
+                <tr><td>导出</td><td>60s</td><td>数据导出</td></tr>
+                <tr><td>导入</td><td>120s</td><td>批量导入</td></tr>
+            </tbody>
+        </table>
+
+        <h3>重试策略</h3>
+        <div class="tip-block tip-info">
+            <strong>重试原则：</strong>仅对<strong>幂等请求</strong>（GET）和<strong>网络瞬时错误</strong>（Network Error、超时、5xx）进行自动重试。
+            POST/PUT/DELETE 等非幂等请求<strong>禁止自动重试</strong>，必须由用户手动触发。
+            重试采用指数退避：<code>delay = min(1000 * 2^retryCount, 10000)</code>，最多重试 3 次。
+        </div>
+
+        <h3>取消请求（AbortController）</h3>
+        <div class="code-block">
+<div class="code-header"><span class="code-title">搜索防抖 — AbortController 取消请求</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-javascript">// ===== 搜索防抖 + 取消上一次请求 =====
+let abortController = null;
+
+async function search(keyword) {
+  // 取消上一次未完成的搜索请求
+  if (abortController) abortController.abort();
+  abortController = new AbortController();
+
+  try {
+    const result = await request.get('/api/search', {
+      params: { keyword },
+      signal: abortController.signal
+    });
+    return result;
+  } catch (err) {
+    if (err.name === 'CanceledError') return; // 被取消，静默处理
+    throw err;
+  }
+}</code></pre>
+</div>
+    </div>
+
+    <!-- ==================== 九、设计令牌速查 ==================== -->
+    <div class="card" id="sec-tokens" style="background:var(--gray-50);">
+        <h2><span class="section-icon">📌</span>数据交互 · 设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">baseURL</span><span class="token-value">/api</span></div>
+            <div class="token-item"><span class="token-name">defaultTimeout</span><span class="token-value">15000ms</span></div>
+            <div class="token-item"><span class="token-name">uploadTimeout</span><span class="token-value">120000ms</span></div>
+            <div class="token-item"><span class="token-name">maxRetries</span><span class="token-value">3 (仅GET)</span></div>
+            <div class="token-item"><span class="token-name">retryBackoff</span><span class="token-value">指数退避 1s→2s→4s</span></div>
+            <div class="token-item"><span class="token-name">successCode</span><span class="token-value">0</span></div>
+            <div class="token-item"><span class="token-name">chunkSize</span><span class="token-value">5MB (分片上传)</span></div>
+            <div class="token-item"><span class="token-name">maxConcurrentChunks</span><span class="token-value">3</span></div>
+            <div class="token-item"><span class="token-name">dateFormat</span><span class="token-value">ISO 8601 UTC</span></div>
+            <div class="token-item"><span class="token-name">fieldNaming</span><span class="token-value">camelCase↔snake_case</span></div>
+        </div>
+    </div>
+
+    <!-- ==================== 十、检查清单 ==================== -->
+    <div class="card" id="sec-checklist">
+        <h2><span class="section-icon">✅</span>数据交互 · 检查清单</h2>
+        <div style="font-size:13px;color:var(--text);line-height:2;padding:16px;background:var(--gray-50);border-radius:var(--radius);">
+            ✅ 是否使用了<strong>统一封装的 HTTP 客户端</strong>（禁止裸调 fetch/axios）？<br>
+            ✅ 请求/响应拦截器是否覆盖了<strong>Token注入、错误统一处理、Loading管理</strong>？<br>
+            ✅ API URL 是否遵循 <strong>RESTful 命名规范</strong>（名词复数、全小写短横线）？<br>
+            ✅ 所有接口响应是否遵循<strong>统一数据结构</strong>（code/message/data）？<br>
+            ✅ 业务错误码是否有<strong>明确的号段划分</strong>（1000/2000/3000...）？<br>
+            ✅ HTTP 状态码使用是否正确（<strong>201创建、204删除、422校验失败</strong>）？<br>
+            ✅ 401 响应是否触发<strong>Token 刷新</strong>（静默刷新→失败跳登录）？<br>
+            ✅ 文件上传是否有<strong>前端+后端双重校验</strong>（类型、大小、魔数）？<br>
+            ✅ 大文件（&gt;50MB）是否使用<strong>分片上传</strong>？<br>
+            ✅ 日期时间是否统一使用 <strong>ISO 8601 字符串</strong>（禁止时间戳数字）？<br>
+            ✅ 前后端字段命名是否通过<strong>拦截器自动转换</strong>（camelCase ↔ snake_case）？<br>
+            ✅ POST/PUT/DELETE 是否<strong>禁止自动重试</strong>（避免重复操作）？<br>
+            ✅ 搜索/自动补全是否使用了<strong>AbortController 取消上一次请求</strong>？<br>
+            ✅ 是否注入了 <strong>X-Request-ID</strong> 用于全链路日志追踪？
+        </div>
+    </div>
+
+<div class="page-footer">
+    <a href="index.html">← 返回总览</a>
+    <span>|</span>
+    <span>设计系统规范库 · 数据交互规范 v2.0</span>
+    <span>|</span>
+    <a href="17-文本内容展示规范-文章详情标题作者日期段落配图.html">← 上一章</a>
+    <span>|</span>
+    <a href="19-身份认证与安全规范-登录注册权限JWT安全策略.html">下一章 →</a>
+</div>
+
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+hljs.highlightAll();
+});
+
+function copyCode(btn) {
+    const block = btn.closest('.code-block');
+    const pre = block.querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+</script>
+</body>
+</html>

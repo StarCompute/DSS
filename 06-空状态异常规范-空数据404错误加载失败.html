@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空状态 & 异常规范 | 空数据 · 错误页 · 加载 · 权限</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#EF4444; --primary-hover:#DC2626; --primary-light:#FEF2F2; --primary-border:#FECACA;
+        }
+        /* ===== 文件专用：card-desc ===== */
+        .card-desc { color:var(--text-secondary); font-size:14px; margin-bottom:20px; }
+
+        /* ===== 空状态通用样式 ===== */
+        .empty-state-demo { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; text-align:center; border-radius:12px; border:2px dashed var(--gray-200); background:var(--gray-50); }
+        .empty-icon { font-size:56px; margin-bottom:16px; opacity:0.6; }
+        .empty-title { font-size:18px; font-weight:600; color:var(--gray-700); margin-bottom:8px; }
+        .empty-desc { font-size:14px; color:var(--gray-500); max-width:360px; margin-bottom:20px; }
+        .empty-action { display:flex; gap:12px; }
+
+        .btn { display:inline-flex; align-items:center; gap:6px; padding:0 20px; height:36px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:none; font-family:inherit; transition:all 0.15s; line-height:1; }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-primary:hover { background:var(--primary-hover); }
+        .btn-secondary { background:white; color:var(--primary); border:1px solid var(--gray-300); }
+        .btn-secondary:hover { border-color:var(--primary); background:var(--gray-50); }
+
+        .error-page-demo { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px; text-align:center; min-height:300px; }
+        .error-code { font-size:72px; font-weight:800; color:var(--gray-300); letter-spacing:-2px; margin-bottom:8px; }
+        .error-title { font-size:22px; font-weight:600; margin-bottom:8px; }
+        .error-desc { color:var(--gray-500); margin-bottom:24px; }
+
+        .skeleton-demo { display:flex; gap:16px; flex-direction:column; max-width:500px; }
+        .skeleton-line { height:14px; background:linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:6px; }
+        .skeleton-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+        .skeleton-card { display:flex; gap:16px; padding:20px; background:white; border-radius:12px; border:1px solid var(--gray-200); align-items:center; }
+        .skeleton-card .skeleton-line:last-child { width:60%; }
+        @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+        .state-matrix { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+        .state-item { background:var(--gray-50); border-radius:10px; padding:20px; border:1px solid var(--gray-200); display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
+        .state-item .icon { font-size:40px; }
+        .state-item .name { font-weight:600; font-size:15px; }
+        .state-item .desc { font-size:12px; color:var(--gray-500); }
+
+        .flex-row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+        .demo-section { margin-bottom:24px; }
+
+        .inline-tip { padding:12px 16px; border-radius:8px; display:flex; align-items:center; gap:10px; font-size:14px; }
+        .inline-tip-error { background:#FEF2F2; border:1px solid #FECACA; }
+        .inline-tip-warn { background:#FFFBEB; border:1px solid #FDE68A; }
+        .inline-tip-success { background:#ECFDF5; border:1px solid #A7F3D0; }
+
+        @media (max-width:768px) { .flex-row { flex-direction:column; } }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">状态与反馈</a>
+        <span class="sep">›</span>
+        <span class="current">06-空状态异常规范</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">🚫</span> 空状态 & 异常规范</h1>
+        <div class="subtitle">
+            <span>空数据</span><span>错误页</span><span>加载中</span><span>权限不足</span><span>网络异常</span><span>骨架屏</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 06</span><span>🎨 主题色: #EF4444</span><span>📂 分类: 状态与反馈</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义系统中所有非正常数据状态的统一处理方案。涵盖空数据、加载中、404/500错误页、权限不足、网络异常、骨架屏及内联错误提示，确保用户在任何情况下都能获得清晰、可操作的反馈。
+        </div>
+    </div>
+
+    <!-- 一、状态分类矩阵 -->
+    <div class="card">
+        <h2><span class="section-icon">📋</span> 一、状态分类矩阵</h2>
+        <p class="card-desc">系统中所有非正常数据状态的统一处理方案，确保用户在任何情况下都有清晰反馈。</p>
+        <div class="state-matrix">
+            <div class="state-item">
+                <div class="icon">📭</div>
+                <div class="name">空数据</div>
+                <div class="desc">列表/搜索结果为空时展示，引导用户创建或调整条件</div>
+                <span class="tag tag-blue">Empty</span>
+            </div>
+            <div class="state-item">
+                <div class="icon">⏳</div>
+                <div class="name">加载中</div>
+                <div class="desc">数据请求中，使用骨架屏或 Spinner 占位</div>
+                <span class="tag tag-blue">Loading</span>
+            </div>
+            <div class="state-item">
+                <div class="icon">🔒</div>
+                <div class="name">无权限</div>
+                <div class="desc">用户无权访问，提示申请权限或联系管理员</div>
+                <span class="tag tag-yellow">403</span>
+            </div>
+            <div class="state-item">
+                <div class="icon">🔍</div>
+                <div class="name">未找到</div>
+                <div class="desc">页面/资源不存在，提供返回首页入口</div>
+                <span class="tag tag-red">404</span>
+            </div>
+            <div class="state-item">
+                <div class="icon">💥</div>
+                <div class="name">服务器错误</div>
+                <div class="desc">后端异常，提供重试和反馈渠道</div>
+                <span class="tag tag-red">500</span>
+            </div>
+            <div class="state-item">
+                <div class="icon">📡</div>
+                <div class="name">网络异常</div>
+                <div class="desc">断网或请求超时，提示检查网络并重试</div>
+                <span class="tag tag-yellow">Network</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二、空数据状态 -->
+    <div class="card" id="sec-empty">
+        <h2><span class="section-icon">📭</span> 二、空数据状态</h2>
+        <p class="card-desc">当列表、表格、搜索结果为空时展示。需包含：图标 + 标题 + 描述 + 操作按钮。</p>
+        <div class="empty-state-demo">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">暂无数据</div>
+            <div class="empty-desc">当前筛选条件下没有匹配的结果，请尝试调整筛选条件或创建新记录。</div>
+            <div class="empty-action">
+                <button class="btn btn-primary">➕ 创建记录</button>
+                <button class="btn btn-secondary">清除筛选</button>
+            </div>
+        </div>
+        <h3>空数据状态规范参数</h3>
+        <table class="spec-table">
+            <thead><tr><th>属性</th><th>规范</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>图标尺寸</td><td>56px（大图标）</td><td>使用灰色调，半透明</td></tr>
+                <tr><td>标题</td><td>18px / 600 字重 / #374151</td><td>简洁明确</td></tr>
+                <tr><td>描述文字</td><td>14px / #6B7280 / 最多两行</td><td>引导性文案</td></tr>
+                <tr><td>操作按钮</td><td>主要操作 + 次要操作（可选），最多 2 个</td><td>提供明确操作入口</td></tr>
+                <tr><td>容器</td><td>虚线边框 2px / 背景 #F9FAFB / 圆角 12px</td><td>与内容区区分</td></tr>
+            </tbody>
+        </table>
+        <div class="tip-success tip-block">✅ <strong>推荐：</strong>空状态文案应有引导性，告诉用户下一步可以做什么，而非仅仅说明"没有数据"。</div>
+    </div>
+
+    <!-- 三、错误页面 -->
+    <div class="card" id="sec-404">
+        <h2><span class="section-icon">❌</span> 三、错误页面</h2>
+        <p class="card-desc">404 未找到 & 500 服务器错误的标准页面样式。</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:280px;">
+                <div class="error-page-demo" style="border:1px solid var(--gray-200);border-radius:12px;">
+                    <div class="error-code">404</div>
+                    <div class="error-title">页面未找到</div>
+                    <div class="error-desc">您访问的页面不存在或已被移除，请检查网址是否正确。</div>
+                    <button class="btn btn-primary">← 返回首页</button>
+                </div>
+                <div style="text-align:center;font-size:12px;color:var(--gray-500);margin-top:8px;">404 页面规范</div>
+            </div>
+            <div style="flex:1;min-width:280px;">
+                <div class="error-page-demo" style="border:1px solid var(--gray-200);border-radius:12px;">
+                    <div class="error-code">500</div>
+                    <div class="error-title">服务器异常</div>
+                    <div class="error-desc">系统暂时不可用，请稍后重试。如持续出现请联系技术支持。</div>
+                    <div style="display:flex;gap:12px;">
+                        <button class="btn btn-primary">🔄 重新加载</button>
+                        <button class="btn btn-secondary">📧 反馈问题</button>
+                    </div>
+                </div>
+                <div style="text-align:center;font-size:12px;color:var(--gray-500);margin-top:8px;">500 页面规范</div>
+            </div>
+        </div>
+        <div class="tip-info tip-block">💡 <strong>注意：</strong>错误码数字使用灰色大号字体（72px），避免过于突出造成用户恐慌。</div>
+    </div>
+
+    <!-- 四、加载状态 · 骨架屏 -->
+    <div class="card" id="sec-skeleton">
+        <h2><span class="section-icon">⏳</span> 四、加载状态 · 骨架屏</h2>
+        <p class="card-desc">数据加载中使用骨架屏占位，避免空白闪烁。列表/卡片/详情页各有对应模板。</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:280px;">
+                <h3>列表骨架屏</h3>
+                <div class="skeleton-demo">
+                    <div class="skeleton-card">
+                        <div class="skeleton-avatar"></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                            <div class="skeleton-line" style="width:70%;"></div>
+                            <div class="skeleton-line" style="width:40%;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-avatar"></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                            <div class="skeleton-line" style="width:55%;"></div>
+                            <div class="skeleton-line" style="width:35%;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-avatar"></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                            <div class="skeleton-line" style="width:80%;"></div>
+                            <div class="skeleton-line" style="width:30%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="flex:1;min-width:280px;">
+                <h3>详情页骨架屏</h3>
+                <div class="skeleton-demo" style="padding:20px;background:white;border-radius:12px;border:1px solid var(--gray-200);">
+                    <div class="skeleton-line" style="width:40%;height:22px;"></div>
+                    <div class="skeleton-line" style="width:90%;"></div>
+                    <div class="skeleton-line" style="width:85%;"></div>
+                    <div class="skeleton-line" style="width:75%;"></div>
+                    <div class="skeleton-line" style="width:60%;"></div>
+                    <div style="display:flex;gap:12px;margin-top:8px;">
+                        <div class="skeleton-line" style="width:80px;height:32px;border-radius:8px;"></div>
+                        <div class="skeleton-line" style="width:80px;height:32px;border-radius:8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>骨架屏规范：</strong>动画时长 1.5s | 圆角 6px | 颜色渐变 #E5E7EB → #F3F4F6 → #E5E7EB | 避免纯色块 | 加载态使用骨架屏优于全屏 Spinner</div>
+    </div>
+
+    <!-- 五、权限不足 & 网络异常 -->
+    <div class="card" id="sec-forbidden">
+        <h2><span class="section-icon">🔒</span> 五、权限不足 & 网络异常</h2>
+        <p class="card-desc">无权限访问和网络中断时的标准反馈样式。</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:280px;">
+                <div class="empty-state-demo">
+                    <div class="empty-icon">🔒</div>
+                    <div class="empty-title">暂无访问权限</div>
+                    <div class="empty-desc">您没有查看此内容的权限，如需访问请联系管理员开通。</div>
+                    <div class="empty-action">
+                        <button class="btn btn-primary">申请权限</button>
+                        <button class="btn btn-secondary">返回</button>
+                    </div>
+                </div>
+            </div>
+            <div id="sec-network" style="flex:1;min-width:280px;">
+                <div class="empty-state-demo">
+                    <div class="empty-icon">📡</div>
+                    <div class="empty-title">网络连接失败</div>
+                    <div class="empty-desc">请检查您的网络设置，确认连接正常后重试。</div>
+                    <div class="empty-action">
+                        <button class="btn btn-primary">🔄 重新加载</button>
+                        <button class="btn btn-secondary">诊断网络</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 六、内联错误提示 -->
+    <div class="card">
+        <h2><span class="section-icon">⚠️</span> 六、内联错误提示</h2>
+        <p class="card-desc">表单校验、操作失败等内联错误提示的样式规范。</p>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:600px;">
+            <div class="inline-tip inline-tip-error">
+                <span style="font-size:18px;">❌</span>
+                <div><strong>操作失败</strong><br><span style="color:var(--gray-500);font-size:13px;">数据提交失败，请检查必填项是否正确填写。</span></div>
+            </div>
+            <div class="inline-tip inline-tip-warn">
+                <span style="font-size:18px;">⚠️</span>
+                <div><strong>请注意</strong><br><span style="color:var(--gray-500);font-size:13px;">此操作将影响 12 条关联数据，确认继续？</span></div>
+            </div>
+            <div class="inline-tip inline-tip-success">
+                <span style="font-size:18px;">✅</span>
+                <div><strong>操作成功</strong><br><span style="color:var(--gray-500);font-size:13px;">数据已成功保存，页面即将刷新。</span></div>
+            </div>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>规范：</strong>内边距 12px 16px | 圆角 8px | 图标 18px | 标题 14px 加粗 | 描述 13px #6B7280</div>
+    </div>
+
+    <!-- 七、设计令牌 -->
+    <div class="card">
+        <h2><span class="section-icon">🎨</span> 七、设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#EF4444（错误红）</span></div>
+            <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#FEF2F2</span></div>
+            <div class="token-item"><span class="token-name">--error</span><span class="token-value">#DC2626</span></div>
+            <div class="token-item"><span class="token-name">--warning</span><span class="token-value">#D97706</span></div>
+            <div class="token-item"><span class="token-name">--success</span><span class="token-value">#059669</span></div>
+            <div class="token-item"><span class="token-name">--gray-50~900</span><span class="token-value">灰度色板</span></div>
+            <div class="token-item"><span class="token-name">--bg</span><span class="token-value">#F8FAFC</span></div>
+            <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+        </div>
+    </div>
+
+    <!-- 八、状态处理原则 -->
+    <div class="card">
+        <h2><span class="section-icon">📌</span> 八、状态处理原则</h2>
+        <ul class="checklist">
+            <li>所有异常状态必须有明确反馈，不可出现空白页</li>
+            <li>优先提供操作入口（重试、返回、创建），而非仅展示信息</li>
+            <li>加载态使用骨架屏优于全屏 Spinner，减少视觉跳动</li>
+            <li>错误信息使用用户能理解的语言，避免技术术语</li>
+            <li>空状态文案应有引导性，告诉用户下一步可以做什么</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">← 返回总览</a>
+        <span>|</span>
+        <span>设计系统规范库 · 空状态与异常规范 v2.0</span>
+        <span>|</span>
+        <a href="05-数据可视化规范-图表配色卡片数据统计面板.html">← 上一章</a>
+        <span>|</span>
+        <a href="07-导航菜单规范-面包屑侧边菜单分页步骤条.html">下一章 →</a>
+    </div>
+
+</div>
+</body>
+</html>

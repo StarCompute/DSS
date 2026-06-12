@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本内容展示规范 | 文章详情 · 标题 · 作者 · 日期 · 段落 · 配图</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#7C3AED; --primary-hover:#6D28D9; --primary-light:#F5F3FF; --primary-border:#DDD6FE;
+
+            /* ---- 文本内容专用设计令牌 ---- */
+            --content-max-width:720px;
+            --content-font-size:16px;
+            --content-line-height:1.75;
+            --content-paragraph-spacing:1.5em;
+            --content-color:#1F2937;
+            --heading-color:#111827;
+            --meta-color:#6B7280;
+            --blockquote-border:#7C3AED;
+            --blockquote-bg:#F5F3FF;
+            --code-inline-bg:#F1F5F9;
+            --code-inline-color:#DC2626;
+            --code-block-bg:#1E293B;
+            --code-block-color:#E2E8F0;
+            --link-color:#7C3AED;
+            --link-hover-color:#5B21B6;
+            --image-radius:8px;
+            --image-caption-color:#6B7280;
+            --divider-color:#E5E7EB;
+            --tag-bg:#F5F3FF;
+            --tag-color:#7C3AED;
+        }
+
+        /* ===== 演示：文章页框架 ===== */
+        .demo-article {
+            max-width:var(--content-max-width);
+            margin:0 auto;
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            overflow:hidden;
+            box-shadow:var(--shadow-md);
+        }
+        .demo-article-header {
+            padding:32px 32px 20px;
+            border-bottom:1px solid var(--divider-color);
+        }
+        .demo-article-body {
+            padding:32px;
+        }
+        .demo-article-footer {
+            padding:20px 32px;
+            border-top:1px solid var(--divider-color);
+            background:var(--gray-50);
+        }
+
+        /* 分隔线 */
+        .divider { border:none; border-top:1px solid var(--divider-color); margin:24px 0; }
+
+        .token-item .token-preview {
+            width:20px; height:20px; border-radius:4px; border:1px solid var(--gray-200);
+            flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">内容与交互</a>
+        <span class="sep">›</span>
+        <span class="current">17-文本内容展示规范</span>
+    </div>
+
+    <!-- ==================== 页面头部 ==================== -->
+    <div class="page-header">
+        <h1><span class="icon">📝</span>文本内容展示规范</h1>
+        <div class="subtitle">
+            <span>文章详情页</span><span>标题层级</span><span>作者日期</span><span>段落间距</span><span>配图</span><span>引用代码</span><span>语义标签</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 17</span><span>🎨 主题色: #7C3AED</span><span>📂 分类: 内容与交互</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义文本内容展示的完整规范，涵盖文章详情页布局、标题层级、作者日期元数据、段落间距与行高、配图与题注、引用块、代码展示、列表样式和语义化标签，确保长文本内容具有良好的可读性和视觉层次。
+        </div>
+    </div>
+
+    <!-- ==================== 一、内容页整体框架 ==================== -->
+    <div class="card" id="sec-framework">
+        <h2><span class="section-icon">🏗️</span>一、内容页整体框架</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>文本内容页（文章详情、公告详情、博客帖子、新闻页）必须遵循统一的<strong>五区结构</strong>。
+            每一区有明确的职责和视觉层级，不允许混用或省略关键区域。
+        </div>
+
+        <h3>五区结构模型</h3>
+        <table class="spec-table">
+            <thead><tr><th style="width:12%;">区域</th><th style="width:18%;">名称</th><th style="width:35%;">包含元素</th><th style="width:35%;">说明</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>①</strong></td>
+                    <td><strong>标题区</strong></td>
+                    <td>H1 主标题、副标题（可选）</td>
+                    <td>文章核心主题，一个页面只有一个 H1</td>
+                </tr>
+                <tr>
+                    <td><strong>②</strong></td>
+                    <td><strong>元数据区</strong></td>
+                    <td>作者头像+姓名、发布日期、阅读量、分类标签</td>
+                    <td>提供上下文信息，帮助读者判断内容可信度和时效</td>
+                </tr>
+                <tr>
+                    <td><strong>③</strong></td>
+                    <td><strong>正文区</strong></td>
+                    <td>段落、H2-H4 小标题、有序/无序列表、引用块、代码块、行内代码、链接、加粗/斜体</td>
+                    <td>内容主体，所有文本样式在此区域统一</td>
+                </tr>
+                <tr>
+                    <td><strong>④</strong></td>
+                    <td><strong>标签/分类区</strong></td>
+                    <td>分类标签、关键词标签</td>
+                    <td>便于内容归类和检索，位于正文之后</td>
+                </tr>
+                <tr>
+                    <td><strong>⑤</strong></td>
+                    <td><strong>附加区（可选）</strong></td>
+                    <td>版权声明、转载声明、相关文章推荐、评论区</td>
+                    <td>增强互动和导航，按需展示</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>完整页面演示</h3>
+        <div class="demo-article">
+            <!-- ① 标题区 -->
+            <div class="demo-article-header">
+                <div style="font-size:26px;font-weight:700;color:var(--heading-color);line-height:1.3;margin-bottom:6px;">
+                    中后台系统表单设计的最佳实践
+                </div>
+                <div style="font-size:15px;color:var(--meta-color);margin-bottom:16px;">
+                    从信息架构到交互细节，构建高效易用的企业级表单
+                </div>
+                <!-- ② 元数据区 -->
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--primary);">张</div>
+                    <div>
+                        <div style="font-size:14px;font-weight:500;color:var(--text);">张三</div>
+                        <div style="font-size:12px;color:var(--meta-color);">高级产品设计师</div>
+                    </div>
+                    <div style="width:1px;height:24px;background:var(--divider-color);"></div>
+                    <div style="font-size:13px;color:var(--meta-color);">📅 2026-06-12</div>
+                    <div style="font-size:13px;color:var(--meta-color);">👁 1,234 阅读</div>
+                    <div style="margin-left:auto;"><span class="tag tag-purple">设计规范</span></div>
+                </div>
+            </div>
+            <!-- ③ 正文区 -->
+            <div class="demo-article-body" style="font-size:var(--content-font-size);line-height:var(--content-line-height);color:var(--content-color);">
+                <p style="margin-bottom:var(--content-paragraph-spacing);">在企业级中后台系统中，表单是用户与数据进行交互的核心媒介。一个设计良好的表单不仅能提升数据录入效率，还能显著降低操作错误率。本文将从信息架构、布局策略、交互反馈三个维度，系统性地阐述表单设计的最佳实践。</p>
+
+                <h3 style="font-size:20px;font-weight:600;color:var(--heading-color);margin:32px 0 12px;padding:0;border:none;">信息架构：先理清「为什么填」</h3>
+                <p style="margin-bottom:var(--content-paragraph-spacing);">在设计表单之前，首先要回答三个问题：用户为什么要填写这个表单？哪些字段是必填的？填写完成后会发生什么？将这些信息在表单顶部以简洁的方式告知用户，可以显著降低用户的认知负担。</p>
+
+                <blockquote style="margin:20px 0;padding:14px 18px;background:var(--blockquote-bg);border-left:4px solid var(--blockquote-border);border-radius:0 6px 6px 0;color:var(--gray-700);font-size:15px;">
+                    <strong>💡 经验法则：</strong>每增加一个非必填字段，表单完成率下降约 3-5%。审慎评估每个字段的必要性。
+                </blockquote>
+
+                <p style="margin-bottom:var(--content-paragraph-spacing);">在实际操作中，建议将表单字段分为三个优先级：<strong>核心必填</strong>（直接影响业务流转）、<strong>重要选填</strong>（提升数据质量但非必需）、<strong>补充信息</strong>（可后续完善）。</p>
+
+                <h3 style="font-size:20px;font-weight:600;color:var(--heading-color);margin:32px 0 12px;padding:0;border:none;">布局策略：纵向优先</h3>
+                <p style="margin-bottom:var(--content-paragraph-spacing);">研究表明，单列纵向布局的表单比多列布局的填写速度快 25%，因为用户不需要在列之间来回移动视线。</p>
+
+                <ul style="margin:16px 0;padding-left:24px;line-height:1.8;">
+                    <li>标签统一置于输入框<strong>上方</strong>（顶部对齐），而非左侧</li>
+                    <li>相关联的字段使用分组标题分隔，每组不超过 5 个字段</li>
+                    <li>操作按钮（提交/取消）固定在页面底部或跟随滚动</li>
+                </ul>
+
+                <p style="margin-bottom:0;">如需了解更多细节，请参考 <a href="#" style="color:var(--link-color);text-decoration:underline;text-underline-offset:3px;">《表单全局规范》</a> 中的完整说明。</p>
+            </div>
+            <!-- ④ 标签区 + ⑤ 附加区 -->
+            <div class="demo-article-footer">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                    <span class="tag tag-purple">表单设计</span>
+                    <span class="tag tag-purple">用户体验</span>
+                    <span class="tag tag-gray">中后台</span>
+                    <span class="tag tag-gray">交互规范</span>
+                </div>
+                <div style="font-size:12px;color:var(--meta-color);line-height:1.6;">
+                    © 2026 设计系统规范库 · 转载需注明出处
+                </div>
+            </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:8px;">
+            ↑ 完整五区结构演示：标题 → 元数据 → 正文（含引用、列表、链接） → 标签 → 版权声明
+        </div>
+    </div>
+
+    <!-- ==================== 二、标题层级规范 ==================== -->
+    <div class="card" id="sec-headings">
+        <h2><span class="section-icon">🔤</span>二、标题层级规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>标题是内容骨架，必须形成清晰的层级树。每个页面<strong>有且仅有一个 H1</strong>，
+            H2-H6 按嵌套顺序使用，<strong>不允许跳级</strong>（如 H2 后直接 H4）。
+        </div>
+
+        <h3>六级标题定义</h3>
+        <table class="spec-table">
+            <thead><tr><th style="width:10%;">级别</th><th style="width:12%;">字号</th><th style="width:10%;">字重</th><th style="width:10%;">行高</th><th style="width:12%;">颜色</th><th style="width:18%;">下间距</th><th style="width:28%;">使用场景</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong style="font-size:26px;">H1</strong></td>
+                    <td><code>26px</code></td>
+                    <td>700</td>
+                    <td>1.3</td>
+                    <td>#111827</td>
+                    <td>16px</td>
+                    <td>文章主标题，每页仅一个</td>
+                </tr>
+                <tr>
+                    <td><strong style="font-size:22px;">H2</strong></td>
+                    <td><code>22px</code></td>
+                    <td>600</td>
+                    <td>1.35</td>
+                    <td>#111827</td>
+                    <td>28px</td>
+                    <td>一级章节标题（如"一、信息架构"）</td>
+                </tr>
+                <tr>
+                    <td><strong style="font-size:18px;">H3</strong></td>
+                    <td><code>18px</code></td>
+                    <td>600</td>
+                    <td>1.4</td>
+                    <td>#1F2937</td>
+                    <td>20px</td>
+                    <td>二级小节标题（如"1.1 字段分类"）</td>
+                </tr>
+                <tr>
+                    <td><strong style="font-size:16px;">H4</strong></td>
+                    <td><code>16px</code></td>
+                    <td>600</td>
+                    <td>1.45</td>
+                    <td>#374151</td>
+                    <td>14px</td>
+                    <td>三级细节标题（如"① 核心必填"）</td>
+                </tr>
+                <tr>
+                    <td><strong style="font-size:15px;">H5</strong></td>
+                    <td><code>15px</code></td>
+                    <td>500</td>
+                    <td>1.5</td>
+                    <td>#4B5563</td>
+                    <td>10px</td>
+                    <td>小标题/注意事项标题</td>
+                </tr>
+                <tr>
+                    <td><strong style="font-size:14px;">H6</strong></td>
+                    <td><code>14px</code></td>
+                    <td>500</td>
+                    <td>1.5</td>
+                    <td>#6B7280</td>
+                    <td>8px</td>
+                    <td>微型标题，极少使用</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>标题间距规则</h3>
+        <table class="spec-table">
+            <thead><tr><th>关系</th><th>间距值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>标题上方（与前一内容）</td><td>1.5× 标题下间距</td><td>标题与上方内容距离 > 与下方内容距离，形成「归属感」</td></tr>
+                <tr><td>标题下方（与后一内容）</td><td>见上表</td><td>标题与其所属内容紧密相邻</td></tr>
+                <tr><td>标题与标题之间</td><td>上间距 = 上一标题下间距 × 1.5</td><td>同级标题间距一致，父子标题间距略小</td></tr>
+            </tbody>
+        </table>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 错误：标题跳级</div>
+                <div style="text-align:left;font-size:13px;line-height:2;">
+                    <div style="font-size:26px;font-weight:700;">H1 主标题</div>
+                    <div style="font-size:18px;font-weight:600;">H3 直接跳过 H2 ❌</div>
+                    <div style="font-size:22px;font-weight:600;">H2 出现在 H3 之后 ❌</div>
+                </div>
+                <div style="font-size:11px;color:var(--error);margin-top:8px;">层级断裂，语义混乱</div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 正确：层级递进</div>
+                <div style="text-align:left;font-size:13px;line-height:2;">
+                    <div style="font-size:26px;font-weight:700;">H1 主标题</div>
+                    <div style="font-size:22px;font-weight:600;">H2 一级章节</div>
+                    <div style="font-size:18px;font-weight:600;">H3 二级小节</div>
+                    <div style="font-size:16px;font-weight:600;">H4 三级细节</div>
+                </div>
+                <div style="font-size:11px;color:var(--success);margin-top:8px;">层级清晰，结构完整</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 三、段落与行距规范 ==================== -->
+    <div class="card" id="sec-paragraph">
+        <h2><span class="section-icon">📏</span>三、段落与行距规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>正文排版的目标是<strong>可读性最大化</strong>。字号、行高、段间距、阅读宽度四者必须协调配合。
+            研究表明，中文正文最佳阅读体验的参数范围为：字号 15-17px，行高 1.6-1.8，每行 35-45 个汉字。
+        </div>
+
+        <h3>正文排版核心参数</h3>
+        <table class="spec-table">
+            <thead><tr><th>参数</th><th>推荐值</th><th>可接受范围</th><th>依据</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>正文字号</strong></td>
+                    <td><code>16px</code></td>
+                    <td>15-17px</td>
+                    <td>小于 15px 增加阅读疲劳，大于 17px 降低信息密度</td>
+                </tr>
+                <tr>
+                    <td><strong>正文行高</strong></td>
+                    <td><code>1.75</code></td>
+                    <td>1.6-1.8</td>
+                    <td>中文笔画复杂，需要比英文更大的行高来保证字间透气性</td>
+                </tr>
+                <tr>
+                    <td><strong>段落间距</strong></td>
+                    <td><code>1.5em</code></td>
+                    <td>1.2-2em</td>
+                    <td>使用 em 单位相对于正文字号，响应式友好</td>
+                </tr>
+                <tr>
+                    <td><strong>最大阅读宽度</strong></td>
+                    <td><code>720px</code></td>
+                    <td>680-760px</td>
+                    <td>超出此宽度视线来回移动距离过大，降低阅读效率</td>
+                </tr>
+                <tr>
+                    <td><strong>正文颜色</strong></td>
+                    <td><code>#1F2937</code></td>
+                    <td>—</td>
+                    <td>不要用纯黑 #000，与白底对比过强导致眩光</td>
+                </tr>
+                <tr>
+                    <td><strong>段落对齐</strong></td>
+                    <td><code>text-align: justify</code>（两端对齐）</td>
+                    <td>—</td>
+                    <td>中文排版传统，两端对齐使段落左右边界整齐，视觉更规整；配合 word-break: break-word 避免英文长单词拉散文字</td>
+                </tr>
+                <tr>
+                    <td><strong>字间距</strong></td>
+                    <td><code>letter-spacing: 0</code>（默认）</td>
+                    <td>0-0.5px</td>
+                    <td>中文默认字间距已满足阅读需求；正文场景不额外加 letter-spacing，标题可酌情加 0.5px 提升质感</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>首行缩进规范</h3>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>首行缩进是中文排版的重要传统，但在屏幕阅读场景下需<strong>分场景处理</strong>。
+            不是所有段落都需要缩进，也不是所有场景都适合缩进。
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th>场景</th><th>缩进值</th><th>理由</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>长篇正文段落</strong><br><span style="font-size:11px;color:var(--meta-color);">（文章、博客、新闻正文）</span></td>
+                    <td><code>text-indent: 2em</code></td>
+                    <td>中文传统排版规范：首行缩进两个汉字宽度（2em = 2×当前字号），帮助读者快速识别段落起始。这是中文印刷排版的标准实践。</td>
+                </tr>
+                <tr>
+                    <td><strong>首段（章节开头第一个段落）</strong></td>
+                    <td><code>text-indent: 0</code>（不缩进）</td>
+                    <td>章节/标题后的第一个段落作为「引领段」，不缩进可保持版面整洁。标题与首段之间已有足够间距区分。</td>
+                </tr>
+                <tr>
+                    <td><strong>短段落（≤ 2 行）</strong></td>
+                    <td><code>text-indent: 0</code>（不缩进）</td>
+                    <td>过渡性短段落、对话行、引言行等不应缩进，避免视觉碎片化。</td>
+                </tr>
+                <tr>
+                    <td><strong>列表项后首段</strong></td>
+                    <td><code>text-indent: 0</code>（不缩进）</td>
+                    <td>列表后的衔接段落通常延续上文语义，缩进会割裂上下文关联。</td>
+                </tr>
+                <tr>
+                    <td><strong>UI 界面段落</strong><br><span style="font-size:11px;color:var(--meta-color);">（卡片、弹窗、提示文案）</span></td>
+                    <td><code>text-indent: 0</code>（不缩进）</td>
+                    <td>界面空间有限，段落间距已足够区分；缩进会破坏 UI 对齐的几何美感。</td>
+                </tr>
+                <tr>
+                    <td><strong>首字下沉</strong><br><span style="font-size:11px;color:var(--meta-color);">（杂志/专题页风格）</span></td>
+                    <td><code>::first-letter { font-size: 3em; float: left; }</code></td>
+                    <td>适用于杂志风格、专题长文的首段首字，增强视觉吸引力。仅限创意场景，常规中后台内容不推荐。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>首行缩进 CSS 实现</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">/* 标准正文段落：首行缩进 2 个汉字宽度 */</span><br>
+            <span style="color:#93C5FD;">.article-body p</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">2em</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-align</span>: <span style="color:#C084FC;">justify</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">1.5em</span>;<br>
+            }<br>
+            <span style="color:#F59E0B;">/* 首段不缩进（章节开头第一个 p） */</span><br>
+            <span style="color:#93C5FD;">.article-body h2 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body h3 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body h4 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body hr + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body blockquote + p</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
+            }<br>
+            <span style="color:#F59E0B;">/* 列表后首段不缩进 */</span><br>
+            <span style="color:#93C5FD;">.article-body ul + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body ol + p</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
+            }<br>
+            <span style="color:#F59E0B;">/* 首字下沉（杂志风格，按需启用） */</span><br>
+            <span style="color:#93C5FD;">.article-body .drop-cap::first-letter</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">3em</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">float</span>: <span style="color:#C084FC;">left</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-right</span>: <span style="color:#C084FC;">6px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">color</span>: <span style="color:#C084FC;">var(--primary)</span>;<br>
+            }
+        </div>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 错误：所有段落都不缩进（长篇正文场景）</div>
+                <div style="text-align:left;font-size:12px;line-height:1.8;padding:8px;">
+                    <p style="margin-bottom:12px;">在企业级中后台系统中，表单是用户与数据进行交互的核心媒介。一个设计良好的表单不仅能提升数据录入效率，还能显著降低操作错误率。</p>
+                    <p style="margin-bottom:12px;">在实际操作中，建议将表单字段分为三个优先级：核心必填（直接影响业务流转）、重要选填（提升数据质量但非必需）、补充信息（可后续完善）。</p>
+                    <p style="margin-bottom:0;">研究表明，单列纵向布局的表单比多列布局的填写速度快 25%，因为用户不需要在列之间来回移动视线。</p>
+                </div>
+                <div style="font-size:11px;color:var(--error);margin-top:8px;">长篇正文无缩进，段落边界模糊，阅读节奏感差</div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 正确：正文段落首行缩进 2em</div>
+                <div style="text-align:left;font-size:12px;line-height:1.8;padding:8px;">
+                    <p style="margin-bottom:12px;text-indent:2em;text-align:justify;">在企业级中后台系统中，表单是用户与数据进行交互的核心媒介。一个设计良好的表单不仅能提升数据录入效率，还能显著降低操作错误率。</p>
+                    <p style="margin-bottom:12px;text-indent:2em;text-align:justify;">在实际操作中，建议将表单字段分为三个优先级：核心必填（直接影响业务流转）、重要选填（提升数据质量但非必需）、补充信息（可后续完善）。</p>
+                    <p style="margin-bottom:0;text-indent:2em;text-align:justify;">研究表明，单列纵向布局的表单比多列布局的填写速度快 25%，因为用户不需要在列之间来回移动视线。</p>
+                </div>
+                <div style="font-size:11px;color:var(--success);margin-top:8px;">缩进清晰标记段落起点，两端对齐使版面规整</div>
+            </div>
+        </div>
+
+        <h3>段落间距的「归属感」原则</h3>
+        <div style="background:var(--gray-50);border-radius:var(--radius);padding:20px;margin:16px 0;font-size:13px;line-height:1.8;color:var(--text-secondary);">
+            <div style="margin-bottom:12px;font-weight:600;color:var(--text);">间距相对关系（从大到小）：</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--gray-300);color:#fff;padding:4px 16px;border-radius:4px;font-size:11px;min-width:40px;text-align:center;">48px</span>
+                <span>H2 标题上方（章节间最大间距，明确分隔）</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--gray-300);color:#fff;padding:4px 16px;border-radius:4px;font-size:11px;min-width:40px;text-align:center;">28px</span>
+                <span>H2 标题下方（标题与其内容紧密关联）</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--gray-300);color:#fff;padding:4px 16px;border-radius:4px;font-size:11px;min-width:40px;text-align:center;">24px</span>
+                <span>段落间距（同一章节内段落间分隔）</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--gray-300);color:#fff;padding:4px 16px;border-radius:4px;font-size:11px;min-width:40px;text-align:center;">16px</span>
+                <span>列表项间距 / 配图上下间距</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="background:var(--gray-300);color:#fff;padding:4px 16px;border-radius:4px;font-size:11px;min-width:40px;text-align:center;">0</span>
+                <span>行内元素间（保持自然行高间距，不加额外 margin）</span>
+            </div>
+        </div>
+
+        <h3>CSS 实现（含首行缩进 + 两端对齐）</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">/* 正文基础样式 */</span><br>
+            <span style="color:#93C5FD;">.article-body</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">16px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.75</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">color</span>: <span style="color:#C084FC;">#1F2937</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">max-width</span>: <span style="color:#C084FC;">720px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">word-break</span>: <span style="color:#C084FC;">break-word</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.article-body</span> <span style="color:#93C5FD;">p</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">1.5em</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">2em</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-align</span>: <span style="color:#C084FC;">justify</span>;<br>
+            }<br>
+            <span style="color:#F59E0B;">/* 首段不缩进：标题/分隔线/引用块后的第一个段落 */</span><br>
+            <span style="color:#93C5FD;">.article-body h2 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body h3 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body h4 + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body hr + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body blockquote + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body ul + p</span>,<br>
+            <span style="color:#93C5FD;">.article-body ol + p</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.article-body</span> <span style="color:#93C5FD;">p:last-child</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">0</span>;<br>
+            }
+        </div>
+    </div>
+
+    <!-- ==================== 四、元数据展示规范 ==================== -->
+    <div class="card" id="sec-meta">
+        <h2><span class="section-icon">👤</span>四、作者/日期/元数据展示规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>元数据区位于标题下方、正文上方，提供内容的<strong>可信度锚点</strong>。
+            作者、日期为必选字段，阅读量、分类标签为推荐字段。
+        </div>
+
+        <h3>元数据元素定义</h3>
+        <table class="spec-table">
+            <thead><tr><th>元素</th><th style="width:8%;">必选</th><th>样式</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>作者头像</strong></td>
+                    <td>✅</td>
+                    <td>32×32px 圆形，如无头像用姓名首字替代</td>
+                    <td>增加内容的人格化可信度</td>
+                </tr>
+                <tr>
+                    <td><strong>作者姓名</strong></td>
+                    <td>✅</td>
+                    <td>14px / font-weight:500 / #1E293B</td>
+                    <td>可附带职务（12px / #6B7280）</td>
+                </tr>
+                <tr>
+                    <td><strong>发布日期</strong></td>
+                    <td>✅</td>
+                    <td>13px / #6B7280 / 格式 YYYY-MM-DD</td>
+                    <td>统一日期格式，避免「3天前」等相对时间（内容页需要精确日期）</td>
+                </tr>
+                <tr>
+                    <td><strong>阅读量</strong></td>
+                    <td>推荐</td>
+                    <td>13px / #6B7280</td>
+                    <td>增强内容热度感知</td>
+                </tr>
+                <tr>
+                    <td><strong>分类标签</strong></td>
+                    <td>推荐</td>
+                    <td>12px / 圆角 pill 标签</td>
+                    <td>放在元数据行右侧，便于快速识别内容领域</td>
+                </tr>
+                <tr>
+                    <td><strong>预计阅读时长</strong></td>
+                    <td>可选</td>
+                    <td>13px / #6B7280</td>
+                    <td>如「阅读约 5 分钟」，提升用户预期管理</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>元数据布局模式</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+            <!-- 模式A：标准型 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:10px;">模式 A：标准型（推荐）</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--primary);">李</div>
+                    <div>
+                        <div style="font-size:14px;font-weight:500;">李四</div>
+                        <div style="font-size:12px;color:var(--meta-color);">前端架构师</div>
+                    </div>
+                    <div style="width:1px;height:24px;background:var(--divider-color);margin:0 4px;"></div>
+                    <div style="font-size:13px;color:var(--meta-color);">2026-06-12</div>
+                </div>
+            </div>
+            <!-- 模式B：紧凑型 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:10px;">模式 B：紧凑型（列表/卡片）</div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--meta-color);">
+                    <span>👤 王五</span>
+                    <span>·</span>
+                    <span>2026-06-12</span>
+                    <span>·</span>
+                    <span>👁 892</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 五、列表样式规范 ==================== -->
+    <div class="card" id="sec-lists">
+        <h2><span class="section-icon">📋</span>五、列表样式规范</h2>
+
+        <h3>有序列表 vs 无序列表</h3>
+        <table class="spec-table">
+            <thead><tr><th>类型</th><th>适用场景</th><th>标记样式</th><th>缩进</th><th>项间距</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>有序列表 &lt;ol&gt;</strong></td>
+                    <td>步骤说明、排名、优先级排序</td>
+                    <td>数字 + 点号（1. 2. 3.）</td>
+                    <td><code>padding-left: 24px</code></td>
+                    <td><code>margin-bottom: 8px</code></td>
+                </tr>
+                <tr>
+                    <td><strong>无序列表 &lt;ul&gt;</strong></td>
+                    <td>并列要点、特征列举</td>
+                    <td>实心圆点（•）</td>
+                    <td><code>padding-left: 24px</code></td>
+                    <td><code>margin-bottom: 8px</code></td>
+                </tr>
+                <tr>
+                    <td><strong>嵌套列表</strong></td>
+                    <td>层级分类、多级要点</td>
+                    <td>外层实心圆 → 内层空心圆 → 更深层实心方块</td>
+                    <td>每层追加 20px</td>
+                    <td>同外层</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>列表 CSS 规范</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#93C5FD;">.article-body ul</span>,
+            <span style="color:#93C5FD;">.article-body ol</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin</span>: <span style="color:#C084FC;">16px 0</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">padding-left</span>: <span style="color:#C084FC;">24px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.8</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.article-body li</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">8px</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.article-body li:last-child</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">0</span>;<br>
+            }<br>
+            <span style="color:#F59E0B;">/* 嵌套列表：内层标记不同 */</span><br>
+            <span style="color:#93C5FD;">.article-body ul ul</span> { <span style="color:#6EE7B7;">list-style-type</span>: <span style="color:#C084FC;">circle</span>; }<br>
+            <span style="color:#93C5FD;">.article-body ul ul ul</span> { <span style="color:#6EE7B7;">list-style-type</span>: <span style="color:#C084FC;">square</span>; }
+        </div>
+    </div>
+
+    <!-- ==================== 六、引用块规范 ==================== -->
+    <div class="card" id="sec-blockquote">
+        <h2><span class="section-icon">💬</span>六、引用块规范</h2>
+
+        <h3>引用块样式定义</h3>
+        <table class="spec-table">
+            <thead><tr><th>属性</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>左边框</strong></td><td><code>4px solid #7C3AED</code></td><td>主题色加粗左边框，视觉锚点</td></tr>
+                <tr><td><strong>背景色</strong></td><td><code>#F5F3FF</code></td><td>极浅主题色背景，与正文区分</td></tr>
+                <tr><td><strong>内边距</strong></td><td><code>14px 18px</code></td><td>文字与边框有呼吸空间</td></tr>
+                <tr><td><strong>字号</strong></td><td><code>15px</code></td><td>略小于正文，突出「引用」的辅助感</td></tr>
+                <tr><td><strong>外边距</strong></td><td><code>margin: 20px 0</code></td><td>与上下文段落间距一致</td></tr>
+                <tr><td><strong>圆角</strong></td><td><code>0 6px 6px 0</code></td><td>仅右侧圆角，左侧与边框平齐</td></tr>
+            </tbody>
+        </table>
+
+        <h3>引用块类型</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+            <div>
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px;">标准引用</div>
+                <blockquote style="margin:0;padding:14px 18px;background:var(--blockquote-bg);border-left:4px solid var(--blockquote-border);border-radius:0 6px 6px 0;font-size:15px;color:var(--gray-700);line-height:1.7;">
+                    这段话引自某篇权威文献或重要参考资料。
+                </blockquote>
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px;">提示型引用（Info）</div>
+                <blockquote style="margin:0;padding:14px 18px;background:#EFF6FF;border-left:4px solid #3B82F6;border-radius:0 6px 6px 0;font-size:15px;color:#1E40AF;line-height:1.7;">
+                    <strong>💡 提示：</strong>这是一种信息型引用，用于强调重要提示。
+                </blockquote>
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px;">警告型引用（Warning）</div>
+                <blockquote style="margin:0;padding:14px 18px;background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 6px 6px 0;font-size:15px;color:#92400E;line-height:1.7;">
+                    <strong>⚠️ 注意：</strong>此操作不可逆，请确认后再执行。
+                </blockquote>
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px;">错误型引用（Danger）</div>
+                <blockquote style="margin:0;padding:14px 18px;background:#FEF2F2;border-left:4px solid #DC2626;border-radius:0 6px 6px 0;font-size:15px;color:#991B1B;line-height:1.7;">
+                    <strong>🚫 禁止：</strong>不要在生产环境直接执行此操作。
+                </blockquote>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 七、代码展示规范 ==================== -->
+    <div class="card" id="sec-code">
+        <h2><span class="section-icon">&lt;/&gt;</span>七、代码展示规范</h2>
+
+        <h3>行内代码 vs 代码块</h3>
+        <table class="spec-table">
+            <thead><tr><th>类型</th><th>HTML 标签</th><th>样式</th><th>使用场景</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>行内代码</strong></td>
+                    <td><code>&lt;code&gt;</code></td>
+                    <td>背景 #F1F5F9，文字 #DC2626，字号 0.9em，padding 2px 6px，圆角 4px</td>
+                    <td>段落中引用变量名、函数名、文件名、命令</td>
+                </tr>
+                <tr>
+                    <td><strong>代码块</strong></td>
+                    <td><code>&lt;pre&gt;&lt;code&gt;</code></td>
+                    <td>背景 #1E293B（深色），文字 #E2E8F0，字号 13px，padding 16px 20px，圆角 8px，等宽字体</td>
+                    <td>展示多行代码片段、配置文件、命令行输出</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>演示对比</h3>
+        <div style="margin:16px 0;font-size:var(--content-font-size);line-height:var(--content-line-height);">
+            <p>在控制器中调用 <code style="background:var(--code-inline-bg);color:var(--code-inline-color);padding:2px 6px;border-radius:4px;font-size:0.9em;">UserService::findById()</code> 方法获取用户数据，然后将结果赋值给 <code style="background:var(--code-inline-bg);color:var(--code-inline-color);padding:2px 6px;border-radius:4px;font-size:0.9em;">$user</code> 变量。</p>
+        </div>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:8px;padding:16px 20px;font-family:'Fira Code', 'Cascadia Code', Consolas, monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">// 用户服务层：获取用户详情</span><br>
+            <span style="color:#C084FC;">public function</span> <span style="color:#6EE7B7;">getUserDetail</span>(<span style="color:#93C5FD;">int</span> <span style="color:#FCD34D;">$userId</span>): <span style="color:#93C5FD;">array</span><br>
+            {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#FCD34D;">$user</span> = <span style="color:#93C5FD;">$this</span>-&gt;userRepo-&gt;<span style="color:#6EE7B7;">findById</span>(<span style="color:#FCD34D;">$userId</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#C084FC;">return</span> <span style="color:#FCD34D;">$user</span> ?? [];<br>
+            }
+        </div>
+        <div style="font-size:12px;color:var(--text-tertiary);text-align:center;">↑ 行内代码与代码块的视觉差异</div>
+    </div>
+
+    <!-- ==================== 八、配图规范 ==================== -->
+    <div class="card" id="sec-images">
+        <h2><span class="section-icon">🖼️</span>八、配图与题注规范</h2>
+
+        <h3>配图规则</h3>
+        <table class="spec-table">
+            <thead><tr><th>规则</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>最大宽度</strong></td><td><code>100%</code>（不超过内容区宽度 720px）</td><td>图片不超出正文阅读区</td></tr>
+                <tr><td><strong>圆角</strong></td><td><code>8px</code></td><td>与卡片风格统一</td></tr>
+                <tr><td><strong>上下间距</strong></td><td><code>margin: 24px 0</code></td><td>与上下文段落保持视觉节奏</td></tr>
+                <tr><td><strong>对齐方式</strong></td><td>居中（<code>display:block; margin:24px auto;</code>）</td><td>图片始终居中，不左对齐</td></tr>
+                <tr><td><strong>图片格式</strong></td><td>WebP 优先 → JPEG/PNG 回退</td><td>WebP 体积小 25-35%</td></tr>
+                <tr><td><strong>响应式</strong></td><td><code>max-width:100%; height:auto;</code></td><td>移动端不溢出</td></tr>
+                <tr><td><strong>懒加载</strong></td><td><code>loading="lazy"</code></td><td>减少首屏带宽消耗</td></tr>
+            </tbody>
+        </table>
+
+        <h3>题注规范</h3>
+        <table class="spec-table">
+            <thead><tr><th>属性</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td><strong>标签</strong></td><td><code>&lt;figcaption&gt;</code> 包裹在 <code>&lt;figure&gt;</code> 内</td></tr>
+                <tr><td><strong>字号</strong></td><td>13px</td></tr>
+                <tr><td><strong>颜色</strong></td><td>#6B7280</td></tr>
+                <tr><td><strong>对齐</strong></td><td>居中</td></tr>
+                <tr><td><strong>上间距</strong></td><td>8px（与图片之间）</td></tr>
+            </tbody>
+        </table>
+
+        <h3>HTML 模板</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#6EE7B7;">&lt;figure</span> <span style="color:#93C5FD;">class</span>=<span style="color:#C084FC;">"article-image"</span><span style="color:#6EE7B7;">&gt;</span><br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">&lt;img</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">src</span>=<span style="color:#C084FC;">"chart.webp"</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">alt</span>=<span style="color:#C084FC;">"表单填写完成率统计图"</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">loading</span>=<span style="color:#C084FC;">"lazy"</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">width</span>=<span style="color:#C084FC;">"720"</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">height</span>=<span style="color:#C084FC;">"400"</span><br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">&gt;</span><br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">&lt;figcaption&gt;</span>图 1：不同表单布局的填写完成率对比<span style="color:#6EE7B7;">&lt;/figcaption&gt;</span><br>
+            <span style="color:#6EE7B7;">&lt;/figure&gt;</span>
+        </div>
+        <div class="tip-block tip-warn">
+            <strong>⚠️ 必须设置 width/height：</strong>img 标签必须指定 <code>width</code> 和 <code>height</code> 属性，
+            防止图片加载时页面布局抖动（CLS - Cumulative Layout Shift）。
+        </div>
+    </div>
+
+    <!-- ==================== 九、链接规范 ==================== -->
+    <div class="card" id="sec-links">
+        <h2><span class="section-icon">🔗</span>九、链接规范</h2>
+
+        <table class="spec-table">
+            <thead><tr><th>状态</th><th>颜色</th><th>装饰</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>默认</strong></td><td><code>#7C3AED</code></td><td>下划线（text-underline-offset: 3px）</td><td>与正文颜色形成足够对比度</td></tr>
+                <tr><td><strong>悬停</strong></td><td><code>#5B21B6</code></td><td>下划线加深</td><td>比默认色深一级，给予交互反馈</td></tr>
+                <tr><td><strong>已访问</strong></td><td><code>#7C3AED</code>（不变）</td><td>下划线</td><td>中后台场景下不区分已访问状态</td></tr>
+                <tr><td><strong>外部链接</strong></td><td>同默认</td><td>后跟 ↗ 图标</td><td>提示用户将离开当前页面</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 十、分隔线规范 ==================== -->
+    <div class="card" id="sec-divider">
+        <h2><span class="section-icon">➖</span>十、分隔线与装饰元素规范</h2>
+
+        <table class="spec-table">
+            <thead><tr><th>类型</th><th>样式</th><th>使用场景</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>章节分隔线</strong></td>
+                    <td><code>border-top: 1px solid #E5E7EB; margin: 32px 0;</code></td>
+                    <td>两个 H2 章节之间的大段落切换</td>
+                </tr>
+                <tr>
+                    <td><strong>轻量分隔</strong></td>
+                    <td><code>border-top: 1px solid #F3F4F6; margin: 16px 0;</code></td>
+                    <td>小节之间的视觉呼吸</td>
+                </tr>
+                <tr>
+                    <td><strong>装饰分隔</strong></td>
+                    <td>三个居中圆点 · · · （color: #D1D5DB, letter-spacing: 8px）</td>
+                    <td>文章内场景切换、时间跳跃</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== 十一、强调与语义化文本标签 ==================== -->
+    <div class="card" id="sec-semantic">
+        <h2><span class="section-icon">🔖</span>十一、强调与语义化文本标签</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>使用语义化标签表达内容含义，而非仅依赖视觉样式。语义标签对<strong>SEO、屏幕阅读器、内容聚合</strong>至关重要。
+            选择标签时优先考虑「这段文字在内容中扮演什么角色」，而非「这段文字应该长什么样」。
+        </div>
+
+        <h3>语义标签速查表</h3>
+        <table class="spec-table">
+            <thead><tr><th style="width:12%;">标签</th><th style="width:12%;">语义</th><th style="width:18%;">默认样式</th><th style="width:28%;">适用场景</th><th style="width:10%;">替换</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><code>&lt;strong&gt;</code></td>
+                    <td>重要、紧急</td>
+                    <td>font-weight: bold</td>
+                    <td>关键结论、警告词、必须遵守的规则</td>
+                    <td style="color:var(--error);">❌ &lt;b&gt;</td>
+                    <td>语义上表达「重要性」，而不仅仅是视觉加粗</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;em&gt;</code></td>
+                    <td>强调、重读</td>
+                    <td>font-style: italic</td>
+                    <td>句子中需要重读的词、对比强调</td>
+                    <td style="color:var(--error);">❌ &lt;i&gt;</td>
+                    <td>改变句子含义的重音位置。如「<em>你</em>做的？」vs「你<em>做的</em>？」</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;b&gt;</code></td>
+                    <td>视觉加粗（无语义）</td>
+                    <td>font-weight: bold</td>
+                    <td>产品名、关键词提取（不带重要性）</td>
+                    <td>—</td>
+                    <td>仅在 HTML5 中重新定义为「样式偏移」标签，无语义权重</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;i&gt;</code></td>
+                    <td>另类语音/语调</td>
+                    <td>font-style: italic</td>
+                    <td>外语短语、思想对白、分类学术语、船名</td>
+                    <td>—</td>
+                    <td>HTML5 重新定义为「与主文本不同语调」的内容</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;mark&gt;</code></td>
+                    <td>高亮标记</td>
+                    <td>背景黄色</td>
+                    <td>搜索结果匹配词、当前上下文相关的文本</td>
+                    <td style="color:var(--error);">❌ &lt;span&gt;</td>
+                    <td>表示与用户当前操作相关的文本，而非通用高亮</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;del&gt;</code> / <code>&lt;ins&gt;</code></td>
+                    <td>删除 / 插入</td>
+                    <td>删除线 / 下划线</td>
+                    <td>文档修订记录、价格变更（原价→现价）、条款更新</td>
+                    <td style="color:var(--error);">❌ &lt;s&gt;</td>
+                    <td><code>&lt;s&gt;</code> 仅表示「不再准确/相关」，无编辑含义</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;kbd&gt;</code></td>
+                    <td>键盘输入</td>
+                    <td>等宽字体、小字号</td>
+                    <td>快捷键说明（<kbd style="background:#F1F5F9;border:1px solid #D1D5DB;border-radius:3px;padding:1px 5px;font-size:0.85em;">Ctrl+C</kbd>）、命令行输入</td>
+                    <td style="color:var(--error);">❌ &lt;code&gt;</td>
+                    <td>行内代码用 <code>&lt;code&gt;</code>，键盘操作用 <code>&lt;kbd&gt;</code></td>
+                </tr>
+                <tr>
+                    <td><code>&lt;abbr&gt;</code></td>
+                    <td>缩写/首字母缩略词</td>
+                    <td>虚线下划线（部分浏览器）</td>
+                    <td>首次出现的专业缩写，配合 <code>title</code> 属性提供全称</td>
+                    <td>—</td>
+                    <td>如 <code>&lt;abbr title="HyperText Markup Language"&gt;HTML&lt;/abbr&gt;</code></td>
+                </tr>
+                <tr>
+                    <td><code>&lt;dl&gt;/&lt;dt&gt;/&lt;dd&gt;</code></td>
+                    <td>描述/定义列表</td>
+                    <td>dt 加粗，dd 缩进</td>
+                    <td>术语解释、FAQ、元数据键值对、配置参数说明</td>
+                    <td style="color:var(--error);">❌ &lt;table&gt;</td>
+                    <td>键值对型数据用 <code>&lt;dl&gt;</code>，表格数据用 <code>&lt;table&gt;</code></td>
+                </tr>
+                <tr>
+                    <td><code>&lt;small&gt;</code></td>
+                    <td>附属说明</td>
+                    <td>较小字号（约 80%）</td>
+                    <td>版权声明、法律免责、表单提示文字</td>
+                    <td style="color:var(--error);">❌ &lt;span&gt;</td>
+                    <td>表示附属信息，非通用缩小文本</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;sub&gt;</code> / <code>&lt;sup&gt;</code></td>
+                    <td>下标 / 上标</td>
+                    <td>缩小并偏移</td>
+                    <td>化学式（H<sub>2</sub>O）、数学指数（x<sup>2</sup>）、脚注引用<sup>[1]</sup></td>
+                    <td>—</td>
+                    <td>仅用于语义上下标，非视觉位移</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>强调层级建议</h3>
+        <div style="background:var(--gray-50);border-radius:var(--radius);padding:20px;margin:16px 0;font-size:13px;line-height:1.8;color:var(--text-secondary);">
+            <div style="margin-bottom:14px;font-weight:600;color:var(--text);">按视觉权重从强到弱排列：</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--error);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;">最强</span>
+                <code><strong></code> + <code style="background:var(--code-inline-bg);color:var(--code-inline-color);padding:2px 6px;border-radius:4px;font-size:0.9em;">color: #DC2626</code>
+                <span style="font-size:12px;color:var(--meta-color);">严重警告、不可逆操作提示</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--warning);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;">强</span>
+                <code><strong></code>（默认加粗）
+                <span style="font-size:12px;color:var(--meta-color);">核心结论、关键术语、必须遵守的规范</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--primary);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;">中</span>
+                <code><em></code>（斜体强调）
+                <span style="font-size:12px;color:var(--meta-color);">需要重读的词语、语义对比</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="background:var(--gray-400);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;">弱</span>
+                <code><mark></code>（高亮标记）
+                <span style="font-size:12px;color:var(--meta-color);">与用户当前上下文关联的内容</span>
+            </div>
+        </div>
+
+        <h3>&lt;kbd&gt; 推荐样式</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#93C5FD;">kbd</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">inline-block</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">2px 6px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-family</span>: <span style="color:#C084FC;">ui-monospace, Consolas, monospace</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">0.85em</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">background</span>: <span style="color:#C084FC;">#F1F5F9</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">border</span>: <span style="color:#C084FC;">1px solid #D1D5DB</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">border-radius</span>: <span style="color:#C084FC;">4px</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">box-shadow</span>: <span style="color:#C084FC;">0 1px 0 #9CA3AF</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.4</span>;<br>
+            }
+        </div>
+        <div style="margin:12px 0;font-size:14px;">
+            <strong>效果：</strong>按下 <kbd style="display:inline-block;padding:2px 6px;font-family:ui-monospace,Consolas,monospace;font-size:0.85em;background:#F1F5F9;border:1px solid #D1D5DB;border-radius:4px;box-shadow:0 1px 0 #9CA3AF;line-height:1.4;">Ctrl</kbd> + <kbd style="display:inline-block;padding:2px 6px;font-family:ui-monospace,Consolas,monospace;font-size:0.85em;background:#F1F5F9;border:1px solid #D1D5DB;border-radius:4px;box-shadow:0 1px 0 #9CA3AF;line-height:1.4;">S</kbd> 保存文件
+        </div>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 错误：滥用无语义标签</div>
+                <div style="text-align:left;font-size:13px;line-height:2;padding:8px;">
+                    <div>请 &lt;b&gt;不要&lt;/b&gt; 在生产环境执行此操作。</div>
+                    <div>技术术语 &lt;i&gt;Deadlock&lt;/i&gt; 指死锁状态。</div>
+                    <div>快捷键 &lt;code&gt;Ctrl+C&lt;/code&gt; 复制文本。</div>
+                    <div>API &lt;span title="..."&gt;REST&lt;/span&gt; 是架构风格。</div>
+                </div>
+                <div style="font-size:11px;color:var(--error);margin-top:8px;">屏幕阅读器无法区分重要性，SEO 权重丢失</div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 正确：语义标签</div>
+                <div style="text-align:left;font-size:13px;line-height:2;padding:8px;">
+                    <div>请 <strong>不要</strong> 在生产环境执行此操作。</div>
+                    <div>技术术语 <i lang="en">Deadlock</i> 指死锁状态。</div>
+                    <div>快捷键 <kbd>Ctrl+C</kbd> 复制文本。</div>
+                    <div>API <abbr title="Representational State Transfer">REST</abbr> 是架构风格。</div>
+                </div>
+                <div style="font-size:11px;color:var(--success);margin-top:8px;">语义明确，可访问性良好，SEO 友好</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 十二、响应式与打印规范 ==================== -->
+    <div class="card" id="sec-responsive">
+        <h2><span class="section-icon">📱</span>十二、响应式与打印规范</h2>
+
+        <h3>移动端适配</h3>
+        <table class="spec-table">
+            <thead><tr><th>断点</th><th>调整项</th><th>值</th></tr></thead>
+            <tbody>
+                <tr><td><strong>≤ 768px</strong></td><td>正文内边距</td><td>padding: 0 16px（原 32px）</td></tr>
+                <tr><td><strong>≤ 768px</strong></td><td>H1 字号</td><td>22px（原 26px）</td></tr>
+                <tr><td><strong>≤ 768px</strong></td><td>H2 字号</td><td>18px（原 22px）</td></tr>
+                <tr><td><strong>≤ 768px</strong></td><td>正文行高</td><td>1.65（原 1.75，窄屏下行高略减）</td></tr>
+                <tr><td><strong>≤ 768px</strong></td><td>元数据布局</td><td>flex 换行（原单行）</td></tr>
+            </tbody>
+        </table>
+
+        <h3>打印样式（@media print）</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#C084FC;">@media print</span> {<br>
+            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 隐藏非内容元素 */</span><br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">.sidebar</span>, <span style="color:#93C5FD;">.comments</span>, <span style="color:#93C5FD;">.related-posts</span> { <span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">none</span>; }<br>
+            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 正文全宽 */</span><br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">.article-body</span> { <span style="color:#6EE7B7;">max-width</span>: <span style="color:#C084FC;">100%</span>; }<br>
+            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 确保链接 URL 可见 */</span><br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">a[href]::after</span> { <span style="color:#6EE7B7;">content</span>: <span style="color:#C084FC;">" (" attr(href) ")"</span>; }<br>
+            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 避免图片跨页断裂 */</span><br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">figure</span> { <span style="color:#6EE7B7;">page-break-inside</span>: <span style="color:#C084FC;">avoid</span>; }<br>
+            }
+        </div>
+    </div>
+
+    <!-- ==================== 十三、设计令牌速查 ==================== -->
+    <div class="card" id="sec-tokens" style="background:var(--gray-50);">
+        <h2><span class="section-icon">📌</span>十三、文本内容展示 · 设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item">
+                <span class="token-name">--content-max-width</span>
+                <span class="token-value">720px</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--content-font-size</span>
+                <span class="token-value">16px</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--content-line-height</span>
+                <span class="token-value">1.75</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--content-paragraph-spacing</span>
+                <span class="token-value">1.5em</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--content-color</span>
+                <span class="token-value">#1F2937</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--heading-color</span>
+                <span class="token-value">#111827</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--meta-color</span>
+                <span class="token-value">#6B7280</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--blockquote-border</span>
+                <span class="token-value">#7C3AED</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--blockquote-bg</span>
+                <span class="token-value">#F5F3FF</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--code-inline-bg</span>
+                <span class="token-value">#F1F5F9</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--code-inline-color</span>
+                <span class="token-value">#DC2626</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--code-block-bg</span>
+                <span class="token-value">#1E293B</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--link-color</span>
+                <span class="token-value">#7C3AED</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--image-radius</span>
+                <span class="token-value">8px</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--tag-bg / --tag-color</span>
+                <span class="token-value">#F5F3FF / #7C3AED</span>
+            </div>
+            <div class="token-item">
+                <span class="token-name">--divider-color</span>
+                <span class="token-value">#E5E7EB</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 十四、检查清单 ==================== -->
+    <div class="card" id="sec-checklist">
+        <h2><span class="section-icon">✅</span>十四、文本内容展示 · 检查清单</h2>
+        <div style="font-size:13px;color:var(--text);line-height:2;padding:16px;background:var(--gray-50);border-radius:var(--radius);">
+            ✅ 每页是否<strong>只有一个 H1</strong>？<br>
+            ✅ 标题层级是否<strong>按 H1→H2→H3→H4 递进，无跳级</strong>？<br>
+            ✅ 正文字号是否在 <strong>15-17px</strong> 范围？<br>
+            ✅ 正文行高是否 ≥ <strong>1.6</strong>？<br>
+            ✅ 段落间距是否使用 <strong>em 单位</strong>（相对字号）？<br>
+            ✅ 内容区最大宽度是否 ≤ <strong>760px</strong>？<br>
+            ✅ 正文颜色是否<strong>不使用纯黑 #000</strong>？<br>
+            ✅ 正文段落是否设置了<strong>首行缩进 2em</strong>（长篇正文场景）？<br>
+            ✅ 标题/列表/引用后的首段是否<strong>取消缩进</strong>？<br>
+            ✅ 正文段落是否使用了<strong>两端对齐（text-align: justify）</strong>？<br>
+            ✅ 元数据区是否包含<strong>作者和日期</strong>？<br>
+            ✅ 图片是否设置了 <strong>width/height</strong> 防止 CLS？<br>
+            ✅ 图片是否使用了 <strong>loading="lazy"</strong>？<br>
+            ✅ 链接是否有<strong>下划线</strong>（不单独依赖颜色区分）？<br>
+            ✅ 代码块和行内代码是否<strong>样式明确区分</strong>？<br>
+            ✅ 引用块是否有<strong>左边框 + 背景色</strong>？<br>
+            ✅ 是否提供了<strong>打印样式</strong>（@media print）？<br>
+            ✅ 移动端字号和间距是否<strong>等比缩放</strong>？<br>
+            ✅ 关键警告/结论是否使用 <strong>&lt;strong&gt;</strong>（而非 &lt;b&gt;）？<br>
+            ✅ 句子中的重读强调是否使用 <strong>&lt;em&gt;</strong>（而非 &lt;i&gt;）？<br>
+            ✅ 键盘快捷键是否使用 <strong>&lt;kbd&gt;</strong> 标签？<br>
+            ✅ 专业缩写首次出现是否使用 <strong>&lt;abbr title="..."&gt;</strong>？<br>
+            ✅ 文档修订（增删改）是否使用 <strong>&lt;del&gt;/&lt;ins&gt;</strong> 标记？
+        </div>
+    </div>
+
+<div class="page-footer">
+    <a href="index.html">← 返回总览</a>
+    <span>|</span>
+    <span>设计系统规范库 · 文本内容展示规范 v2.0</span>
+    <span>|</span>
+    <a href="16-前端性能优化规范-CSS引入JS位置DOM优化重排重绘.html">← 上一章</a>
+    <span>|</span>
+    <a href="18-数据交互规范-API请求响应格式与错误处理.html">下一章 →</a>
+</div>
+
+</div>
+</body>
+</html>

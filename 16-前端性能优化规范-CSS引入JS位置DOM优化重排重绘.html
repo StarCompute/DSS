@@ -1,0 +1,926 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端性能优化规范 | CSS引入 · JS位置 · DOM优化 · 重排重绘</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+    --primary:#0891B2; --primary-hover:#0E7490; --primary-light:#ECFEFF; --primary-border:#A5F3FC;
+}
+
+        /* ===== 代码块 ===== */
+        .code-block {
+            background:#1E293B; color:#E2E8F0; border-radius:8px;
+            overflow:hidden; margin:12px 0; position:relative;
+        }
+        .code-block pre {
+            padding:20px; margin:0; overflow-x:auto;
+            font-family:'Fira Code','Cascadia Code',Consolas,monospace;
+            font-size:13px; line-height:1.7; white-space:pre;
+        }
+        .code-block .code-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 16px; background:rgba(255,255,255,.04);
+            border-bottom:1px solid rgba(255,255,255,.06);
+        }
+        .code-block .code-header .code-title {
+            font-size:12px; color:#94A3B8; font-weight:600;
+        }
+        .code-block .copy-btn {
+            font-size:12px; padding:3px 10px;
+            border:1px solid rgba(255,255,255,.12); border-radius:4px;
+            color:#94A3B8; cursor:pointer; background:transparent;
+            transition:all .15s;
+        }
+        .code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+        .code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+        .code-block .hljs { background:transparent; padding:0; }
+
+        /* ===== 对比展示 ===== */
+        @media (max-width:768px) { .compare-grid { grid-template-columns:1fr; } }
+
+        /* ===== 流程图 ===== */
+        .flow {
+            display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+            padding:16px; background:var(--gray-50); border-radius:var(--radius-sm);
+            margin:12px 0 20px; font-size:13px; justify-content:center;
+        }
+        .flow .step {
+            background:var(--surface); border:2px solid var(--primary);
+            border-radius:8px; padding:8px 16px; font-weight:600; color:var(--primary);
+            white-space:nowrap;
+        }
+        .flow .step.good { border-color:var(--success); color:var(--success); background:var(--success-bg); }
+        .flow .step.bad { border-color:var(--error); color:var(--error); background:var(--error-bg); }
+        .flow .arrow { color:var(--text-tertiary); font-size:18px; font-weight:700; }
+
+        /* ===== 层级深度示意 ===== */
+        .nest-demo {
+            display:flex; flex-direction:column; gap:8px; margin:12px 0 20px;
+        }
+        .nest-level {
+            border-radius:6px; padding:10px 14px; font-size:12px;
+            display:flex; align-items:center; gap:8px;
+            border-left:4px solid;
+        }
+        .nest-level.l0 { margin-left:0; border-color:var(--primary); background:var(--primary-light); }
+        .nest-level.l1 { margin-left:20px; border-color:#8B5CF6; background:#F5F3FF; }
+        .nest-level.l2 { margin-left:40px; border-color:#EC4899; background:#FDF2F8; }
+        .nest-level.l3 { margin-left:60px; border-color:var(--error); background:var(--error-bg); }
+        .nest-level.l4 { margin-left:80px; border-color:var(--error); background:#FEE2E2; }
+        .nest-level .badge {
+            padding:1px 8px; border-radius:10px; font-size:11px; font-weight:600;
+            color:#fff;
+        }
+        .nest-level .badge.ok { background:var(--success); }
+        .nest-level .badge.warn { background:var(--warning); }
+        .nest-level .badge.err { background:var(--error); }
+
+        /* ===== 响应式 ===== */
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">服务与部署</a>
+        <span class="sep">›</span>
+        <span class="current">16-前端性能优化规范</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">⚡</span>前端性能优化规范</h1>
+        <div class="subtitle">
+            <span>CSS 引入位置</span><span>JS 加载策略</span>
+            <span>DOM 嵌套优化</span><span>重排重绘</span>
+            <span>资源预加载</span><span>渲染路径</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 16</span><span>🎨 主题色: #0891B2</span><span>📂 分类: 服务与部署</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义前端性能优化的完整规范，涵盖CSS引入位置、JS加载策略、DOM嵌套优化、重排重绘避免、资源预加载和关键渲染路径优化，确保页面加载速度和用户体验。
+        </div>
+    </div>
+
+    <!-- ============ 1. CSS 引入规范 ============ -->
+    <div class="card" id="sec-css-loading">
+        <h2><span class="section-icon">🎨</span>一、CSS 引入规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>CSS 的加载位置和方式直接影响<strong>首次内容绘制 (FCP)</strong> 和 <strong>首次有意义绘制 (FMP)</strong>，错误的位置会导致白屏或样式闪烁。CSS 是<strong>渲染阻塞资源 (Render-Blocking)</strong>，必须放在 <code>&lt;head&gt;</code> 中。
+        </div>
+
+        <h3>📌 CSS 加载方式对比</h3>
+
+        <table class="spec-table">
+            <thead><tr>
+                <th style="width:25%;">引入方式</th>
+                <th style="width:15%;">位置</th>
+                <th style="width:15%;">渲染行为</th>
+                <th style="width:25%;">原理</th>
+                <th>建议</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td><code>&lt;link rel="stylesheet"&gt;</code></td>
+                <td>&lt;head&gt; 顶部</td>
+                <td>阻塞渲染，但尽早下载</td>
+                <td>浏览器遇到 &lt;link&gt; 立即发起请求，同时继续解析 HTML；CSSOM 构建完成后才进入渲染阶段</td>
+                <td style="color:var(--success);font-weight:500;">✅ 推荐</td>
+            </tr>
+            <tr>
+                <td><code>&lt;link rel="stylesheet"&gt;</code></td>
+                <td>&lt;body&gt; 底部</td>
+                <td>先无样式渲染，再重绘</td>
+                <td>浏览器已开始首次绘制，CSS 加载完毕后触发重绘 → FOUC</td>
+                <td style="color:var(--error);font-weight:500;">❌ 禁止</td>
+            </tr>
+            <tr>
+                <td><code>&lt;style&gt;</code> 内联</td>
+                <td>&lt;head&gt;</td>
+                <td>不阻塞，零网络请求</td>
+                <td>关键 CSS 内联到 HTML 中，无需额外网络请求，首屏渲染最快</td>
+                <td style="color:var(--success);font-weight:500;">✅ 首屏关键CSS推荐</td>
+            </tr>
+            <tr>
+                <td><code>&lt;link media="print"&gt;</code></td>
+                <td>&lt;head&gt;</td>
+                <td>不阻塞渲染</td>
+                <td>通过 media 属性声明为非关键 CSS，浏览器仍下载但不阻塞渲染</td>
+                <td style="color:var(--success);font-weight:500;">✅ 非首屏样式推荐</td>
+            </tr>
+            <tr>
+                <td><code>@import</code></td>
+                <td>CSS 文件内</td>
+                <td>串行加载，阻塞更久</td>
+                <td>@import 必须在 CSS 文件下载后才能解析，形成请求链，增加关键路径长度</td>
+                <td style="color:var(--error);font-weight:500;">❌ 禁止</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>最佳实践代码示例</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">CSS 最佳实践模板</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-html">&lt;!-- ✅ 正确：CSS 全部放在 &lt;head&gt; 中 --&gt;
+&lt;head&gt;
+    &lt;!-- 1. 首屏关键CSS内联（消除额外请求） --&gt;
+    &lt;style&gt;
+        /* 首屏必须的样式：布局、字体、颜色 */
+        *,*::before,*::after{box-sizing:border-box}
+        body{font-family:system-ui,sans-serif;margin:0}
+        .header{height:56px;background:#fff}
+    &lt;/style&gt;
+
+    &lt;!-- 2. 主样式表 preload（提前下载，不阻塞渲染） --&gt;
+    &lt;link rel="preload" href="/css/main.css" as="style"&gt;
+
+    &lt;!-- 3. 主样式表加载（使用 onload 切换，避免阻塞） --&gt;
+    &lt;link rel="stylesheet" href="/css/main.css" media="print" onload="this.media='all'"&gt;
+
+    &lt;!-- 4. 非首屏样式延迟加载 --&gt;
+    &lt;link rel="stylesheet" href="/css/print.css" media="print"&gt;
+&lt;/head&gt;</code></pre>
+</div>
+
+        <div class="tip-block tip-info">
+            <strong>关键路径优化公式：</strong> 减少 CSS 文件数量 → 压缩体积 → 内联关键 CSS → 非关键 CSS 异步加载。目标是让浏览器在收到 HTML 后最快进入首次渲染。
+        </div>
+    </div>
+
+    <!-- ============ 2. JS 引入规范 ============ -->
+    <div class="card" id="sec-js-loading">
+        <h2><span class="section-icon">📜</span>二、JavaScript 引入规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>JS 的加载和执行方式直接影响 <strong>TTI (可交互时间)</strong> 和用户体验。普通 <code>&lt;script&gt;</code> 是<strong>解析阻塞 (Parser-Blocking)</strong> 资源，JS 默认放在 <code>&lt;/body&gt;</code> 之前，按需使用 async/defer。
+        </div>
+
+        <h3>📌 JS 加载方式对比</h3>
+
+        <table class="spec-table">
+            <thead><tr>
+                <th style="width:18%;">加载方式</th>
+                <th style="width:12%;">下载时机</th>
+                <th style="width:12%;">执行时机</th>
+                <th style="width:12%;">HTML解析</th>
+                <th style="width:18%;">适用场景</th>
+                <th>执行顺序</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td><code>&lt;script src&gt;</code> (普通)</td>
+                <td>遇到标签时</td>
+                <td>下载完立即执行</td>
+                <td style="color:var(--error);font-weight:500;">暂停</td>
+                <td>——（不推荐）</td>
+                <td style="color:var(--error);font-weight:500;">文档顺序</td>
+            </tr>
+            <tr>
+                <td><code>&lt;script defer&gt;</code></td>
+                <td>遇到标签时立即下载</td>
+                <td>HTML 解析完成后</td>
+                <td style="color:var(--success);font-weight:500;">不暂停</td>
+                <td>依赖 DOM 的脚本、主业务逻辑</td>
+                <td style="color:var(--success);font-weight:500;">文档顺序保证</td>
+            </tr>
+            <tr>
+                <td><code>&lt;script async&gt;</code></td>
+                <td>遇到标签时立即下载</td>
+                <td>下载完立即执行</td>
+                <td>执行时暂停</td>
+                <td>独立第三方脚本（统计、广告）</td>
+                <td style="color:var(--error);font-weight:500;">不保证顺序</td>
+            </tr>
+            <tr>
+                <td><code>&lt;script type="module"&gt;</code></td>
+                <td>遇到标签时</td>
+                <td>类似 defer</td>
+                <td style="color:var(--success);font-weight:500;">不暂停</td>
+                <td>ES Module 项目</td>
+                <td style="color:var(--success);font-weight:500;">import 依赖顺序</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>加载时序对比</h3>
+        <div class="flow">
+            <span class="step bad">普通 script<br>（阻塞解析）</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--text-secondary);">下载JS时<br>HTML解析停止</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--text-secondary);">执行JS<br>才继续解析</span>
+        </div>
+        <div class="flow">
+            <span class="step good">script defer</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--text-secondary);">HTML解析<br>并行下载JS</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--text-secondary);">HTML解析完<br>再执行JS</span>
+        </div>
+        <div class="flow">
+            <span class="step good">script async</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--text-secondary);">HTML解析<br>并行下载JS</span>
+            <span class="arrow">→</span>
+            <span style="font-size:12px;color:var(--error);">下载完立即执行<br>暂停HTML解析</span>
+        </div>
+
+        <h3>最佳实践代码</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">JS 加载标准模板</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-html">&lt;!-- ✅ 标准模板 --&gt;
+&lt;head&gt;
+    &lt;!-- 关键 JS 预连接（提前 DNS + TCP + TLS） --&gt;
+    &lt;link rel="preconnect" href="https://api.example.com"&gt;
+    &lt;link rel="dns-prefetch" href="https://cdn.example.com"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- 页面内容 --&gt;
+
+    &lt;!-- ✅ 主业务脚本：defer，放 &lt;/body&gt; 前 --&gt;
+    &lt;script defer src="/js/app.js"&gt;&lt;/script&gt;
+
+    &lt;!-- ✅ 独立第三方脚本：async --&gt;
+    &lt;script async src="https://www.googletagmanager.com/gtag/js"&gt;&lt;/script&gt;
+
+    &lt;!-- ✅ 内联初始化脚本（极少代码） --&gt;
+    &lt;script&gt;
+        // 仅放最关键的初始化，如暗色模式检测
+        document.documentElement.dataset.theme =
+            localStorage.getItem('theme') || 'light';
+    &lt;/script&gt;
+&lt;/body&gt;</code></pre>
+</div>
+
+        <h3>资源预加载策略汇总</h3>
+        <table class="spec-table">
+            <thead><tr>
+                <th>指令</th>
+                <th>作用</th>
+                <th>使用场景</th>
+                <th>示例</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td><code>preload</code></td>
+                <td>声明当前页面<strong>必定使用</strong>的高优先级资源，浏览器立即下载</td>
+                <td>首屏字体、关键CSS/JS、首屏大图</td>
+                <td><code>&lt;link rel="preload" href="font.woff2" as="font" crossorigin&gt;</code></td>
+            </tr>
+            <tr>
+                <td><code>prefetch</code></td>
+                <td>声明<strong>未来可能使用</strong>的低优先级资源，空闲时下载</td>
+                <td>下一页资源、非首屏路由</td>
+                <td><code>&lt;link rel="prefetch" href="/page2.html"&gt;</code></td>
+            </tr>
+            <tr>
+                <td><code>preconnect</code></td>
+                <td>提前建立连接（DNS+TCP+TLS），消除握手延迟</td>
+                <td>第三方 API、CDN、字体服务</td>
+                <td><code>&lt;link rel="preconnect" href="https://api.example.com"&gt;</code></td>
+            </tr>
+            <tr>
+                <td><code>dns-prefetch</code></td>
+                <td>仅提前 DNS 解析，比 preconnect 更轻量</td>
+                <td>不太确定是否会用到的第三方域名</td>
+                <td><code>&lt;link rel="dns-prefetch" href="https://cdn.example.com"&gt;</code></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============ 3. DIV/HTML 元素使用规范 ============ -->
+    <div class="card" id="sec-dom-structure">
+        <h2><span class="section-icon">🏗️</span>三、DIV / HTML 元素使用规范</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：语义化 + 扁平化 + 最小嵌套。</strong>过度的 DOM 嵌套和滥用 <code>&lt;div&gt;</code> 会显著增加<strong>样式计算 (Style Calculation)</strong> 和 <strong>布局 (Layout)</strong> 的耗时。当 CSS 选择器从右向左匹配时，深度嵌套会导致每条规则遍历更多节点。
+        </div>
+
+        <h3>3.1 语义化标签优先（避免 div 滥用）</h3>
+
+        <table class="spec-table">
+            <thead><tr>
+                <th style="width:20%;">场景</th>
+                <th style="width:40%;color:var(--error);">❌ div 滥用</th>
+                <th style="width:40%;color:var(--success);">✅ 语义化标签</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td>页面头部</td>
+                <td><code>&lt;div class="header"&gt;</code></td>
+                <td><code>&lt;header&gt;</code></td>
+            </tr>
+            <tr>
+                <td>导航区域</td>
+                <td><code>&lt;div class="nav"&gt;</code></td>
+                <td><code>&lt;nav&gt;</code></td>
+            </tr>
+            <tr>
+                <td>主要内容</td>
+                <td><code>&lt;div class="main"&gt;</code></td>
+                <td><code>&lt;main&gt;</code></td>
+            </tr>
+            <tr>
+                <td>独立内容块</td>
+                <td><code>&lt;div class="article"&gt;</code></td>
+                <td><code>&lt;article&gt;</code></td>
+            </tr>
+            <tr>
+                <td>侧边栏</td>
+                <td><code>&lt;div class="sidebar"&gt;</code></td>
+                <td><code>&lt;aside&gt;</code></td>
+            </tr>
+            <tr>
+                <td>页面底部</td>
+                <td><code>&lt;div class="footer"&gt;</code></td>
+                <td><code>&lt;footer&gt;</code></td>
+            </tr>
+            <tr>
+                <td>内容分区</td>
+                <td><code>&lt;div class="section"&gt;</code></td>
+                <td><code>&lt;section&gt;</code></td>
+            </tr>
+            <tr>
+                <td>按钮</td>
+                <td><code>&lt;div onclick&gt;</code></td>
+                <td><code>&lt;button&gt;</code></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>3.2 最大嵌套深度原则</h3>
+
+        <div class="nest-demo">
+            <div class="nest-level l0"><span class="badge ok">OK</span> 层级 0 — &lt;body&gt; — 根节点</div>
+            <div class="nest-level l1"><span class="badge ok">OK</span> 层级 1 — &lt;main&gt; / &lt;section&gt; — 页面主结构</div>
+            <div class="nest-level l2"><span class="badge ok">OK</span> 层级 2 — .card / .panel — 组件容器</div>
+            <div class="nest-level l3"><span class="badge warn">⚠️ 注意</span> 层级 3 — 组件内部元素 — 此为合理上限</div>
+            <div class="nest-level l4"><span class="badge err">❌ 过深</span> 层级 4+ — 过度嵌套，必须重构</div>
+        </div>
+
+        <div class="tip-block tip-info">
+            <strong>深度红线：</strong> 单条 DOM 路径从 &lt;body&gt; 算起不应超过 <strong>15 层</strong>，组件内部不应超过 <strong>4 层</strong>。超过此阈值，布局计算时间呈指数级增长。
+        </div>
+
+        <h3>3.3 减少包装层（Wrapper Reduction）</h3>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 过度包装 — 8层嵌套</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-html">&lt;div class="wrapper"&gt;
+  &lt;div class="container"&gt;
+    &lt;div class="row"&gt;
+      &lt;div class="col"&gt;
+        &lt;div class="card"&gt;
+          &lt;div class="card-body"&gt;
+            &lt;div class="content"&gt;
+              &lt;span&gt;Hello&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<div style="font-size:11px;color:var(--error);margin-top:4px;">← 8层才到达内容文本</div>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 精简后 — 3层嵌套</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-html">&lt;main class="container"&gt;
+  &lt;article class="card"&gt;
+    &lt;p&gt;Hello&lt;/p&gt;
+  &lt;/article&gt;
+&lt;/main&gt;</code></pre>
+<div style="font-size:11px;color:var(--success);margin-top:4px;">← 3层到达内容，减少5次DOM遍历</div>
+            </div>
+        </div>
+
+        <h3>3.4 DOM 数量控制标准</h3>
+
+        <table class="spec-table">
+            <thead><tr><th>指标</th><th>绿色（优）</th><th>黄色（可接受）</th><th>红色（需优化）</th></tr></thead>
+            <tbody>
+            <tr>
+                <td>总 DOM 节点数</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 1,500</td>
+                <td style="color:var(--warning);">1,500 ~ 3,000</td>
+                <td style="color:var(--error);font-weight:500;">&gt; 3,000</td>
+            </tr>
+            <tr>
+                <td>最大嵌套深度</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 15 层</td>
+                <td style="color:var(--warning);">15 ~ 32 层</td>
+                <td style="color:var(--error);font-weight:500;">&gt; 32 层</td>
+            </tr>
+            <tr>
+                <td>单组件嵌套</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 4 层</td>
+                <td style="color:var(--warning);">4 ~ 6 层</td>
+                <td style="color:var(--error);font-weight:500;">&gt; 6 层</td>
+            </tr>
+            <tr>
+                <td>CSS 选择器深度</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 3 层</td>
+                <td style="color:var(--warning);">3 ~ 4 层</td>
+                <td style="color:var(--error);font-weight:500;">&gt; 4 层</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-info">
+            <strong>Lighthouse 审计参考：</strong> 避免 DOM 过大（Avoid an excessive DOM size）。超过 1,500 个节点时 Lighthouse 会发出警告。可通过 Chrome DevTools → Performance → 录制 → 查看 Recalculate Style 耗时来量化影响。
+        </div>
+    </div>
+
+    <!-- ============ 4. 重排 (Reflow) 与重绘 (Repaint) ============ -->
+    <div class="card" id="sec-reflow-repaint">
+        <h2><span class="section-icon">🔄</span>四、重排 (Reflow) 与重绘 (Repaint)</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>理解浏览器渲染流水线是写出高性能前端代码的基础。触发重排的代价远高于重绘，批量读写 DOM 可大幅减少布局抖动。
+        </div>
+
+        <h3>📌 浏览器渲染流水线</h3>
+        <div class="flow">
+            <span class="step">JavaScript</span><span class="arrow">→</span>
+            <span class="step">Style<br>计算样式</span><span class="arrow">→</span>
+            <span class="step">Layout<br>布局(重排)</span><span class="arrow">→</span>
+            <span class="step">Paint<br>绘制(重绘)</span><span class="arrow">→</span>
+            <span class="step">Composite<br>合成</span>
+        </div>
+
+        <h3>4.1 触发重排 (Layout) 的操作</h3>
+        <div class="tip-block tip-warn">
+            <strong>代价最高：</strong> 重排会触发后续的 Layout → Paint → Composite 全流程。修改几何属性（宽高、位置、显示/隐藏）必定触发重排，且父元素重排会级联影响所有子元素。
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:22%;">类别</th><th>具体操作</th><th style="width:30%;">影响范围</th></tr></thead>
+            <tbody>
+            <tr>
+                <td>元素几何</td>
+                <td>修改 width / height / padding / margin / border</td>
+                <td style="color:var(--error);font-weight:500;">自身 + 后续兄弟 + 父级（级联）</td>
+            </tr>
+            <tr>
+                <td>元素位置</td>
+                <td>修改 top / left / right / bottom / position</td>
+                <td style="color:var(--error);font-weight:500;">自身 + 兄弟元素</td>
+            </tr>
+            <tr>
+                <td>显示/隐藏</td>
+                <td>display:none ↔ display:block</td>
+                <td style="color:var(--error);font-weight:500;">整个子树（插入/移除渲染树）</td>
+            </tr>
+            <tr>
+                <td>DOM 增删</td>
+                <td>appendChild / removeChild / innerHTML</td>
+                <td style="color:var(--error);font-weight:500;">整个子树</td>
+            </tr>
+            <tr>
+                <td>字体加载</td>
+                <td>Web Font 加载完成</td>
+                <td style="color:var(--error);font-weight:500;">所有使用该字体的元素</td>
+            </tr>
+            <tr>
+                <td>窗口变化</td>
+                <td>resize 事件、orientationchange</td>
+                <td style="color:var(--error);font-weight:500;">整个页面</td>
+            </tr>
+            <tr>
+                <td>读取布局属性</td>
+                <td>offsetWidth / offsetHeight / getBoundingClientRect() / scrollTop / getComputedStyle()</td>
+                <td style="color:var(--error);font-weight:500;">强制同步布局（见 4.3）</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>4.2 仅触发重绘 (Paint) 的操作</h3>
+        <div class="tip-block tip-success">
+            <strong>代价中等：</strong> 修改视觉属性（颜色、背景、阴影、可见性）仅触发 Paint + Composite，不触发 Layout，性能优于重排。
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:22%;">类别</th><th>具体操作</th><th style="width:30%;">说明</th></tr></thead>
+            <tbody>
+            <tr><td>颜色</td><td>color / background-color / border-color</td><td style="color:var(--success);font-weight:500;">仅重绘</td></tr>
+            <tr><td>阴影</td><td>box-shadow / text-shadow</td><td style="color:var(--success);font-weight:500;">仅重绘</td></tr>
+            <tr><td>轮廓</td><td>outline / outline-color</td><td style="color:var(--success);font-weight:500;">仅重绘</td></tr>
+            <tr><td>可见性</td><td>visibility:hidden ↔ visible</td><td style="color:var(--success);font-weight:500;">仅重绘（不改变布局空间）</td></tr>
+            <tr><td>背景</td><td>background-image</td><td style="color:var(--success);font-weight:500;">仅重绘</td></tr>
+            </tbody>
+        </table>
+
+        <h3>4.3 强制同步布局 (Forced Synchronous Layout) — 最大的性能杀手</h3>
+
+        <div class="tip-block tip-warn">
+            <strong>问题：</strong> 当 JS <strong>写入</strong> DOM 样式后立即<strong>读取</strong>布局属性时，浏览器必须强制立即完成 Layout 才能返回正确的值。如果在一个循环中反复执行此操作，就会产生 <strong>布局抖动 (Layout Thrashing)</strong>。
+        </div>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 布局抖动</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">// 每次循环：写 → 读 → 强制布局
+for (let i = 0; i &lt; items.length; i++) {
+    items[i].style.width = newWidths[i] + 'px';
+    // ⚠️ 立即读取 → 强制同步布局!
+    const h = items[i].offsetHeight;
+    items[i].style.marginTop = calcMargin(h);
+}
+// 如果有 100 个 item，触发 100 次强制布局</code></pre>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 批量读写分离</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">// 第1步：批量读取（不触发强制布局）
+const heights = [];
+for (let i = 0; i &lt; items.length; i++) {
+    heights.push(items[i].offsetHeight);
+}
+
+// 第2步：批量写入（一次性布局）
+for (let i = 0; i &lt; items.length; i++) {
+    items[i].style.width = newWidths[i] + 'px';
+    items[i].style.marginTop = calcMargin(heights[i]) + 'px';
+}
+// 仅触发 1 次布局!</code></pre>
+            </div>
+        </div>
+
+        <h3>4.4 高性能动画策略</h3>
+
+        <table class="spec-table">
+            <thead><tr>
+                <th style="width:15%;">方式</th>
+                <th style="width:15%;">触发阶段</th>
+                <th style="width:15%;">性能</th>
+                <th>说明</th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td><code>transform</code></td>
+                <td style="color:var(--success);font-weight:500;">仅 Composite</td>
+                <td style="color:var(--success);font-weight:500;">⭐⭐⭐ 最优</td>
+                <td>GPU 合成层，不触发 Layout/Paint。适用于位移、缩放、旋转</td>
+            </tr>
+            <tr>
+                <td><code>opacity</code></td>
+                <td style="color:var(--success);font-weight:500;">仅 Composite</td>
+                <td style="color:var(--success);font-weight:500;">⭐⭐⭐ 最优</td>
+                <td>GPU 合成层，不触发 Layout/Paint。适用于淡入淡出</td>
+            </tr>
+            <tr>
+                <td><code>will-change</code></td>
+                <td>——（提前提升）</td>
+                <td style="color:var(--success);font-weight:500;">⭐⭐ 辅助</td>
+                <td>提前告知浏览器该元素将变化，浏览器提前创建独立合成层。注意：<strong>不可滥用</strong>，用后及时移除</td>
+            </tr>
+            <tr>
+                <td><code>left / top</code></td>
+                <td style="color:var(--error);font-weight:500;">Layout → Paint → Composite</td>
+                <td style="color:var(--error);font-weight:500;">⭐ 最差</td>
+                <td>触发全流程重排。动画场景下应用 transform:translate() 替代</td>
+            </tr>
+            <tr>
+                <td><code>width / height</code></td>
+                <td style="color:var(--error);font-weight:500;">Layout → Paint → Composite</td>
+                <td style="color:var(--error);font-weight:500;">⭐ 最差</td>
+                <td>动画场景下应用 transform:scale() 替代</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-info">
+            <strong>合成层 (Composite Layer) 注意事项：</strong> 每个合成层都需要 GPU 显存。过多合成层会导致 <strong>纹理内存溢出</strong>，反而降低性能。使用 <code>will-change</code> 时应遵循「用完即删」原则，或在动画结束后通过 JS 移除该属性。
+        </div>
+    </div>
+
+    <!-- ============ 5. 列表渲染与虚拟化 ============ -->
+    <div class="card" id="sec-list-render">
+        <h2><span class="section-icon">📋</span>五、列表渲染与批量 DOM 操作</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>大量数据的列表渲染是 DOM 性能问题的重灾区。合理使用 DocumentFragment、虚拟滚动和批量更新可减少数百倍的布局计算。
+        </div>
+
+        <h3>5.1 DocumentFragment — 离线 DOM 构建</h3>
+        <div class="tip-block tip-info">
+            <strong>原理：</strong> DocumentFragment 是内存中的轻量文档片段，对其操作不会触发页面重排。先将所有节点构建到 Fragment 中，再一次插入 DOM，只触发一次重排。
+        </div>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 逐条插入 — N 次重排</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">const list = document.getElementById('list');
+for (let i = 0; i &lt; 1000; i++) {
+    const li = document.createElement('li');
+    li.textContent = `Item ${i}`;
+    list.appendChild(li);  // ← 每次触发重排
+}
+// 1000 次 Layout 计算</code></pre>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ DocumentFragment — 1 次重排</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">const list = document.getElementById('list');
+const fragment = document.createDocumentFragment();
+for (let i = 0; i &lt; 1000; i++) {
+    const li = document.createElement('li');
+    li.textContent = `Item ${i}`;
+    fragment.appendChild(li);  // ← 不触发重排
+}
+list.appendChild(fragment);  // ← 仅1次重排</code></pre>
+            </div>
+        </div>
+
+        <h3>5.2 批量 DOM 更新 — display:none 技巧</h3>
+
+        <div class="compare-grid">
+            <div class="bad-box">
+                <div class="label">❌ 可见状态下多次修改</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">const el = document.getElementById('box');
+el.style.width = '200px';    // 重排
+el.style.height = '100px';   // 重排
+el.style.padding = '16px';   // 重排
+el.style.margin = '12px';    // 重排
+// 4 次重排</code></pre>
+            </div>
+            <div class="good-box">
+                <div class="label">✅ 脱离文档流 → 修改 → 恢复</div>
+<pre style="margin:0; font-size:12px; background:#1E293B; color:#E2E8F0; border-radius:8px; padding:16px; overflow-x:auto; font-family:'Fira Code','Cascadia Code',Consolas,monospace; line-height:1.7;"><code class="language-javascript">const el = document.getElementById('box');
+el.style.display = 'none';    // 1次重排（移除渲染树）
+el.style.width = '200px';    // 不重排
+el.style.height = '100px';   // 不重排
+el.style.padding = '16px';   // 不重排
+el.style.margin = '12px';    // 不重排
+el.style.display = '';         // 1次重排（重新插入）
+// 仅 2 次重排</code></pre>
+            </div>
+        </div>
+
+        <h3>5.3 虚拟滚动 (Virtual Scrolling)</h3>
+        <div class="tip-block tip-info">
+            <strong>适用场景：</strong> 列表数据超过 500 条时，应使用虚拟滚动。只渲染可视区域 + 缓冲区内的 DOM 节点，而非全部数据。<br>
+            <strong>原理：</strong> 总容器高度 = 数据总量 × 单项高度（撑开滚动条），实际只渲染 <code>可视区域 / 单项高度 + 缓冲区</code> 个节点，通过 <code>transform:translateY()</code> 定位到正确偏移位置。<br>
+            <strong>效果：</strong> 10,000 条数据从渲染 10,000 个节点降至约 20~30 个节点，DOM 数量减少 99.7%。
+        </div>
+    </div>
+
+    <!-- ============ 6. CSS 选择器性能 ============ -->
+    <div class="card" id="sec-css-selector">
+        <h2><span class="section-icon">🎯</span>六、CSS 选择器性能优化</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>浏览器从右向左匹配 CSS 选择器。了解这一机制，可以编写更高效的选择器，减少样式计算时间。
+        </div>
+
+        <h3>选择器效率排名（从快到慢）</h3>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:15%;">优先级</th><th>选择器类型</th><th>示例</th><th>匹配方式</th></tr></thead>
+            <tbody>
+            <tr>
+                <td style="color:var(--success);font-weight:500;">最快</td>
+                <td>ID 选择器</td>
+                <td><code>#header</code></td>
+                <td>浏览器通过 ID 哈希直接定位，O(1)</td>
+            </tr>
+            <tr>
+                <td style="color:var(--success);font-weight:500;">快</td>
+                <td>类选择器</td>
+                <td><code>.card</code></td>
+                <td>现代浏览器对 class 有优化索引</td>
+            </tr>
+            <tr>
+                <td style="color:var(--success);font-weight:500;">快</td>
+                <td>标签选择器</td>
+                <td><code>header</code></td>
+                <td>按标签名分组，匹配快</td>
+            </tr>
+            <tr>
+                <td style="color:var(--warning);">中等</td>
+                <td>属性选择器</td>
+                <td><code>[data-type="primary"]</code></td>
+                <td>需遍历检查属性值</td>
+            </tr>
+            <tr>
+                <td style="color:var(--warning);">中等</td>
+                <td>相邻/子代选择器</td>
+                <td><code>.card > .title</code></td>
+                <td>向上查找 1 层父级</td>
+            </tr>
+            <tr>
+                <td style="color:var(--error);font-weight:500;">慢</td>
+                <td>后代选择器</td>
+                <td><code>.card .title</code></td>
+                <td>向上遍历所有祖先直到根节点</td>
+            </tr>
+            <tr>
+                <td style="color:var(--error);font-weight:500;">慢</td>
+                <td>通配符</td>
+                <td><code>.card *</code></td>
+                <td>匹配所有子代，范围最广</td>
+            </tr>
+            <tr>
+                <td style="color:var(--error);font-weight:500;">最慢</td>
+                <td>深层嵌套选择器</td>
+                <td><code>.a .b .c .d .e</code></td>
+                <td>每个元素向上查找 5 层祖先</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>推荐写法</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">CSS 选择器最佳实践</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-css">/* ✅ 好：BEM 风格，单层类选择器 */
+
+.card__title { }
+.card--featured { }
+
+/* ⚠️ 可接受：最多 2 层嵌套 */
+.card .card__title { }
+
+/* ❌ 差：过度嵌套，每个 .title 遍历所有祖先 */
+.page .main .container .card .body .title { }</code></pre>
+</div>
+    </div>
+
+    <!-- ============ 7. 检查清单 ============ -->
+    <div class="card" id="sec-checklist">
+        <h2><span class="section-icon">✅</span>七、前端性能检查清单</h2>
+        <div class="tip-block tip-info">
+            <strong>上线前对照检查，确保关键性能指标达标。</strong>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:5%;">#</th><th>检查项</th><th style="width:15%;">目标值</th><th style="width:15%;">检测工具</th></tr></thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>CSS 是否全部放在 &lt;head&gt; 中</td>
+                <td style="color:var(--success);font-weight:500;">✅ 是</td>
+                <td>查看页面源代码</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>是否内联了首屏关键 CSS</td>
+                <td style="color:var(--success);font-weight:500;">首屏 CSS &lt; 14KB</td>
+                <td>Lighthouse / Coverage</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>非关键 CSS 是否使用 media="print" 异步加载</td>
+                <td style="color:var(--success);font-weight:500;">✅ 是</td>
+                <td>查看页面源代码</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>是否使用 @import（应避免）</td>
+                <td style="color:var(--success);font-weight:500;">❌ 否</td>
+                <td>CSS 文件搜索 @import</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>JS 是否使用 defer（主脚本）/ async（独立脚本）</td>
+                <td style="color:var(--success);font-weight:500;">✅ 是</td>
+                <td>查看页面源代码</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>总 DOM 节点数</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 1,500</td>
+                <td>Lighthouse / Performance</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>最大 DOM 嵌套深度</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 15 层</td>
+                <td>Chrome DevTools Elements</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>动画是否使用 transform/opacity</td>
+                <td style="color:var(--success);font-weight:500;">✅ 是</td>
+                <td>Performance 录制</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>是否存在强制同步布局（布局抖动）</td>
+                <td style="color:var(--success);font-weight:500;">❌ 否</td>
+                <td>Performance → 红色三角标记</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>大列表是否使用虚拟滚动或分页</td>
+                <td style="color:var(--success);font-weight:500;">✅ 是（&gt;500条时）</td>
+                <td>代码审查</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>CSS 选择器深度</td>
+                <td style="color:var(--success);font-weight:500;">&lt; 3 层</td>
+                <td>CSS 文件审查</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>是否使用了 preload / prefetch / preconnect</td>
+                <td style="color:var(--success);font-weight:500;">关键资源已配置</td>
+                <td>查看页面源代码</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+<!-- ====== 设计令牌 ====== -->
+<div class="card" id="sec-tokens">
+<h2><span class="section-icon">🎨</span>八、设计令牌速查</h2>
+<div class="token-grid">
+    <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#0891B2（性能青）</span></div>
+    <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#ECFEFF</span></div>
+    <div class="token-item"><span class="token-name">--success</span><span class="token-value">#059669</span></div>
+    <div class="token-item"><span class="token-name">--error</span><span class="token-value">#DC2626</span></div>
+    <div class="token-item"><span class="token-name">--warning</span><span class="token-value">#D97706</span></div>
+    <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+    <div class="token-item"><span class="token-name">--bg</span><span class="token-value">#F8FAFC</span></div>
+    <div class="token-item"><span class="token-name">--border</span><span class="token-value">#E2E8F0</span></div>
+</div>
+</div>
+
+<div class="page-footer">
+    <a href="index.html">← 返回总览</a>
+    <span>|</span>
+    <span>设计系统规范库 · 前端性能优化规范 v2.0</span>
+    <span>|</span>
+    <a href="15-Nginx配置规范-反向代理负载均衡HTTPS配置生成器.html">← 上一章</a>
+    <span>|</span>
+    <a href="17-文本内容展示规范-文章详情标题作者日期段落配图.html">下一章 →</a>
+</div>
+
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+hljs.highlightAll();
+});
+
+function copyCode(btn) {
+    const block = btn.closest('.code-block');
+    const pre = block.querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+</script>
+</body>
+</html>

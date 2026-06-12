@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<!--
+    Third-party notice:
+    This file uses highlight.js (https://highlightjs.org/)
+    Copyright (c) 2006, Ivan Sagalaev
+    Licensed under the BSD-3-Clause license
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多语言编码规范 | PHP · Python · C# · Java</title>
+<link rel="stylesheet" href="standard.css">
+<style>
+:root {
+    --primary:#06B6D4; --primary-hover:#0891B2; --primary-light:#ECFEFF; --primary-border:#A5F3FC;
+    --php:#777BB3; --python:#3776AB; --csharp:#68217A; --java:#ED8B00;
+}
+
+/* 语言标签 */
+.lang-tabs { display:flex; gap:0; margin-bottom:24px; background:var(--bg); border-radius:8px; padding:4px; }
+.lang-tab { flex:1; text-align:center; padding:10px 16px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; transition:all .15s; color:var(--text-secondary); border:none; background:transparent; }
+.lang-tab:hover { color:var(--text); }
+.lang-tab.active { background:var(--surface); color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.lang-tab.php.active { color:#777BB3; }
+.lang-tab.python.active { color:#3776AB; }
+.lang-tab.csharp.active { color:#68217A; }
+.lang-tab.java.active { color:#ED8B00; }
+
+.lang-panel { display:none; }
+.lang-panel.show { display:block; }
+
+/* 表格 */
+table { width:100%; border-collapse:collapse; font-size:14px; margin:16px 0; }
+th { background:var(--bg); text-align:left; padding:10px 14px; font-weight:600; font-size:13px; color:var(--text-secondary); border-bottom:2px solid var(--border); white-space:nowrap; }
+td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+tr:last-child td { border-bottom:none; }
+td code { background:var(--primary-light); padding:1px 6px; border-radius:3px; font-size:13px; color:var(--primary); }
+
+/* 代码块 */
+.code-block { background:#1E293B; color:#E2E8F0; border-radius:8px; overflow:hidden; margin:12px 0; position:relative; }
+.code-block .lang-label { position:absolute; top:8px; right:12px; font-size:11px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; }
+.code-block pre { padding:20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+.code-block .code-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.06); }
+.code-block .code-header .code-title { font-size:12px; color:#94A3B8; font-weight:600; }
+.code-block .copy-btn { font-size:12px; padding:3px 10px; border:1px solid rgba(255,255,255,.12); border-radius:4px; color:#94A3B8; cursor:pointer; background:transparent; transition:all .15s; }
+.code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+.code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+
+/* 要点卡片 */
+.tip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:16px 0; }
+.tip-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.tip-card h4 { font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.tip-card .dot { width:8px; height:8px; border-radius:50%; }
+.tip-card ul { list-style:none; padding:0; }
+.tip-card li { font-size:13px; color:var(--text-secondary); padding:3px 0; padding-left:16px; position:relative; }
+.tip-card li::before { content:'•'; position:absolute; left:0; color:var(--text-tertiary); }
+
+/* 对比表格高亮 */
+.compare-table th:first-child { width:180px; }
+.compare-table .do { color:var(--success); }
+.compare-table .dont { color:var(--error); }
+.compare-table .good td { background:#F0FDF4; }
+.compare-table .bad td { background:#FEF2F2; }
+
+/* 段落 */
+p { margin:10px 0; font-size:14px; color:var(--text-secondary); }
+.note { background:var(--primary-light); border:1px solid var(--primary-border); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--text-secondary); margin:12px 0; }
+
+.code-block .hljs { background:transparent; padding:0; }
+@media (max-width:768px) {
+    body { padding:16px; }
+    .card { padding:20px; }
+    .lang-tabs { flex-wrap:wrap; }
+    .lang-tab { flex:none; width:50%; }
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+<!-- 导航面包屑 -->
+<div class="nav-breadcrumb">
+    <a href="index.html">📐 设计系统规范库</a><span class="sep">›</span>
+    <a href="index.html">💻 编程语言规范</a><span class="sep">›</span>
+    <span class="current">💻 多语言编码规范</span>
+</div>
+
+<!-- 页面头部 -->
+<div class="page-header">
+    <h1>💻 多语言编码规范</h1>
+    <div class="subtitle">PHP · Python · C# · Java — 变量命名、类结构、编码风格与最佳实践</div>
+    <div class="doc-meta">📅 版本 v1.0 · 🔖 编程语言层 · 🏷️ PHP PSR-12 / Python PEP 8 / C# Microsoft / Java Google Style</div>
+    <div class="doc-summary">本规范定义了 PHP、Python、C#、Java 四种后端语言的统一编码标准，涵盖命名约定、类结构规范、编码风格要点、数据库操作规范和项目结构推荐。点击上方语言标签可切换查看各语言详细规范，底部提供四语言命名对照速查表。</div>
+</div>
+
+<!-- ====== 语言切换器 ====== -->
+<div class="lang-tabs" id="langTabs">
+    <button class="lang-tab php active" data-lang="php">&loz; PHP</button>
+    <button class="lang-tab python" data-lang="python">&loz; Python</button>
+    <button class="lang-tab csharp" data-lang="csharp">&loz; C#</button>
+    <button class="lang-tab java" data-lang="java">&loz; Java</button>
+</div>
+
+<!-- =================================================================== -->
+<!-- PHP -->
+<!-- =================================================================== -->
+<div class="lang-panel show" id="panel-php">
+<div class="card" id="sec-php">
+<h2><span class="section-icon">🐘</span>PHP 编码规范</h2>
+<span class="tag tag-purple" style="margin-left:12px;font-size:11px;">PSR-1 / PSR-12</span>
+
+<h3>一、命名约定</h3>
+<table>
+<tr><th>元素</th><th>风格</th><th>示例</th></tr>
+<tr><td>类名</td><td><code>PascalCase</code></td><td><code>UserController</code>、<code>OrderService</code></td></tr>
+<tr><td>接口</td><td><code>PascalCase</code> + Interface 后缀</td><td><code>UserRepositoryInterface</code></td></tr>
+<tr><td>Trait</td><td><code>PascalCase</code> + Trait 后缀</td><td><code>LoggableTrait</code></td></tr>
+<tr><td>方法/函数</td><td><code>camelCase</code></td><td><code>getUserById()</code>、<code>validateInput()</code></td></tr>
+<tr><td>变量</td><td><code>camelCase</code>（不用 $ 前缀匈牙利）</td><td><code>$userName</code>、<code>$totalCount</code></td></tr>
+<tr><td>常量</td><td><code>UPPER_SNAKE_CASE</code></td><td><code>MAX_RETRY_COUNT</code>、<code>API_BASE_URL</code></td></tr>
+<tr><td>数据库字段</td><td><code>snake_case</code></td><td><code>created_at</code>、<code>order_status</code></td></tr>
+<tr><td>文件名</td><td>与类名一致（PascalCase）</td><td><code>UserController.php</code></td></tr>
+<tr><td>命名空间</td><td><code>PascalCase</code> 目录映射</td><td><code>App\Http\Controllers</code></td></tr>
+</table>
+
+<h3>二、类结构规范</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">UserService.php — 标准类结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-php">namespace App\Services;
+
+use App\Models\User;
+use App\Repositories\UserRepositoryInterface;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * 用户业务逻辑层
+ */
+class UserService
+{
+    // 1. Trait 引用
+    use LoggableTrait;
+
+    // 2. 常量
+    private const CACHE_TTL = 3600;
+    public const STATUS_ACTIVE = 1;
+
+    // 3. 属性（按可见性排列）
+    private UserRepositoryInterface $userRepo;
+    private ?User $currentUser = null;
+
+    // 4. 构造函数
+    public function __construct(UserRepositoryInterface $userRepo)
+    {
+        $this->userRepo = $userRepo;
+    }
+
+    // 5. 公开方法
+    public function findActiveUser(int $id): ?User
+    {
+        return $this->userRepo->findByIdAndStatus(
+            $id, self::STATUS_ACTIVE
+        );
+    }
+
+    // 6. 私有方法
+    private function normalizeName(string $name): string
+    {
+        return trim(ucwords(strtolower($name)));
+    }
+}</code></pre>
+</div>
+
+<h3>三、编码风格要点</h3>
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>推荐的写法</h4>
+    <ul>
+        <li>严格类型声明：<code>declare(strict_types=1);</code></li>
+        <li>方法签名使用类型提示</li>
+        <li>返回类型声明：<code>: ?User</code></li>
+        <li>依赖注入，避免 new 在构造器外</li>
+        <li>使用 <code>match</code> 替代长 <code>switch</code>（PHP 8+）</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>避免的写法</h4>
+    <ul>
+        <li>不使用 <code>mysql_*</code> 函数（已移除）</li>
+        <li>避免 <code>extract()</code>、<code>eval()</code></li>
+        <li>不用 <code>else</code> 嵌套超过 2 层</li>
+        <li>避免全局变量 <code>global $var</code></li>
+        <li>不拼接 SQL 字符串，用参数绑定</li>
+    </ul>
+</div>
+
+<h3>四、数据库操作规范（与 DBHelper 结合）</h3>
+<p>遵循 <strong>PSR-1/PSR-12</strong> 命名风格，PDO 参数化查询 + 自建 DBHelper 封装。完整代码见 <a href="14-数据库操作规范-DBHelper与ORM设计.html" style="color:var(--primary);font-weight:600;">🗃️ 数据库操作规范</a>。</p>
+<div class="code-block">
+<div class="code-header"><span class="code-title">DBHelper + UserRepository — PHP PDO 标准写法</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-php">// === DBHelper 核心（PDO 单例 + 全参数化）===
+class DBHelper
+{
+    private static ?DBHelper $instance = null;
+    private PDO $pdo;
+
+    private function __construct(array $cfg) {
+        $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $cfg['host']??'127.0.0.1', $cfg['port']??3306, $cfg['dbname']);
+        $this->pdo = new PDO($dsn, $cfg['user'], $cfg['pass'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,   // 真预处理，防注入
+        ]);
+    }
+    public static function getInstance(array $cfg = []): self {
+        return self::$instance ??= new self($cfg);
+    }
+    public function select(string $sql, array $params = []): array {
+        $stmt = $this->pdo->prepare($sql); $stmt->execute($params); return $stmt->fetchAll();
+    }
+    public function selectOne(string $sql, array $params = []): ?array {
+        $stmt = $this->pdo->prepare($sql); $stmt->execute($params); $row = $stmt->fetch(); return $row ?: null;
+    }
+    public function selectValue(string $sql, array $params = []): mixed {
+        $row = $this->pdo->prepare($sql); $row->execute($params); $r = $row->fetch(PDO::FETCH_NUM); return $r[0] ?? null;
+    }
+    public function execute(string $sql, array $params = []): int {
+        $stmt = $this->pdo->prepare($sql); $stmt->execute($params); return $stmt->rowCount();
+    }
+    public function lastInsertId(): string { return $this->pdo->lastInsertId(); }
+    public function exists(string $sql, array $params = []): bool {
+        return $this->selectValue("SELECT EXISTS($sql)", $params) == 1;
+    }
+    public function transaction(callable $cb): mixed {
+        $this->pdo->beginTransaction();
+        try { $r = $cb($this); $this->pdo->commit(); return $r; }
+        catch (\Throwable $e) { $this->pdo->rollBack(); throw $e; }
+    }
+    public function beginTransaction(): void { $this->pdo->beginTransaction(); }
+    public function commit(): void { $this->pdo->commit(); }
+    public function rollBack(): void { $this->pdo->rollBack(); }
+    private function __clone() {}
+}
+
+// === Repository 使用 DBHelper（接口 + 实现）===
+interface UserRepositoryInterface {
+    public function findById(int $id): ?User;
+    public function findByEmail(string $email): ?User;
+    public function save(User $user): User;
+    public function delete(int $id): bool;
+}
+class UserRepository implements UserRepositoryInterface
+{
+    public function __construct(private DBHelper $db) {}
+    
+    public function findById(int $id): ?User {
+        $row = $this->db->selectOne('SELECT * FROM users WHERE id=? AND deleted_at IS NULL', [$id]);
+        return $row ? User::fromArray($row) : null;
+    }
+    public function findByEmail(string $email): ?User {
+        $row = $this->db->selectOne('SELECT * FROM users WHERE email=? AND deleted_at IS NULL', [$email]);
+        return $row ? User::fromArray($row) : null;
+    }
+    public function save(User $user): User {
+        if ($user->id) {
+            $this->db->execute('UPDATE users SET name=?,email=?,updated_at=NOW() WHERE id=?',
+                [$user->name, $user->email, $user->id]);
+        } else {
+            $this->db->execute('INSERT INTO users (name,email,created_at,updated_at) VALUES (?,?,NOW(),NOW())',
+                [$user->name, $user->email]);
+            $user->id = (int)$this->db->lastInsertId();
+        }
+        return $user;
+    }
+    public function delete(int $id): bool {
+        return $this->db->execute('UPDATE users SET deleted_at=NOW() WHERE id=?', [$id]) > 0;
+    }
+}</code></pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<!-- =================================================================== -->
+<!-- Python -->
+<!-- =================================================================== -->
+<div class="lang-panel" id="panel-python">
+<div class="card" id="sec-python">
+<h2><span class="section-icon">🐍</span>Python 编码规范</h2>
+<span class="tag tag-purple" style="margin-left:12px;font-size:11px;background:#EBF5FB;color:#3776AB;">PEP 8</span>
+
+<h3>一、命名约定</h3>
+<table>
+<tr><th>元素</th><th>风格</th><th>示例</th></tr>
+<tr><td>类名</td><td><code>PascalCase</code></td><td><code>UserService</code>、<code>OrderRepository</code></td></tr>
+<tr><td>异常类</td><td><code>PascalCase</code> + Error 后缀</td><td><code>ValidationError</code>、<code>NotFoundError</code></td></tr>
+<tr><td>函数/方法</td><td><code>snake_case</code></td><td><code>get_user_by_id()</code></td></tr>
+<tr><td>变量</td><td><code>snake_case</code></td><td><code>user_name</code>、<code>total_count</code></td></tr>
+<tr><td>常量</td><td><code>UPPER_SNAKE_CASE</code></td><td><code>MAX_RETRY_COUNT = 3</code></td></tr>
+<tr><td>私有成员</td><td>单下划线前缀 <code>_</code></td><td><code>self._cache</code>、<code>_internal_method()</code></td></tr>
+<tr><td>内部私有</td><td>双下划线前缀 <code>__</code></td><td><code>self.__secret</code>（名称改写）</td></tr>
+<tr><td>模块/文件名</td><td><code>snake_case</code></td><td><code>user_service.py</code></td></tr>
+<tr><td>包名</td><td>短小全小写（不用下划线）</td><td><code>auth</code>、<code>models</code></td></tr>
+</table>
+
+<h3>二、类结构规范</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">user_service.py — 标准类结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-python">"""用户业务逻辑模块。"""
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass
+from typing import Optional, List
+
+from app.models.user import User
+from app.repositories.user_repo import UserRepository
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class UserQuery:
+    """用户查询参数"""
+    keyword: str = ""
+    status: int = 1
+    page: int = 1
+    page_size: int = 20
+
+
+class UserService:
+    """用户业务逻辑层。
+
+    负责用户相关的业务规则校验与编排。
+    """
+
+    MAX_BATCH_SIZE: int = 100
+
+    def __init__(self, user_repo: UserRepository) -> None:
+        self._repo = user_repo
+        self._cache: dict[int, User] = {}
+
+    def find_active_user(self, user_id: int) -> Optional[User]:
+        """按 ID 查找活跃用户。"""
+        if user_id <= 0:
+            raise ValueError(f"无效的用户 ID: {user_id}")
+        return self._repo.find_by_id(user_id)
+
+    def search_users(self, query: UserQuery) -> List[User]:
+        """分页搜索用户列表。"""
+        return self._repo.search(
+            keyword=query.keyword,
+            status=query.status,
+            limit=query.page_size,
+            offset=(query.page - 1) * query.page_size,
+        )
+
+    def _normalize_name(self, name: str) -> str:
+        """规范化用户名（私有方法）。"""
+        return name.strip().title()
+</code></pre>
+</div>
+
+<h3>三、编码风格要点</h3>
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>推荐的写法</h4>
+    <ul>
+        <li>使用类型注解 + <code>mypy</code> 静态检查</li>
+        <li>dataclass / Pydantic 建模数据结构</li>
+        <li>上下文管理器 <code>with</code> 处理资源</li>
+        <li>f-string 格式化：<code>f"Hello {name}"</code></li>
+        <li>装饰器复用逻辑</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>避免的写法</h4>
+    <ul>
+        <li>不用可变类型做默认参数</li>
+        <li>避免 <code>from module import *</code></li>
+        <li>不用裸 <code>except:</code>，指定异常类型</li>
+        <li>避免 <code>lambda</code> 赋值给变量</li>
+        <li>不用 <code>== None</code>，用 <code>is None</code></li>
+    </ul>
+</div>
+</div>
+
+<h3>四、项目结构推荐</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">典型 FastAPI / Django 项目结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-plaintext">project/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # 入口
+│   ├── config.py            # 配置
+│   ├── models/              # 数据模型
+│   │   ├── __init__.py
+│   │   └── user.py
+│   ├── schemas/             # Pydantic Schema（DTO）
+│   ├── services/            # 业务逻辑层
+│   ├── repositories/        # 数据访问层
+│   ├── routers/             # 路由/控制器
+│   └── utils/               # 工具函数
+├── tests/
+├── migrations/
+├── requirements.txt
+└── pyproject.toml</code></pre>
+</div>
+
+<h3>五、数据库操作规范（与 DBHelper 结合）</h3>
+<p>遵循 <strong>PEP 8</strong> snake_case 风格，使用 SQLAlchemy Core 或驱动参数化。完整代码见 <a href="14-数据库操作规范-DBHelper与ORM设计.html" style="color:var(--primary);font-weight:600;">🗃️ 数据库操作规范</a>。</p>
+<div class="code-block">
+<div class="code-header"><span class="code-title">db_helper.py + user_repo.py — SQLAlchemy Core 标准写法</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-python"># === db_helper.py — SQLAlchemy Core + 连接池 ===
+from __future__ import annotations
+from typing import Any
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import QueuePool
+
+class DBHelper:
+    def __init__(self, url: str = "mysql+pymysql://user:pass@127.0.0.1:3306/db?charset=utf8mb4",
+                 pool_size: int = 10, echo: bool = False) -> None:
+        self.engine: Engine = create_engine(
+            url, poolclass=QueuePool, pool_size=pool_size,
+            pool_recycle=3600, pool_pre_ping=True, echo=echo)
+
+    def select(self, sql: str, params: dict | None = None) -> list[dict]:
+        with self.engine.connect() as conn:
+            rows = conn.execute(text(sql), params or {})
+            return [dict(row._mapping) for row in rows]
+
+    def select_one(self, sql: str, params: dict | None = None) -> dict | None:
+        with self.engine.connect() as conn:
+            row = conn.execute(text(sql), params or {}).fetchone()
+            return dict(row._mapping) if row else None
+
+    def select_value(self, sql: str, params: dict | None = None) -> Any:
+        with self.engine.connect() as conn:
+            return conn.execute(text(sql), params or {}).scalar()
+
+    def execute(self, sql: str, params: dict | None = None) -> int:
+        with self.engine.begin() as conn:
+            return conn.execute(text(sql), params or {}).rowcount
+
+    def exists(self, sql: str, params: dict | None = None) -> bool:
+        return self.select_value(f"SELECT EXISTS({sql})", params) == 1
+
+    def paginate(self, sql: str, params: dict, page: int, page_size: int = 20) -> dict:
+        total = self.select_value(f"SELECT COUNT(*) FROM ({sql}) AS _tmp", params)
+        offset = (page - 1) * page_size
+        data = self.select(f"{sql} LIMIT :limit OFFSET :offset",
+                           {**params, "limit": page_size, "offset": offset})
+        return {"data": data, "total": total, "page": page, "page_size": page_size}
+
+# === user_repo.py — 仓储模式（snake_case）===
+from app.models.user import User
+
+class UserRepository:
+    def __init__(self, db: DBHelper) -> None:
+        self._db = db
+
+    def find_by_id(self, user_id: int) -> User | None:
+        row = self._db.select_one(
+            "SELECT * FROM users WHERE id=:uid AND deleted_at IS NULL", {"uid": user_id})
+        return User(**row) if row else None
+
+    def find_by_email(self, email: str) -> User | None:
+        row = self._db.select_one(
+            "SELECT * FROM users WHERE email=:email AND deleted_at IS NULL",
+            {"email": email.lower()})
+        return User(**row) if row else None
+
+    def save(self, user: User) -> User:
+        if user.id:
+            self._db.execute(
+                "UPDATE users SET name=:n,email=:e,updated_at=NOW() WHERE id=:id",
+                {"n": user.name, "e": user.email, "id": user.id})
+        else:
+            self._db.execute(
+                "INSERT INTO users (name,email) VALUES (:n,:e)",
+                {"n": user.name, "e": user.email})
+        return user
+
+    def soft_delete(self, user_id: int) -> bool:
+        return self._db.execute(
+            "UPDATE users SET deleted_at=NOW() WHERE id=:id", {"id": user_id}) > 0</code></pre>
+</div>
+
+</div>
+</div>
+
+<!-- =================================================================== -->
+<!-- C# -->
+<!-- =================================================================== -->
+<div class="lang-panel" id="panel-csharp">
+<div class="card" id="sec-csharp">
+<h2><span class="section-icon">🎯</span>C# 编码规范</h2>
+<span class="tag tag-purple" style="margin-left:12px;font-size:11px;background:#F5EEF8;color:#68217A;">Microsoft Guidelines</span>
+
+<h3>一、命名约定</h3>
+<table>
+<tr><th>元素</th><th>风格</th><th>示例</th></tr>
+<tr><td>类/结构体</td><td><code>PascalCase</code></td><td><code>UserService</code>、<code>OrderDto</code></td></tr>
+<tr><td>接口</td><td><code>PascalCase</code> + <code>I</code> 前缀</td><td><code>IUserRepository</code>、<code>ILogger</code></td></tr>
+<tr><td>方法</td><td><code>PascalCase</code></td><td><code>GetUserByIdAsync()</code></td></tr>
+<tr><td>属性</td><td><code>PascalCase</code></td><td><code>public string UserName { get; set; }</code></td></tr>
+<tr><td>私有字段</td><td><code>_camelCase</code>（下划线前缀）</td><td><code>private readonly ILogger _logger;</code></td></tr>
+<tr><td>局部变量/参数</td><td><code>camelCase</code></td><td><code>int userId</code>、<code>string keyword</code></td></tr>
+<tr><td>常量</td><td><code>PascalCase</code></td><td><code>public const int MaxRetryCount = 3;</code></td></tr>
+<tr><td>枚举值</td><td><code>PascalCase</code></td><td><code>OrderStatus.Pending</code></td></tr>
+<tr><td>异步方法</td><td>+ <code>Async</code> 后缀</td><td><code>GetUserByIdAsync()</code></td></tr>
+<tr><td>命名空间</td><td><code>PascalCase</code> 匹配目录</td><td><code>Company.Project.Services</code></td></tr>
+</table>
+
+<h3>二、类结构规范</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">UserService.cs — 标准类结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-csharp">using Microsoft.Extensions.Logging;
+
+namespace Company.Project.Services;
+
+/// &lt;summary&gt;
+/// 用户业务逻辑层
+/// &lt;/summary&gt;
+public class UserService : IUserService
+{
+    // 1. 常量
+    private const int CacheTtlMinutes = 60;
+
+    // 2. 只读字段
+    private readonly IUserRepository _userRepo;
+    private readonly ILogger&lt;UserService&gt; _logger;
+
+    // 3. 构造函数
+    public UserService(
+        IUserRepository userRepo,
+        ILogger&lt;UserService&gt; logger)
+    {
+        _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    // 4. 公开属性
+    public int OperationCount { get; private set; }
+
+    // 5. 公开方法（异步优先）
+    public async Task&lt;UserDto?&gt; GetActiveUserAsync(
+        int userId,
+        CancellationToken ct = default)
+    {
+        if (userId &lt;= 0)
+            throw new ArgumentException("无效的用户 ID", nameof(userId));
+
+        var user = await _userRepo.FindByIdAsync(userId, ct);
+        return user is { IsActive: true } ? MapToDto(user) : null;
+    }
+
+    // 6. 私有方法
+    private static UserDto MapToDto(User entity) =&gt; new()
+    {
+        Id = entity.Id,
+        Name = entity.Name,
+        Email = entity.Email
+    };
+}</code></pre>
+</div>
+
+<h3>三、编码风格要点</h3>
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>推荐的写法</h4>
+    <ul>
+        <li>异步优先：<code>async/await</code> + <code>CancellationToken</code></li>
+        <li>使用 <code>record</code> 定义 DTO（C# 9+）</li>
+        <li>表达式体成员：<code>=&gt;</code> 简化单行方法</li>
+        <li>空检查：<code>?? throw new ArgumentNullException()</code></li>
+        <li>模式匹配：<code>is { IsActive: true }</code></li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>避免的写法</h4>
+    <ul>
+        <li>不混用 <code>async void</code>（除非事件处理器）</li>
+        <li>避免 <code>Thread.Sleep()</code>，用 <code>Task.Delay()</code></li>
+        <li>不用 <code>ArrayList</code>，用 <code>List&lt;T&gt;</code></li>
+        <li>避免 <code>lock(this)</code> 或 <code>lock(typeof(...))</code></li>
+        <li>不写公开字段，用属性封装</li>
+    </ul>
+</div>
+
+<h3>四、数据库操作规范（与 DBHelper 结合）</h3>
+<p>遵循 <strong>Microsoft 指南</strong>，使用 Dapper 轻量 ORM + async/await。接口 <code>I</code> 前缀 + PascalCase。完整代码见 <a href="14-数据库操作规范-DBHelper与ORM设计.html" style="color:var(--primary);font-weight:600;">🗃️ 数据库操作规范</a>。</p>
+<div class="code-block">
+<div class="code-header"><span class="code-title">DbHelper.cs + UserRepository.cs — Dapper 标准写法</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-csharp">using System.Data;
+using Dapper;
+using MySql.Data.MySqlClient;
+
+namespace Company.Project.Data;
+
+// === DbHelper（Dapper 封装） ===
+public class DbHelper : IDisposable
+{
+    private readonly MySqlConnection _conn;
+    public DbHelper(string connectionString) {
+        _conn = new MySqlConnection(connectionString);
+    }
+
+    public async Task OpenAsync() => await _conn.OpenAsync();
+
+    // 查询列表
+    public async Task&lt;IEnumerable&lt;T&gt;&gt; SelectAsync&lt;T&gt;(string sql, object? param = null)
+        => await _conn.QueryAsync&lt;T&gt;(sql, param);
+
+    // 查询单条
+    public async Task&lt;T?&gt; SelectOneAsync&lt;T&gt;(string sql, object? param = null)
+        => await _conn.QueryFirstOrDefaultAsync&lt;T&gt;(sql, param);
+
+    // 查询单个值
+    public async Task&lt;T&gt; SelectValueAsync&lt;T&gt;(string sql, object? param = null)
+        => await _conn.ExecuteScalarAsync&lt;T&gt;(sql, param);
+
+    // 执行写操作
+    public async Task&lt;int&gt; ExecuteAsync(string sql, object? param = null, IDbTransaction? tx = null)
+        => await _conn.ExecuteAsync(sql, param, tx);
+
+    // 判断是否存在
+    public async Task&lt;bool&gt; ExistsAsync(string sql, object? param = null)
+        => await _conn.ExecuteScalarAsync&lt;int&gt;($"SELECT EXISTS({sql})", param) == 1;
+
+    // 分页
+    public async Task&lt;(IEnumerable&lt;T&gt; Data, int Total)&gt; PaginateAsync&lt;T&gt;(
+        string sql, object param, int page, int pageSize = 20) {
+        var total = await _conn.ExecuteScalarAsync&lt;int&gt;($"SELECT COUNT(*) FROM ({sql}) _t", param);
+        var data = await _conn.QueryAsync&lt;T&gt;($"{sql} LIMIT {pageSize} OFFSET {(page-1)*pageSize}", param);
+        return (data, total);
+    }
+
+    // 事务
+    public IDbTransaction BeginTransaction() => _conn.BeginTransaction();
+
+    public void Dispose() => _conn?.Dispose();
+}
+
+// === IUserRepository + 实现 ===
+public interface IUserRepository {
+    Task&lt;User?&gt; FindByIdAsync(long id, CancellationToken ct = default);
+    Task&lt;User&gt; SaveAsync(User user, CancellationToken ct = default);
+    Task&lt;bool&gt; SoftDeleteAsync(long id, CancellationToken ct = default);
+}
+
+public class UserRepository : IUserRepository
+{
+    private readonly DbHelper _db;
+    public UserRepository(DbHelper db) => _db = db;
+
+    public async Task&lt;User?&gt; FindByIdAsync(long id, CancellationToken ct = default) {
+        var sql = "SELECT * FROM users WHERE id=@Id AND deleted_at IS NULL";
+        return await _db.SelectOneAsync&lt;User&gt;(sql, new { Id = id });
+    }
+
+    public async Task&lt;User&gt; SaveAsync(User user, CancellationToken ct = default) {
+        if (user.Id > 0)
+            await _db.ExecuteAsync(
+                "UPDATE users SET name=@Name,email=@Email,updated_at=NOW() WHERE id=@Id", user);
+        else
+            user.Id = await _db.SelectValueAsync&lt;long&gt;(
+                "INSERT INTO users (name,email,created_at) VALUES (@Name,@Email,NOW()); SELECT LAST_INSERT_ID()", user);
+        return user;
+    }
+
+    public async Task&lt;bool&gt; SoftDeleteAsync(long id, CancellationToken ct = default)
+        => await _db.ExecuteAsync("UPDATE users SET deleted_at=NOW() WHERE id=@Id", new { Id = id }) > 0;
+}</code></pre>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- =================================================================== -->
+<!-- Java -->
+<!-- =================================================================== -->
+<div class="lang-panel" id="panel-java">
+<div class="card" id="sec-java">
+<h2><span class="section-icon">☕</span>Java 编码规范</h2>
+<span class="tag tag-purple" style="margin-left:12px;font-size:11px;background:#FFF7ED;color:#ED8B00;">Google Java Style / Oracle</span>
+
+<h3>一、命名约定</h3>
+<table>
+<tr><th>元素</th><th>风格</th><th>示例</th></tr>
+<tr><td>类/枚举</td><td><code>PascalCase</code></td><td><code>UserService</code>、<code>OrderStatus</code></td></tr>
+<tr><td>接口</td><td><code>PascalCase</code>（不加 I 前缀）</td><td><code>UserRepository</code>、<code>Auditable</code></td></tr>
+<tr><td>实现类</td><td>接口名 + <code>Impl</code></td><td><code>UserRepositoryImpl</code></td></tr>
+<tr><td>方法</td><td><code>camelCase</code></td><td><code>getUserById()</code></td></tr>
+<tr><td>变量/参数</td><td><code>camelCase</code></td><td><code>String userName</code>、<code>int pageSize</code></td></tr>
+<tr><td>常量</td><td><code>UPPER_SNAKE_CASE</code></td><td><code>public static final int MAX_RETRY = 3;</code></td></tr>
+<tr><td>包名</td><td>全小写，点分隔</td><td><code>com.company.project.service</code></td></tr>
+<tr><td>枚举值</td><td><code>UPPER_SNAKE_CASE</code></td><td><code>OrderStatus.PENDING_PAYMENT</code></td></tr>
+<tr><td>泛型</td><td>单大写字母</td><td><code>&lt;T&gt;</code>、<code>&lt;K, V&gt;</code>、<code>&lt;R&gt;</code></td></tr>
+</table>
+
+<h3>二、类结构规范</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">UserService.java — 标准类结构</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-java">package com.company.project.service;
+
+import com.company.project.model.User;
+import com.company.project.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+/**
+ * 用户业务逻辑层。
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UserService {
+
+    // 1. 常量
+    private static final int CACHE_TTL_MINUTES = 60;
+
+    // 2. 依赖（构造器注入）
+    private final UserRepository userRepo;
+
+    /**
+     * 按 ID 查找活跃用户。
+     */
+    public Optional&lt;User&gt; findActiveUser(long userId) {
+        if (userId &lt;= 0) {
+            throw new IllegalArgumentException("无效的用户 ID: " + userId);
+        }
+        return userRepo.findByIdAndStatus(userId, UserStatus.ACTIVE);
+    }
+
+    /**
+     * 创建用户（写事务）。
+     */
+    @Transactional
+    public User createUser(CreateUserRequest request) {
+        validateRequest(request);
+
+        User user = User.builder()
+                .name(normalizeName(request.getName()))
+                .email(request.getEmail().toLowerCase())
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        User saved = userRepo.save(user);
+        log.info("用户创建成功: id={}", saved.getId());
+        return saved;
+    }
+
+    // 3. 私有方法
+    private void validateRequest(CreateUserRequest request) {
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("用户名不能为空");
+        }
+    }
+
+    private String normalizeName(String name) {
+        return name.trim().replaceAll("\\s+", " ");
+    }
+}</code></pre>
+</div>
+
+<h3>三、编码风格要点</h3>
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>推荐的写法</h4>
+    <ul>
+        <li>Lombok 减少样板代码：<code>@Data</code>、<code>@Builder</code></li>
+        <li>构造器注入优于 <code>@Autowired</code> 字段注入</li>
+        <li>Optional 处理可能为 null 的返回值</li>
+        <li>事务边界明确：<code>@Transactional(readOnly=true)</code></li>
+        <li>使用 Enum 代替魔法字符串</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>避免的写法</h4>
+    <ul>
+        <li>不捕获 <code>Exception</code> 后吞掉异常</li>
+        <li>避免在循环中拼接字符串（用 StringBuilder）</li>
+        <li>不用 <code>Vector</code>/<code>Hashtable</code>（遗留类）</li>
+        <li>不返回 null 集合，返回空集合</li>
+        <li>避免 <code>System.out.println</code> 在生产代码中</li>
+    </ul>
+</div>
+
+<h3>四、数据库操作规范（与 DBHelper 结合）</h3>
+<p>遵循 <strong>Google Java Style</strong>，使用 JdbcTemplate 或 MyBatis-Plus。camelCase 命名 + 构造器注入。完整代码见 <a href="14-数据库操作规范-DBHelper与ORM设计.html" style="color:var(--primary);font-weight:600;">🗃️ 数据库操作规范</a>。</p>
+<div class="code-block">
+<div class="code-header"><span class="code-title">DbHelper.java + UserRepositoryImpl.java — JdbcTemplate 标准写法</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-java">package com.company.project.data;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.*;
+
+// === DbHelper（JdbcTemplate 封装） ===
+@Component
+@RequiredArgsConstructor
+public class DbHelper {
+    private final JdbcTemplate jdbc;
+
+    // 查询列表
+    public &lt;T&gt; List&lt;T&gt; select(String sql, RowMapper&lt;T&gt; mapper, Object... params) {
+        return jdbc.query(sql, mapper, params);
+    }
+
+    // 查询单条
+    public &lt;T&gt; Optional&lt;T&gt; selectOne(String sql, RowMapper&lt;T&gt; mapper, Object... params) {
+        List&lt;T&gt; list = jdbc.query(sql, mapper, params);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
+
+    // 查询单个值
+    public &lt;T&gt; T selectValue(String sql, Class&lt;T&gt; clazz, Object... params) {
+        return jdbc.queryForObject(sql, clazz, params);
+    }
+
+    // 执行写操作
+    public int execute(String sql, Object... params) {
+        return jdbc.update(sql, params);
+    }
+
+    // 判断是否存在
+    public boolean exists(String sql, Object... params) {
+        Integer count = jdbc.queryForObject("SELECT EXISTS(" + sql + ")", Integer.class, params);
+        return count != null &amp;&amp; count == 1;
+    }
+
+    // 分页
+    public record PageResult&lt;T&gt;(List&lt;T&gt; data, long total, int page, int pageSize) {}
+
+    public &lt;T&gt; PageResult&lt;T&gt; paginate(String sql, RowMapper&lt;T&gt; mapper,
+                                       int page, int pageSize, Object... params) {
+        Long total = jdbc.queryForObject("SELECT COUNT(*) FROM (" + sql + ") _t", Long.class, params);
+        int offset = (page - 1) * pageSize;
+        List&lt;T&gt; data = jdbc.query(sql + " LIMIT " + pageSize + " OFFSET " + offset, mapper, params);
+        return new PageResult&lt;&gt;(data, total, page, pageSize);
+    }
+}
+
+// === UserRepository 接口 + 实现 ===
+public interface UserRepository {
+    Optional&lt;User&gt; findById(long id);
+    User save(User user);
+    boolean softDelete(long id);
+}
+
+@Component
+@RequiredArgsConstructor
+public class UserRepositoryImpl implements UserRepository {
+    private final DbHelper db;
+
+    private final RowMapper&lt;User&gt; userMapper = (rs, rowNum) -> User.builder()
+        .id(rs.getLong("id")).name(rs.getString("name"))
+        .email(rs.getString("email")).status(rs.getString("status")).build();
+
+    @Override
+    public Optional&lt;User&gt; findById(long id) {
+        return db.selectOne(
+            "SELECT * FROM users WHERE id=? AND deleted_at IS NULL", userMapper, id);
+    }
+
+    @Override
+    @Transactional
+    public User save(User user) {
+        if (user.getId() != null &amp;&amp; user.getId() > 0) {
+            db.execute("UPDATE users SET name=?,email=?,updated_at=NOW() WHERE id=?",
+                user.getName(), user.getEmail(), user.getId());
+        } else {
+            db.execute("INSERT INTO users (name,email,created_at) VALUES (?,?,NOW())",
+                user.getName(), user.getEmail());
+        }
+        return user;
+    }
+
+    @Override
+    public boolean softDelete(long id) {
+        return db.execute("UPDATE users SET deleted_at=NOW() WHERE id=?", id) > 0;
+    }
+}</code></pre>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- =================================================================== -->
+<!-- 四语言对比总览 -->
+<!-- =================================================================== -->
+<div class="card" id="sec-namingconv">
+<h2><span class="section-icon">📊</span>四语言命名对照速查表</h2>
+<div class="note" style="margin-bottom:16px;">💡 点击上方语言标签可切换查看各语言详细规范。下表为四语言快速对照。</div>
+<table class="compare-table">
+<thead>
+<tr><th>场景</th><th>PHP</th><th>Python</th><th>C#</th><th>Java</th></tr></thead>
+<tbody>
+<tr><td><b>类名</b></td><td><code>UserService</code></td><td><code>UserService</code></td><td><code>UserService</code></td><td><code>UserService</code></td></tr>
+<tr><td><b>方法/函数</b></td><td><code>getUserById()</code></td><td><code>get_user_by_id()</code></td><td><code>GetUserByIdAsync()</code></td><td><code>getUserById()</code></td></tr>
+<tr><td><b>局部变量</b></td><td><code>$userName</code></td><td><code>user_name</code></td><td><code>userName</code></td><td><code>userName</code></td></tr>
+<tr><td><b>私有字段</b></td><td><code>$this->userName</code></td><td><code>self._user_name</code></td><td><code>_userName</code></td><td><code>this.userName</code></td></tr>
+<tr><td><b>常量</b></td><td><code>MAX_RETRY</code></td><td><code>MAX_RETRY</code></td><td><code>MaxRetryCount</code></td><td><code>MAX_RETRY</code></td></tr>
+<tr><td><b>接口</b></td><td><code>UserRepositoryInterface</code></td><td><code>UserRepository</code></td><td><code>IUserRepository</code></td><td><code>UserRepository</code></td></tr>
+<tr><td><b>文件名</b></td><td><code>UserService.php</code></td><td><code>user_service.py</code></td><td><code>UserService.cs</code></td><td><code>UserService.java</code></td></tr>
+<tr><td><b>包/命名空间</b></td><td><code>App\Services</code></td><td><code>app.services</code></td><td><code>Company.Project.Services</code></td><td><code>com.company.project.service</code></td></tr>
+<tr><td><b>布尔方法</b></td><td><code>isActive()</code></td><td><code>is_active()</code></td><td><code>IsActive()</code></td><td><code>isActive()</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- =================================================================== -->
+<!-- 通用工程规范 -->
+<!-- =================================================================== -->
+<div class="card" id="sec-classstruct">
+<h2><span class="section-icon">🛠️</span>通用工程规范（跨语言）</h2>
+
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--info);"></span>架构分层</h4>
+    <ul>
+        <li>Controller → Service → Repository → DB</li>
+        <li>每层只依赖下一层，不可反向引用</li>
+        <li>DTO 用于层间数据传输</li>
+        <li>Domain 模型独立于持久化框架</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--warning);"></span>异常处理</h4>
+    <ul>
+        <li>业务异常用自定义异常类</li>
+        <li>全局异常处理器统一捕获</li>
+        <li>异常消息面向用户可理解</li>
+        <li>日志记录完整堆栈，API 返回脱敏信息</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>代码质量</h4>
+    <ul>
+        <li>函数不超过 50 行（建议 20 行内）</li>
+        <li>类不超过 500 行</li>
+        <li>参数不超过 5 个，多用 DTO 封装</li>
+        <li>圈复杂度 &lt; 10</li>
+    </ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>安全红线</h4>
+    <ul>
+        <li>SQL 必须参数化绑定</li>
+        <li>用户输入必须校验+转义</li>
+        <li>敏感配置不入库不提交</li>
+        <li>密码必须哈希（bcrypt/argon2）</li>
+    </ul>
+</div>
+</div>
+</div>
+
+<!-- ==================== 设计令牌速查 ==================== -->
+<div class="card">
+    <h2><span class="section-icon">🎨</span>设计令牌速查</h2>
+    <div class="token-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#06B6D4</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-hover</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#0891B2</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-light</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#ECFEFF</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-border</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#A5F3FC</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--php</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#777BB3</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--python</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#3776AB</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--csharp</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#68217A</span></div>
+        <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--java</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#ED8B00</span></div>
+    </div>
+</div>
+
+<!-- ==================== 规范检查清单 ==================== -->
+<div class="card">
+    <h2><span class="section-icon">✅</span>规范检查清单</h2>
+    <ul class="checklist" style="list-style:none;padding:0;margin:16px 0;">
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">PHP 是否遵循 PSR-1/PSR-12，使用 strict_types 和类型声明</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">Python 是否遵循 PEP 8，使用 snake_case 命名和类型注解</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">C# 是否使用 async/await + CancellationToken，接口 I 前缀</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">Java 是否使用 Lombok + 构造器注入，避免字段注入</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">所有语言 SQL 是否都使用了参数化绑定防注入</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">函数是否控制在 50 行以内，参数不超过 5 个</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">密码是否使用了 bcrypt/argon2 哈希，敏感配置不入库</li>
+        <li style="padding:8px 0 8px 28px;position:relative;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--gray-100);">是否使用了 Controller → Service → Repository 分层架构</li>
+    </ul>
+</div>
+
+<div class="page-footer" style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text-tertiary);display:flex;flex-wrap:wrap;gap:16px;justify-content:center;">
+    <a href="index.html" style="color:var(--text-tertiary);text-decoration:none;">📐 规范总览</a>
+    <a href="14-数据库操作规范-DBHelper与ORM设计.html" style="color:var(--text-tertiary);text-decoration:none;">🗃️ 数据库操作规范</a>
+    <a href="09-数据库设计规范-字段设计命名索引表结构.html" style="color:var(--text-tertiary);text-decoration:none;">🗄️ 数据库设计规范</a>
+    <span>多语言编码规范 v1.0 · PHP PSR-12 · Python PEP 8 · C# Microsoft · Java Google Style</span>
+</div>
+
+</div><!-- container -->
+
+<script>
+// 语言标签切换
+document.querySelectorAll('.lang-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('show'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.lang).classList.add('show');
+    });
+});
+</script>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// 语法高亮
+hljs.highlightAll();
+});
+
+// 复制代码
+function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+</script>
+
+</body>
+</html>

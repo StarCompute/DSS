@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化规范 | 图表配色 · 卡片数据 · 统计面板</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#F59E0B; --primary-hover:#D97706; --primary-light:#FFFBEB; --primary-border:#FDE68A;
+
+            --chart-blue:#0066CC; --chart-green:#10B981; --chart-orange:#F59E0B;
+            --chart-red:#EF4444; --chart-purple:#8B5CF6; --chart-cyan:#06B6D4;
+            --chart-pink:#EC4899; --chart-sky:#3B82F6;
+        }
+        /* 05专用 */
+        .chart-palette { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+        .chart-color { width:48px; height:48px; border-radius:8px; position:relative; }
+        .chart-color .label { position:absolute; bottom:-20px; left:0; right:0; font-size:10px; color:var(--gray-500); text-align:center; white-space:nowrap; }
+        .palette-group { margin-bottom:24px; }
+        .palette-group h3 { font-size:16px; font-weight:500; margin-bottom:12px; color:var(--gray-700); }
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; }
+        .stat-card { background:white; border-radius:12px; padding:20px; border:1px solid var(--gray-200); transition:box-shadow 0.2s; }
+        .stat-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+        .stat-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .stat-title { font-size:13px; color:var(--gray-500); font-weight:500; }
+        .stat-icon { font-size:24px; opacity:0.7; }
+        .stat-value { font-size:30px; font-weight:700; margin-bottom:4px; letter-spacing:-0.5px; }
+        .stat-change { font-size:12px; display:flex; align-items:center; gap:4px; }
+        .stat-change.up { color:var(--success); }
+        .stat-change.down { color:var(--error); }
+        .bar-chart { display:flex; align-items:flex-end; gap:12px; height:180px; padding-top:20px; }
+        .bar-col { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+        .bar { width:100%; max-width:48px; border-radius:6px 6px 0 0; transition:opacity 0.2s; cursor:pointer; }
+        .bar:hover { opacity:0.8; }
+        .bar-label { font-size:11px; color:var(--gray-500); }
+        .pie-demo { display:flex; align-items:center; gap:32px; flex-wrap:wrap; }
+        .pie-visual { width:160px; height:160px; border-radius:50%; background:conic-gradient(#0066CC 0% 35%,#10B981 35% 60%,#F59E0B 60% 78%,#3B82F6 78% 90%,#8B5CF6 90% 100%); }
+        .pie-legend { display:flex; flex-direction:column; gap:8px; }
+        .legend-item { display:flex; align-items:center; gap:8px; font-size:13px; }
+        .legend-dot { width:10px; height:10px; border-radius:3px; }
+        .line-chart-area { position:relative; height:160px; background:var(--gray-50); border-radius:12px; border-bottom:2px solid var(--gray-200); border-left:2px solid var(--gray-200); margin-bottom:20px; overflow:hidden; }
+        .line-svg { width:100%; height:100%; }
+        .data-table { width:100%; border-collapse:collapse; font-size:14px; }
+        .data-table th { background:var(--gray-50); text-align:left; padding:12px 16px; font-weight:600; border-bottom:1px solid var(--gray-200); }
+        .data-table td { padding:12px 16px; border-bottom:1px solid var(--gray-100); }
+        .data-table tr:hover td { background:var(--gray-50); }
+        .tag-up { background:var(--success-bg); color:var(--success); }
+        .tag-down { background:var(--error-bg); color:var(--error); }
+        .tag-flat { background:var(--gray-100); color:var(--gray-500); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a><span class="sep">›</span><a href="index.html">图标与可视化</a><span class="sep">›</span><span class="current">05-数据可视化规范</span>
+    </div>
+    <div class="page-header">
+        <h1><span class="icon">📊</span> 数据可视化规范</h1>
+        <div class="subtitle"><span>图表配色</span><span>数据卡片</span><span>统计面板</span><span>趋势展示</span></div>
+        <div class="doc-meta"><span>📅 版本: v2.0</span><span>🔖 规范编号: 05</span><span>📂 分组: 图标与可视化</span></div>
+        <div class="doc-summary"><strong>📖 概要：</strong>本规范定义了数据可视化场景的配色方案、统计卡片、柱状图、饼图、折线图及数据表格增强版的统一标准。所有图表配色基于5色/8色/10色扩展方案，确保数据可读性与视觉一致性。</div>
+    </div>
+
+    <!-- 一、图表配色 -->
+    <div class="card" id="sec-chartcolor">
+        <h2><span class="section-icon">🎨</span> 一、图表配色方案</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">图表专用色板，确保数据可读性和视觉一致性。支持 5 色/8 色/10 色方案。</p>
+        <div class="palette-group">
+            <h3>基础 5 色方案（最常用）</h3>
+            <div class="chart-palette">
+                <div class="chart-color" style="background:#0066CC;"><span class="label">#0066CC</span></div>
+                <div class="chart-color" style="background:#10B981;"><span class="label">#10B981</span></div>
+                <div class="chart-color" style="background:#F59E0B;"><span class="label">#F59E0B</span></div>
+                <div class="chart-color" style="background:#3B82F6;"><span class="label">#3B82F6</span></div>
+                <div class="chart-color" style="background:#8B5CF6;"><span class="label">#8B5CF6</span></div>
+            </div>
+        </div>
+        <div class="palette-group">
+            <h3>扩展 8 色方案</h3>
+            <div class="chart-palette">
+                <div class="chart-color" style="background:#0066CC;"><span class="label">蓝</span></div>
+                <div class="chart-color" style="background:#10B981;"><span class="label">绿</span></div>
+                <div class="chart-color" style="background:#F59E0B;"><span class="label">橙</span></div>
+                <div class="chart-color" style="background:#EF4444;"><span class="label">红</span></div>
+                <div class="chart-color" style="background:#3B82F6;"><span class="label">天蓝</span></div>
+                <div class="chart-color" style="background:#8B5CF6;"><span class="label">紫</span></div>
+                <div class="chart-color" style="background:#EC4899;"><span class="label">粉</span></div>
+                <div class="chart-color" style="background:#06B6D4;"><span class="label">青</span></div>
+            </div>
+        </div>
+        <div class="palette-group">
+            <h3>语义色方案（用于状态/趋势对比）</h3>
+            <div class="chart-palette">
+                <div class="chart-color" style="background:#10B981;"><span class="label">增长 ↑</span></div>
+                <div class="chart-color" style="background:#DC2626;"><span class="label">下降 ↓</span></div>
+                <div class="chart-color" style="background:#0066CC;"><span class="label">当前值</span></div>
+                <div class="chart-color" style="background:#6B7280;"><span class="label">对比值</span></div>
+            </div>
+        </div>
+        <div class="tip-info tip-block">💡 <strong>使用建议：</strong>柱状图/折线图使用基础 5 色；饼图不超过 6 个分类；相邻色块保证足够对比度（WCAG AA 标准）。</div>
+    </div>
+
+    <!-- 二、统计卡片 -->
+    <div class="card" id="sec-statcard">
+        <h2><span class="section-icon">📇</span> 二、统计卡片</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">标准数据统计卡片样式，支持数值、趋势、图标组合展示。</p>
+        <div class="stat-grid">
+            <div class="stat-card"><div class="stat-header"><span class="stat-title">总用户数</span><span class="stat-icon">👥</span></div><div class="stat-value">128,420</div><div class="stat-change up">↑ 12.5% <span style="color:var(--gray-500);margin-left:4px;">较上月</span></div></div>
+            <div class="stat-card"><div class="stat-header"><span class="stat-title">活跃用户</span><span class="stat-icon">⚡</span></div><div class="stat-value">45,832</div><div class="stat-change up">↑ 8.2%</div></div>
+            <div class="stat-card"><div class="stat-header"><span class="stat-title">转化率</span><span class="stat-icon">🎯</span></div><div class="stat-value">24.8%</div><div class="stat-change down">↓ 3.1%</div></div>
+            <div class="stat-card"><div class="stat-header"><span class="stat-title">总收入</span><span class="stat-icon">💰</span></div><div class="stat-value">¥586K</div><div class="stat-change up">↑ 18.7%</div></div>
+        </div>
+        <table class="spec-table" style="margin-top:24px;">
+            <thead><tr><th>属性</th><th>规范值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>卡片圆角</td><td><code>12px</code></td><td>与全局卡片圆角一致</td></tr>
+                <tr><td>内边距</td><td><code>20px</code></td><td>统一内边距</td></tr>
+                <tr><td>数值字号</td><td><code>30px / Bold</code></td><td>突出核心数据</td></tr>
+                <tr><td>标题字号</td><td><code>13px / #6B7280</code></td><td>辅助信息</td></tr>
+                <tr><td>趋势色</td><td>绿涨红跌</td><td>国际化通用惯例</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 三、柱状图 -->
+    <div class="card" id="sec-charts">
+        <h2><span class="section-icon">📊</span> 三、柱状图规范</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">柱宽最大 48px，间距 12px，圆角顶部 6px。Y 轴建议 4-6 条刻度线。</p>
+        <div class="bar-chart">
+            <div class="bar-col"><div class="bar" style="height:140px;background:#0066CC;"></div><div class="bar-label">1月</div></div>
+            <div class="bar-col"><div class="bar" style="height:100px;background:#10B981;"></div><div class="bar-label">2月</div></div>
+            <div class="bar-col"><div class="bar" style="height:160px;background:#F59E0B;"></div><div class="bar-label">3月</div></div>
+            <div class="bar-col"><div class="bar" style="height:120px;background:#3B82F6;"></div><div class="bar-label">4月</div></div>
+            <div class="bar-col"><div class="bar" style="height:175px;background:#8B5CF6;"></div><div class="bar-label">5月</div></div>
+            <div class="bar-col"><div class="bar" style="height:90px;background:#06B6D4;"></div><div class="bar-label">6月</div></div>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>参数：</strong>柱宽 48px | 柱间距 12px | 圆角 6px 0 0 6px | Y轴刻度 4 条 | 悬停不透明度 0.8</div>
+    </div>
+
+    <!-- 四、饼图 -->
+    <div class="card">
+        <h2><span class="section-icon">🥧</span> 四、饼图 / 环形图规范</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">分类不超过 6 个，按占比从大到小排列，图例标注清晰。</p>
+        <div class="pie-demo">
+            <div class="pie-visual"></div>
+            <div class="pie-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#0066CC;"></div>产品 A · 35%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#10B981;"></div>产品 B · 25%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div>产品 C · 18%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#3B82F6;"></div>产品 D · 12%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6;"></div>其他 · 10%</div>
+            </div>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>参数：</strong>外径 160px | 内径 0（饼图）/ 60px（环形图）| 分类上限 6 | 图例间距 8px</div>
+    </div>
+
+    <!-- 五、折线图 -->
+    <div class="card">
+        <h2><span class="section-icon">📈</span> 五、折线图规范</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">线宽 2px，数据点 6px 圆点，悬停显示数值。单图最多 3 条线，避免视觉混乱。</p>
+        <div class="line-chart-area">
+            <svg class="line-svg" viewBox="0 0 800 160">
+                <line x1="0" y1="40" x2="800" y2="40" stroke="#E5E7EB" stroke-width="1"/>
+                <line x1="0" y1="80" x2="800" y2="80" stroke="#E5E7EB" stroke-width="1"/>
+                <line x1="0" y1="120" x2="800" y2="120" stroke="#E5E7EB" stroke-width="1"/>
+                <polyline points="0,120 133,95 267,80 400,50 533,30 667,55 800,35" fill="none" stroke="#0066CC" stroke-width="2.5"/>
+                <circle cx="0" cy="120" r="4" fill="#0066CC"/><circle cx="133" cy="95" r="4" fill="#0066CC"/>
+                <circle cx="267" cy="80" r="4" fill="#0066CC"/><circle cx="400" cy="50" r="4" fill="#0066CC"/>
+                <circle cx="533" cy="30" r="4" fill="#0066CC"/><circle cx="667" cy="55" r="4" fill="#0066CC"/>
+                <circle cx="800" cy="35" r="4" fill="#0066CC"/>
+                <polyline points="0,130 133,110 267,100 400,80 533,65 667,75 800,60" fill="none" stroke="#10B981" stroke-width="2.5"/>
+                <circle cx="0" cy="130" r="4" fill="#10B981"/><circle cx="133" cy="110" r="4" fill="#10B981"/>
+                <circle cx="267" cy="100" r="4" fill="#10B981"/><circle cx="400" cy="80" r="4" fill="#10B981"/>
+                <circle cx="533" cy="65" r="4" fill="#10B981"/><circle cx="667" cy="75" r="4" fill="#10B981"/>
+                <circle cx="800" cy="60" r="4" fill="#10B981"/>
+            </svg>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>参数：</strong>线宽 2.5px | 数据点 8px (r=4) | 最多 3 条线 | 悬停 tooltip 显示精确值</div>
+    </div>
+
+    <!-- 六、数据表格增强 -->
+    <div class="card" id="sec-datatable">
+        <h2><span class="section-icon">📋</span> 六、数据表格（增强版）</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">在基础表格规范之上，增加排序标识、状态标签、数值格式化等数据展示场景。</p>
+        <table class="data-table">
+            <thead><tr><th>产品名称 <span style="font-size:10px;">▲</span></th><th>销量</th><th>环比</th><th>状态</th><th>进度</th></tr></thead>
+            <tbody>
+                <tr><td>产品 Alpha</td><td>12,840</td><td><span class="tag tag-up">+15.3%</span></td><td><span class="tag tag-up">正常</span></td><td><div style="width:120px;height:6px;background:var(--gray-200);border-radius:10px;"><div style="width:85%;height:100%;background:var(--success);border-radius:10px;"></div></div></td></tr>
+                <tr><td>产品 Beta</td><td>8,520</td><td><span class="tag tag-down">-5.2%</span></td><td><span class="tag tag-down">预警</span></td><td><div style="width:120px;height:6px;background:var(--gray-200);border-radius:10px;"><div style="width:42%;height:100%;background:var(--warning);border-radius:10px;"></div></div></td></tr>
+                <tr><td>产品 Gamma</td><td>6,340</td><td><span class="tag tag-flat">0.0%</span></td><td><span class="tag tag-flat">持平</span></td><td><div style="width:120px;height:6px;background:var(--gray-200);border-radius:10px;"><div style="width:60%;height:100%;background:var(--primary);border-radius:10px;"></div></div></td></tr>
+            </tbody>
+        </table>
+        <div class="tip-info tip-block">💡 <strong>数值格式化：</strong>千分位逗号分隔 | 百分比保留 1 位小数 | 进度条高度 6px | 状态色语义化</div>
+    </div>
+
+    <!-- 七、设计令牌 -->
+    <div class="card">
+        <h2><span class="section-icon">📌</span> 七、设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--chart-blue</span><span class="token-value">#0066CC</span></div>
+            <div class="token-item"><span class="token-name">--chart-green</span><span class="token-value">#10B981</span></div>
+            <div class="token-item"><span class="token-name">--chart-orange</span><span class="token-value">#F59E0B</span></div>
+            <div class="token-item"><span class="token-name">--chart-red</span><span class="token-value">#EF4444</span></div>
+            <div class="token-item"><span class="token-name">--chart-purple</span><span class="token-value">#8B5CF6</span></div>
+            <div class="token-item"><span class="token-name">--chart-cyan</span><span class="token-value">#06B6D4</span></div>
+            <div class="token-item"><span class="token-name">--chart-pink</span><span class="token-value">#EC4899</span></div>
+            <div class="token-item"><span class="token-name">--chart-sky</span><span class="token-value">#3B82F6</span></div>
+            <div class="token-item"><span class="token-name">--stat-value-size</span><span class="token-value">30px</span></div>
+            <div class="token-item"><span class="token-name">--bar-radius</span><span class="token-value">6px</span></div>
+            <div class="token-item"><span class="token-name">--primary (主题色)</span><span class="token-value">#F59E0B</span></div>
+            <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+        </div>
+    </div>
+
+    <!-- 八、检查清单 -->
+    <div class="card">
+        <h2><span class="section-icon">✅</span> 八、可视化检查清单</h2>
+        <ul class="checklist">
+            <li>图表使用统一色板（5色/8色/10色方案）</li>
+            <li>饼图分类不超过 6 个</li>
+            <li>折线图单图最多 3 条线</li>
+            <li>柱状图柱宽不超过 48px</li>
+            <li>统计卡片趋势色：绿涨红跌</li>
+            <li>数值格式化：千分位逗号分隔</li>
+            <li>相邻色块保证足够对比度（WCAG AA）</li>
+            <li>图表必须包含图例</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">← 返回总览</a><span>|</span>
+        <a href="06-空状态异常规范-空数据404错误加载失败.html">下一页：空状态异常规范 →</a><span>|</span>
+        <span>设计系统规范库 · 数据可视化规范 v2.0</span>
+    </div>
+</div>
+</body>
+</html>

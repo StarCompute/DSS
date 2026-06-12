@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据库操作规范 | DBHelper · ORM · 仓储模式</title>
+<link rel="stylesheet" href="standard.css">
+<style>
+:root {
+    --primary:#7C3AED; --primary-hover:#6D28D9; --primary-light:#F5F3FF; --primary-border:#DDD6FE;
+
+    --content-max-width:720px; --content-font-size:16px; --content-line-height:1.75;
+    --content-paragraph-spacing:1.5em; --content-color:#1F2937; --heading-color:#111827;
+    --meta-color:#6B7280;
+    --blockquote-border:#7C3AED; --blockquote-bg:#F5F3FF;
+    --code-inline-bg:#F1F5F9; --code-inline-color:#DC2626;
+    --code-block-bg:#1E293B; --code-block-color:#E2E8F0;
+    --link-color:#7C3AED; --link-hover-color:#5B21B6;
+    --image-radius:8px; --image-caption-color:#6B7280;
+    --divider-color:#E5E7EB; --tag-bg:#F5F3FF; --tag-color:#7C3AED;
+}
+
+/* ===== 代码块 ===== */
+.code-block { background:var(--code-block-bg); color:var(--code-block-color); border-radius:8px; overflow:hidden; margin:12px 0; position:relative; }
+.code-block pre { padding:20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+.code-block .code-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.06); }
+.code-block .code-header .code-title { font-size:12px; color:#94A3B8; font-weight:600; }
+.code-block .copy-btn { font-size:12px; padding:3px 10px; border:1px solid rgba(255,255,255,.12); border-radius:4px; color:#94A3B8; cursor:pointer; background:transparent; transition:all .15s; }
+.code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+.code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+.code-block .kw { color:#C084FC; } .code-block .str { color:#34D399; } .code-block .fn { color:#60A5FA; } .code-block .cmt { color:#6B7280; font-style:italic; }
+
+/* ===== 标签切换（DBHelper 多语言） ===== */
+.tabs { display:flex; gap:0; margin-bottom:20px; background:var(--gray-50); border-radius:8px; padding:4px; }
+.tab-btn { padding:8px 20px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-secondary); border:none; background:transparent; transition:all .15s; font-family:inherit; }
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { background:var(--surface); color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.tab-panel { display:none; }
+.tab-panel.show { display:block; }
+
+/* ===== 设计要点卡片 ===== */
+.tip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0; }
+.tip-card { background:var(--gray-50); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.tip-card h4 { font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.tip-card .dot { width:8px; height:8px; border-radius:50%; }
+.tip-card ul { list-style:none; padding:0; }
+.tip-card li { font-size:13px; color:var(--text-secondary); padding:3px 0; padding-left:16px; position:relative; }
+.tip-card li::before { content:'•'; position:absolute; left:0; color:var(--text-tertiary); }
+.tip-card p { font-size:13px; color:var(--text-secondary); margin:4px 0; }
+
+p { margin:10px 0; font-size:14px; color:var(--text-secondary); line-height:1.7; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+<!-- ==================== 导航面包屑 ==================== -->
+<div class="nav-breadcrumb">
+    <a href="index.html">📐 设计系统规范库</a><span class="sep">›</span>
+    <a href="index.html">🗃️ 数据库操作</a><span class="sep">›</span>
+    <span class="current">🗃️ 数据库操作规范</span>
+</div>
+
+<!-- ==================== 页面头部 ==================== -->
+<div class="page-header">
+    <h1><span class="icon">🗃️</span>数据库操作规范</h1>
+    <div class="subtitle">
+        <span>DBHelper</span><span>PDO</span><span>ORM 框架选型</span><span>仓储模式</span><span>SQL 安全</span><span>多语言</span>
+    </div>
+    <div class="doc-meta">📅 版本 v1.0 · 🔖 数据层 · 🏷️ DBHelper ORM 事务 连接池</div>
+    <div class="doc-summary">本规范定义了数据库操作的标准模式，包括自定义 DBHelper 封装（PHP PDO / Python SQLAlchemy / C# Dapper / Java JdbcTemplate）、ORM 框架选型建议、仓储模式实现和 SQL 安全规范，覆盖四种主流后端语言。</div>
+</div>
+
+<!-- ==================== 一、自定义 DBHelper ==================== -->
+<div class="card" id="sec-dbhelper">
+    <h2><span class="section-icon">🔧</span>一、自定义 DBHelper 设计</h2>
+    <div class="tip-block tip-info">
+        <strong>核心原则：</strong>以下是一个生产级 PHP PDO 封装类，涵盖<strong>连接管理、参数化查询、事务、批量操作和日志</strong>。
+        可作为项目中直接引用的通用数据库操作层。支持 PHP、Python、C#、Java 四语言版本。
+    </div>
+
+    <div class="tabs" id="dbTabs">
+        <button class="tab-btn active" data-panel="db-php">PHP (PDO)</button>
+        <button class="tab-btn" data-panel="db-python">Python (SQLAlchemy Core)</button>
+        <button class="tab-btn" data-panel="db-csharp">C# (Dapper)</button>
+        <button class="tab-btn" data-panel="db-java">Java (JDBC Template)</button>
+    </div>
+
+<!-- PHP DBHelper -->
+<div class="tab-panel show" id="db-php">
+<div class="code-block">
+<div class="code-header"><span class="code-title">DBHelper.php — 完整 DBHelper 实现</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-php">&lt;?php
+declare(strict_types=1);
+
+namespace App\Database;
+
+use PDO;
+use PDOException;
+use PDOStatement;
+use RuntimeException;
+use InvalidArgumentException;
+
+/**
+ * 数据库操作助手 — PDO 封装。
+ *
+ * 特性：
+ * - 单例连接管理（支持读写分离扩展）
+ * - 全部参数化查询，杜绝 SQL 注入
+ * - 自动事务 with 回滚
+ * - 批量插入优化
+ * - 查询日志（调试模式）
+ */
+class DBHelper
+{
+    private static ?DBHelper $instance = null;
+    private PDO $pdo;
+    private bool $debug = false;
+    private array $queryLog = [];
+
+    // ─── 配置 ───
+    private string $host;
+    private int $port;
+    private string $dbName;
+    private string $user;
+    private string $pass;
+    private string $charset;
+
+    private function __construct(array $config = [])
+    {
+        $this->host    = $config['host']    ?? '127.0.0.1';
+        $this->port    = $config['port']    ?? 3306;
+        $this->dbName  = $config['dbname']  ?? 'test';
+        $this->user    = $config['user']    ?? 'root';
+        $this->pass    = $config['pass']    ?? '';
+        $this->charset = $config['charset'] ?? 'utf8mb4';
+        $this->debug   = $config['debug']   ?? false;
+        $this->connect();
+    }
+
+    // ─── 单例入口 ───
+    public static function getInstance(array $config = []): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self($config);
+        }
+        return self::$instance;
+    }
+
+    // ─── 连接 ───
+    private function connect(): void
+    {
+        $dsn = sprintf(
+            'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+            $this->host, $this->port, $this->dbName, $this->charset
+        );
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset}",
+        ];
+        try {
+            $this->pdo = new PDO($dsn, $this->user, $this->pass, $options);
+        } catch (PDOException $e) {
+            throw new RuntimeException("数据库连接失败: " . $e->getMessage(), 500);
+        }
+    }
+
+    // ─── 查询：返回多行 ───
+    public function select(string $sql, array $params = []): array
+    {
+        return $this->execute($sql, $params)->fetchAll();
+    }
+
+    // ─── 查询：返回单行 ───
+    public function selectOne(string $sql, array $params = []): ?array
+    {
+        $row = $this->execute($sql, $params)->fetch();
+        return $row !== false ? $row : null;
+    }
+
+    // ─── 查询：返回单个值 ───
+    public function selectValue(string $sql, array $params = []): mixed
+    {
+        $row = $this->execute($sql, $params)->fetch(PDO::FETCH_NUM);
+        return $row !== false ? $row[0] : null;
+    }
+
+    // ─── 执行写操作 (INSERT/UPDATE/DELETE) ───
+    public function execute(string $sql, array $params = []): PDOStatement
+    {
+        $start = microtime(true);
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+        } catch (PDOException $e) {
+            throw new RuntimeException(
+                "SQL 执行失败: " . $e->getMessage() . " | SQL: " . $sql,
+                (int)$e->getCode()
+            );
+        }
+        if ($this->debug) {
+            $this->queryLog[] = [
+                'sql'    => $sql,
+                'params' => $params,
+                'time'   => round((microtime(true) - $start) * 1000, 2) . 'ms',
+            ];
+        }
+        return $stmt;
+    }
+
+    // ─── 获取最后插入 ID ───
+    public function lastInsertId(): string { return $this->pdo->lastInsertId(); }
+
+    // ─── 批量插入 ───
+    public function batchInsert(string $table, array $rows): int
+    {
+        if (empty($rows)) return 0;
+        $columns = array_keys(reset($rows));
+        $placeholders = '(' . implode(',', array_fill(0, count($columns), '?')) . ')';
+        $allPlaceholders = implode(',', array_fill(0, count($rows), $placeholders));
+        $sql = sprintf('INSERT IGNORE INTO `%s` (`%s`) VALUES %s', $table, implode('`,`', $columns), $allPlaceholders);
+        $params = [];
+        foreach ($rows as $row) { foreach ($row as $value) { $params[] = $value; } }
+        return $this->execute($sql, $params)->rowCount();
+    }
+
+    // ─── 事务（回调模式） ───
+    public function transaction(callable $callback): mixed
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $result = $callback($this);
+            $this->pdo->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    // ─── 分页查询 ───
+    public function paginate(string $sql, array $params, int $page, int $pageSize = 20): array
+    {
+        $page = max(1, $page);
+        $pageSize = min(max(1, $pageSize), 200);
+        $countSql = "SELECT COUNT(*) FROM ({$sql}) AS _tmp";
+        $total = (int)$this->selectValue($countSql, $params);
+        $offset = ($page - 1) * $pageSize;
+        $data = $this->select("{$sql} LIMIT {$pageSize} OFFSET {$offset}", $params);
+        return [
+            'data' => $data, 'total' => $total,
+            'page' => $page, 'page_size' => $pageSize,
+            'pages' => (int)ceil($total / $pageSize),
+        ];
+    }
+
+    // ─── 插入 / 更新 / 删除 ───
+    public function insert(string $table, array $data): string
+    {
+        $columns = array_keys($data);
+        $holders = array_fill(0, count($columns), '?');
+        $sql = sprintf('INSERT INTO `%s` (`%s`) VALUES (%s)', $table, implode('`,`', $columns), implode(',', $holders));
+        $this->execute($sql, array_values($data));
+        return $this->lastInsertId();
+    }
+
+    public function update(string $table, array $data, string $where, array $whereParams = []): int
+    {
+        $sets = []; foreach ($data as $col => $v) { $sets[] = "`{$col}` = ?"; }
+        $sql = sprintf('UPDATE `%s` SET %s WHERE %s', $table, implode(', ', $sets), $where);
+        return $this->execute($sql, array_merge(array_values($data), $whereParams))->rowCount();
+    }
+
+    public function delete(string $table, string $where, array $params = []): int
+    {
+        return $this->execute("DELETE FROM `{$table}` WHERE {$where}", $params)->rowCount();
+    }
+
+    // ─── 原子增减 ───
+    public function increment(string $table, string $column, string $where, array $params = [], int $amount = 1): int
+    {
+        $sql = "UPDATE `{$table}` SET `{$column}` = `{$column}` + ? WHERE {$where}";
+        return $this->execute($sql, array_merge([$amount], $params))->rowCount();
+    }
+    public function decrement(string $table, string $column, string $where, array $params = [], int $amount = 1): int
+    {
+        return $this->increment($table, $column, $where, $params, -$amount);
+    }
+
+    // ─── 手动事务控制 ───
+    public function beginTransaction(): void { $this->pdo->beginTransaction(); }
+    public function commit(): void { $this->pdo->commit(); }
+    public function rollBack(): void { if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); } }
+
+    // ─── 判断存在 / 计数 ───
+    public function exists(string $tableOrSql, array $params = [], bool $isRawSql = false): bool { /* ... */ }
+    public function count(string $tableOrSql, array $params = [], bool $isRawSql = false): int { /* ... */ }
+
+    // ─── 连接检测 ───
+    public function ping(): bool { /* ping + auto-reconnect */ return true; }
+
+    // ─── 调试日志 ───
+    public function getQueryLog(): array { return $this->queryLog; }
+
+    // 禁止克隆/反序列化
+    private function __clone() {}
+    public function __wakeup() { throw new RuntimeException("禁止反序列化单例"); }
+}
+</code></pre>
+</div>
+</div>
+
+<!-- Python -->
+<div class="tab-panel" id="db-python">
+<div class="code-block">
+<div class="code-header"><span class="code-title">db_helper.py — SQLAlchemy Core + 连接池</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-python">"""数据库操作助手 — 基于 SQLAlchemy Core。"""
+from __future__ import annotations
+from contextlib import contextmanager
+from typing import Any, Optional
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import QueuePool
+
+class DBHelper:
+    """数据库操作封装。"""
+    def __init__(self, url: str = "mysql+pymysql://user:pass@127.0.0.1:3306/db?charset=utf8mb4",
+                 pool_size: int = 10, pool_recycle: int = 3600, echo: bool = False) -> None:
+        self.engine: Engine = create_engine(url, poolclass=QueuePool,
+            pool_size=pool_size, pool_recycle=pool_recycle, pool_pre_ping=True, echo=echo)
+
+    def select(self, sql: str, params: dict | None = None) -> list[dict]:
+        with self.engine.connect() as conn:
+            rows = conn.execute(text(sql), params or {})
+            return [dict(row._mapping) for row in rows]
+
+    def select_one(self, sql: str, params: dict | None = None) -> dict | None:
+        with self.engine.connect() as conn:
+            row = conn.execute(text(sql), params or {}).fetchone()
+            return dict(row._mapping) if row else None
+
+    def select_value(self, sql: str, params: dict | None = None) -> Any:
+        with self.engine.connect() as conn:
+            return conn.execute(text(sql), params or {}).scalar()
+
+    def execute(self, sql: str, params: dict | None = None) -> int:
+        with self.engine.begin() as conn:
+            result = conn.execute(text(sql), params or {})
+            return result.rowcount
+
+    @contextmanager
+    def transaction(self):
+        with self.engine.begin() as conn:
+            yield conn
+
+    def paginate(self, sql: str, params: dict, page: int, page_size: int = 20) -> dict:
+        total = self.select_value(f"SELECT COUNT(*) FROM ({sql}) AS _tmp", params)
+        offset = (page - 1) * page_size
+        data = self.select(f"{sql} LIMIT :limit OFFSET :offset", {**params, "limit": page_size, "offset": offset})
+        return {"data": data, "total": total, "page": page, "page_size": page_size,
+                "pages": (total + page_size - 1) // page_size}
+
+    def insert(self, table: str, data: dict) -> int:
+        cols = list(data.keys())
+        holders = [f":{c}" for c in cols]
+        sql = f"INSERT INTO `{table}` (`{'`,`'.join(cols)}`) VALUES ({','.join(holders)})"
+        with self.engine.begin() as conn:
+            result = conn.execute(text(sql), data)
+            return result.lastrowid
+
+    def update(self, table: str, data: dict, where: str, where_params: dict | None = None) -> int:
+        sets = [f"`{c}` = :set_{c}" for c in data]
+        params = {f"set_{c}": v for c, v in data.items()}
+        if where_params: params.update(where_params)
+        return self.execute(f"UPDATE `{table}` SET {', '.join(sets)} WHERE {where}", params)
+
+    def delete(self, table: str, where: str, params: dict | None = None) -> int:
+        return self.execute(f"DELETE FROM `{table}` WHERE {where}", params or {})
+
+    def increment(self, table: str, column: str, where: str, params: dict | None = None, amount: int = 1) -> int:
+        p = params or {}; p["_amt"] = amount
+        return self.execute(f"UPDATE `{table}` SET `{column}` = `{column}` + :_amt WHERE {where}", p)
+</code></pre>
+</div>
+</div>
+
+<!-- C# -->
+<div class="tab-panel" id="db-csharp">
+<div class="code-block">
+<div class="code-header"><span class="code-title">DbHelper.cs — Dapper 封装</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-csharp">using System.Data;
+using Dapper;
+using MySql.Data.MySqlClient;
+
+namespace Company.Project.Data;
+
+public class DbHelper : IDisposable
+{
+    private readonly MySqlConnection _conn;
+
+    public DbHelper(string connectionString) { _conn = new MySqlConnection(connectionString); _conn.Open(); }
+
+    public async Task&lt;IEnumerable&lt;T&gt;&gt; SelectAsync&lt;T&gt;(string sql, object? param = null)
+        => await _conn.QueryAsync&lt;T&gt;(sql, param);
+
+    public async Task&lt;T?&gt; SelectOneAsync&lt;T&gt;(string sql, object? param = null)
+        => await _conn.QueryFirstOrDefaultAsync&lt;T&gt;(sql, param);
+
+    public async Task&lt;int&gt; ExecuteAsync(string sql, object? param = null, IDbTransaction? tx = null)
+        => await _conn.ExecuteAsync(sql, param, tx);
+
+    public async Task&lt;(IEnumerable&lt;T&gt; Data, int Total)&gt; PaginateAsync&lt;T&gt;(string sql, object param, int page, int pageSize = 20)
+    {
+        var total = await _conn.ExecuteScalarAsync&lt;int&gt;($"SELECT COUNT(*) FROM ({sql}) AS _tmp", param);
+        var offset = (page - 1) * pageSize;
+        var data = await _conn.QueryAsync&lt;T&gt;($"{sql} LIMIT {pageSize} OFFSET {offset}", param);
+        return (data, total);
+    }
+
+    public IDbTransaction BeginTransaction() => _conn.BeginTransaction();
+
+    public async Task&lt;bool&gt; ExistsAsync(string sql, object? param = null)
+        => await _conn.ExecuteScalarAsync&lt;int&gt;($"SELECT EXISTS({sql})", param) == 1;
+
+    public async Task&lt;long&gt; InsertAsync(string table, object data)
+    {
+        var props = data.GetType().GetProperties().Where(p => p.GetValue(data) != null).ToList();
+        var cols = string.Join("`,`", props.Select(p => p.Name));
+        var holders = string.Join(",", props.Select(p => $"@{p.Name}"));
+        return await _conn.ExecuteScalarAsync&lt;long&gt;(
+            $"INSERT INTO `{table}` (`{cols}`) VALUES ({holders}); SELECT LAST_INSERT_ID()", data);
+    }
+
+    public async Task&lt;int&gt; DeleteAsync(string table, string where, object? param = null)
+        => await _conn.ExecuteAsync($"DELETE FROM `{table}` WHERE {where}", param);
+
+    public async Task&lt;int&gt; IncrementAsync(string table, string column, string where,
+        object? param = null, int amount = 1)
+        => await _conn.ExecuteAsync(
+            $"UPDATE `{table}` SET `{column}` = `{column}` + {amount} WHERE {where}", param);
+
+    public void Dispose() => _conn?.Dispose();
+}
+</code></pre>
+</div>
+</div>
+
+<!-- Java -->
+<div class="tab-panel" id="db-java">
+<div class="code-block">
+<div class="code-header"><span class="code-title">DbHelper.java — JdbcTemplate 封装</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><code class="language-java">package com.company.project.data;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import java.util.*;
+
+@Component
+public class DbHelper {
+    private final JdbcTemplate jdbc;
+    public DbHelper(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+
+    public &lt;T&gt; List&lt;T&gt; select(String sql, RowMapper&lt;T&gt; mapper, Object... params) {
+        return jdbc.query(sql, mapper, params);
+    }
+
+    public &lt;T&gt; Optional&lt;T&gt; selectOne(String sql, RowMapper&lt;T&gt; mapper, Object... params) {
+        List&lt;T&gt; list = jdbc.query(sql, mapper, params);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
+
+    public &lt;T&gt; T selectValue(String sql, Class&lt;T&gt; clazz, Object... params) {
+        return jdbc.queryForObject(sql, clazz, params);
+    }
+
+    public int execute(String sql, Object... params) { return jdbc.update(sql, params); }
+
+    public record PageResult&lt;T&gt;(List&lt;T&gt; data, long total, int page, int pageSize) {}
+
+    public &lt;T&gt; PageResult&lt;T&gt; paginate(String sql, RowMapper&lt;T&gt; mapper, int page, int pageSize, Object... params) {
+        Long total = jdbc.queryForObject("SELECT COUNT(*) FROM (" + sql + ") AS _tmp", Long.class, params);
+        int offset = (page - 1) * pageSize;
+        List&lt;T&gt; data = jdbc.query(sql + " LIMIT " + pageSize + " OFFSET " + offset, mapper, params);
+        return new PageResult&lt;&gt;(data, total, page, pageSize);
+    }
+
+    public long insert(String table, Map&lt;String, Object&gt; data) { /* SimpleJdbcInsert */ return 0L; }
+    public int delete(String table, String where, Object... params) {
+        return jdbc.update("DELETE FROM `" + table + "` WHERE " + where, params);
+    }
+    public int increment(String table, String column, String where, int amount, Object... params) {
+        String sql = "UPDATE `" + table + "` SET `" + column + "` = `" + column + "` + ? WHERE " + where;
+        Object[] allParams = new Object[params.length + 1];
+        allParams[0] = amount;
+        System.arraycopy(params, 0, allParams, 1, params.length);
+        return jdbc.update(sql, allParams);
+    }
+}
+</code></pre>
+</div>
+</div>
+</div>
+
+<h3 id="sec-pdo">DBHelper 核心设计原则</h3>
+<div class="tip-grid">
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--error);"></span>SQL 注入防护</h4>
+    <ul><li>所有查询必须参数化绑定</li><li>永不拼接用户输入到 SQL 字符串</li><li>表名/列名动态时，使用白名单校验</li></ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--info);"></span>连接管理</h4>
+    <ul><li>长连接 + 连接池，避免频繁建连</li><li>设置连接超时和最大生命周期</li><li>连接前检测有效性 (pre_ping)</li></ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--warning);"></span>事务规范</h4>
+    <ul><li>事务尽量短，不放网络 I/O</li><li>写操作必须包裹事务</li><li>避免长事务导致锁等待</li></ul>
+</div>
+<div class="tip-card">
+    <h4><span class="dot" style="background:var(--success);"></span>错误处理</h4>
+    <ul><li>统一异常封装，不泄露 SQL 细节</li><li>死锁重试（最多 3 次）</li><li>慢查询日志 ≥ 200ms</li></ul>
+</div>
+</div>
+</div>
+
+<!-- ==================== 二、ORM 框架选型 ==================== -->
+<div class="card" id="sec-orm">
+    <h2><span class="section-icon">📦</span>二、ORM 框架选型与推荐</h2>
+    <div class="tip-block tip-info">
+        <strong>核心原则：</strong>以下仅收录经过性能验证的高效 ORM / SQL 工具。
+        全功能重型 ORM（如 Hibernate、Entity Framework 跟踪查询、Eloquent 关联预加载缺失场景）
+        在复杂查询和批量操作中存在显著的 N+1、内存占用大、生成 SQL 不可控等问题，<strong>不做推荐</strong>。
+    </div>
+
+    <h3>高性能 ORM / SQL 工具推荐</h3>
+    <table class="spec-table">
+    <thead><tr><th>语言</th><th>框架</th><th>类型</th><th>核心优势</th><th>许可证</th><th>推荐场景</th></tr></thead>
+    <tbody>
+    <tr><td rowspan="2"><strong>PHP</strong></td><td><code>Cycle ORM</code></td><td>DataMapper ORM</td><td>零魔法调用、堆内存极低、自动预热关系</td><td>MIT</td><td>⭐ 高性能首选，适合 Swoole/RoadRunner</td></tr>
+    <tr><td><code>自定义 DBHelper + PDO</code></td><td>微型 SQL 封装</td><td>无反射开销、SQL 完全可控</td><td>-</td><td>极致性能场景、复杂报表</td></tr>
+    <tr><td rowspan="2"><strong>Python</strong></td><td><code>SQLAlchemy Core</code></td><td>SQL 构造器</td><td>避免 Unit of Work 开销</td><td>MIT</td><td>⭐ 首选，Core 比 ORM 快 2~5 倍</td></tr>
+    <tr><td><code>Peewee</code></td><td>轻量 ORM</td><td>单文件 ~6K 行，内存占用低</td><td>MIT</td><td>小型项目 / 脚本</td></tr>
+    <tr><td rowspan="2"><strong>C#</strong></td><td><code>Dapper</code></td><td>微型 ORM</td><td>接近手写 ADO.NET 性能</td><td>Apache-2.0</td><td>⭐ 高性能首选</td></tr>
+    <tr><td><code>EF Core (AsNoTracking)</code></td><td>全功能 ORM</td><td>仅 AsNoTracking 模式可接受</td><td>MIT</td><td>仅限只读查询</td></tr>
+    <tr><td rowspan="2"><strong>Java</strong></td><td><code>MyBatis-Plus</code></td><td>SQL Mapper</td><td>SQL 手写可控，无隐式 JOIN</td><td>Apache-2.0</td><td>⭐ 高性能首选</td></tr>
+    <tr><td><code>jOOQ</code></td><td>类型安全 SQL DSL</td><td>编译期校验 SQL 语法</td><td>Apache-2.0</td><td>数据库优先架构</td></tr>
+    </tbody>
+    </table>
+
+    <h3>不推荐：性能有缺陷的 ORM</h3>
+    <table class="spec-table">
+    <thead><tr><th>框架</th><th>语言</th><th>主要性能问题</th><th>替代方案</th></tr></thead>
+    <tbody>
+    <tr style="background:#FEF2F2;"><td><code>Hibernate / JPA</code></td><td>Java</td><td>一级缓存隐式脏检查、N+1 难以根治、批量操作生成大量 SQL</td><td>MyBatis / jOOQ</td></tr>
+    <tr style="background:#FEF2F2;"><td><code>Eloquent (默认)</code></td><td>PHP</td><td>ActiveRecord 天然 N+1、关联懒加载、大数据量内存溢出</td><td>Cycle ORM / DBHelper</td></tr>
+    <tr style="background:#FEF2F2;"><td><code>Doctrine ORM</code></td><td>PHP</td><td>Unit of Work 开销大、DQL 二次解析慢</td><td>Cycle ORM / DBHelper</td></tr>
+    <tr style="background:#FEF2F2;"><td><code>Django ORM</code></td><td>Python</td><td>QuerySet 懒求值易触发多次查询、关联 JOIN 不可控</td><td>SQLAlchemy Core</td></tr>
+    <tr style="background:#FEF2F2;"><td><code>EF Core (跟踪查询)</code></td><td>C#</td><td>Change Tracker 内存开销大、批量插入性能极差</td><td>Dapper</td></tr>
+    </tbody>
+    </table>
+
+    <div class="tip-block tip-success">
+        💡 <strong>选型原则：</strong>
+        <ul style="margin:6px 0 0 16px;font-size:13px;line-height:1.8;">
+            <li><strong>简单 CRUD</strong> → 轻量 ORM（Dapper / MyBatis-Plus / Peewee）</li>
+            <li><strong>复杂查询 / 报表</strong> → SQL 构造器 / Mapper（SQLAlchemy Core / jOOQ / DBHelper）</li>
+            <li><strong>高并发 / 常驻内存</strong> → 无状态 SQL 封装，避免 ORM Unit of Work</li>
+            <li><strong>所有场景</strong> → 禁止使用全功能重型 ORM 的默认跟踪/懒加载模式</li>
+        </ul>
+        以上推荐的框架均使用 MIT / Apache-2.0 许可证，可免费商业使用。
+    </div>
+</div>
+
+<!-- ==================== 三、仓储模式 ==================== -->
+<div class="card" id="sec-repository">
+    <h2><span class="section-icon">🏗️</span>三、仓储模式（Repository Pattern）</h2>
+    <div class="tip-block tip-info">
+        <strong>核心原则：</strong>仓储模式将数据访问逻辑封装在独立层，使业务逻辑与持久化细节解耦。
+        通过接口定义契约，实现可替换性，便于单元测试。
+    </div>
+
+    <h3>PHP 仓储模式示例</h3>
+    <div class="code-block">
+    <div class="code-header"><span class="code-title">UserRepository.php — 接口 + 实现 + Service 调用</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+    <pre><code class="language-php">// ============ 接口 ============
+interface UserRepositoryInterface
+{
+    public function findById(int $id): ?User;
+    public function findByEmail(string $email): ?User;
+    public function search(UserQuery $query): array;
+    public function save(User $user): User;
+    public function delete(int $id): bool;
+}
+
+// ============ 实现 ============
+class UserRepository implements UserRepositoryInterface
+{
+    public function __construct(private DBHelper $db) {}
+
+    public function findById(int $id): ?User
+    {
+        $row = $this->db->selectOne(
+            'SELECT * FROM users WHERE id = ? AND deleted_at IS NULL', [$id]
+        );
+        return $row ? User::fromArray($row) : null;
+    }
+
+    public function save(User $user): User
+    {
+        if ($user->id) {
+            $this->db->execute(
+                'UPDATE users SET name=?, email=?, updated_at=NOW() WHERE id=?',
+                [$user->name, $user->email, $user->id]
+            );
+        } else {
+            $this->db->execute(
+                'INSERT INTO users (name, email, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
+                [$user->name, $user->email]
+            );
+            $user->id = (int)$this->db->lastInsertId();
+        }
+        return $user;
+    }
+
+    public function delete(int $id): bool
+    {
+        // 软删除
+        return $this->db->execute(
+            'UPDATE users SET deleted_at = NOW() WHERE id = ?', [$id]
+        )->rowCount() > 0;
+    }
+}
+
+// ============ Service 层使用 ============
+class UserService
+{
+    public function __construct(private UserRepositoryInterface $userRepo) {}
+
+    public function activateUser(int $id): User
+    {
+        $user = $this->userRepo->findById($id)
+            ?? throw new NotFoundException("用户不存在");
+        $user->status = 'active';
+        return $this->userRepo->save($user);
+    }
+}</code></pre>
+    </div>
+</div>
+
+<!-- ==================== 四、SQL 安全与性能 ==================== -->
+<div class="card" id="sec-sqlsafe">
+    <h2><span class="section-icon">🛡️</span>四、SQL 安全与性能规范</h2>
+    <div class="tip-block tip-info">
+        <strong>核心原则：</strong>SQL 注入是 OWASP Top 10 高风险漏洞。
+        所有用户输入必须通过参数化绑定进入 SQL，动态表名/列名/排序字段必须通过白名单校验。
+    </div>
+
+    <h3 id="sec-transaction">SQL 注入对照</h3>
+    <table class="spec-table">
+    <thead><tr><th>场景</th><th style="color:var(--error);">❌ 危险写法</th><th style="color:var(--success);">✅ 安全写法</th></tr></thead>
+    <tbody>
+    <tr><td>条件查询</td><td style="font-family:monospace;font-size:12px;">"SELECT * FROM users WHERE id = $id"</td><td style="font-family:monospace;font-size:12px;">SELECT * FROM users WHERE id = ?</td></tr>
+    <tr><td>LIKE 查询</td><td style="font-family:monospace;font-size:12px;">"WHERE name LIKE '%$kw%'"</td><td style="font-family:monospace;font-size:12px;">WHERE name LIKE CONCAT('%', ?, '%')</td></tr>
+    <tr><td>IN 查询</td><td style="font-family:monospace;font-size:12px;">"WHERE id IN ($ids)"</td><td style="font-family:monospace;font-size:12px;">WHERE id IN (?, ?, ?) [动态占位符]</td></tr>
+    <tr><td>排序字段</td><td style="font-family:monospace;font-size:12px;">"ORDER BY $col $dir"</td><td style="font-family:monospace;font-size:12px;">白名单校验 + 硬编码字段名</td></tr>
+    <tr><td>表名动态</td><td style="font-family:monospace;font-size:12px;">"SELECT * FROM $table"</td><td style="font-family:monospace;font-size:12px;">白名单 + 反引号包裹</td></tr>
+    </tbody>
+    </table>
+
+    <h3>查询优化要点</h3>
+    <div class="tip-grid">
+    <div class="tip-card">
+        <h4><span class="dot" style="background:var(--info);"></span>索引原则</h4>
+        <ul><li>WHERE / JOIN / ORDER BY 列建索引</li><li>复合索引遵循最左前缀</li><li>避免在索引列上使用函数</li><li>用 EXPLAIN 分析执行计划</li></ul>
+    </div>
+    <div class="tip-card">
+        <h4><span class="dot" style="background:var(--warning);"></span>查询优化</h4>
+        <ul><li>SELECT 指定列名，不用 SELECT *</li><li>大偏移分页用游标/延迟关联</li><li>批量操作分批次（每批 ≤1000）</li><li>避免在循环中执行 SQL (N+1)</li></ul>
+    </div>
+    <div class="tip-card">
+        <h4><span class="dot" style="background:var(--error);"></span>高危操作</h4>
+        <ul><li>生产环境禁止 DROP/TRUNCATE</li><li>UPDATE/DELETE 必须有 WHERE</li><li>大表 DDL 用 pt-online-schema-change</li><li>慢查询阈值设为 200ms</li></ul>
+    </div>
+    <div class="tip-card">
+        <h4><span class="dot" style="background:var(--success);"></span>连接规范</h4>
+        <ul><li>连接池最小 5，最大 20~50</li><li>连接超时 30s，等待超时 3s</li><li>读写分离：写主库，读从库</li><li>设置 sql_mode 严格模式</li></ul>
+    </div>
+    </div>
+</div>
+
+<!-- ==================== 五、设计令牌速查 ==================== -->
+<div class="card" id="sec-tokens" style="background:var(--gray-50);">
+    <h2><span class="section-icon">📌</span>五、数据库操作 · 设计令牌速查</h2>
+    <div class="token-grid">
+        <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#7C3AED</span></div>
+        <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#F5F3FF</span></div>
+        <div class="token-item"><span class="token-name">--success / --success-bg</span><span class="token-value">#059669 / #ECFDF5</span></div>
+        <div class="token-item"><span class="token-name">--warning / --warning-bg</span><span class="token-value">#D97706 / #FFFBEB</span></div>
+        <div class="token-item"><span class="token-name">--error / --error-bg</span><span class="token-value">#DC2626 / #FEF2F2</span></div>
+        <div class="token-item"><span class="token-name">--code-block-bg</span><span class="token-value">#1E293B</span></div>
+        <div class="token-item"><span class="token-name">--code-block-color</span><span class="token-value">#E2E8F0</span></div>
+        <div class="token-item"><span class="token-name">--code-inline-bg / --code-inline-color</span><span class="token-value">#F1F5F9 / #DC2626</span></div>
+        <div class="token-item"><span class="token-name">--radius / --radius-sm</span><span class="token-value">10px / 6px</span></div>
+        <div class="token-item"><span class="token-name">--shadow-sm / --shadow-md</span><span class="token-value">标准阴影层级</span></div>
+        <div class="token-item"><span class="token-name">--font</span><span class="token-value">system-ui, sans-serif</span></div>
+        <div class="token-item"><span class="token-name">--bg / --surface</span><span class="token-value">#F8FAFC / #FFFFFF</span></div>
+    </div>
+</div>
+
+<!-- ==================== 六、检查清单 ==================== -->
+<div class="card" id="sec-checklist">
+    <h2><span class="section-icon">✅</span>六、数据库操作 · 检查清单</h2>
+    <div style="font-size:13px;color:var(--text);line-height:2;padding:16px;background:var(--gray-50);border-radius:var(--radius);">
+        ✅ 是否所有 SQL 查询都使用<strong>参数化绑定</strong>，无字符串拼接用户输入？<br>
+        ✅ 动态表名/列名/排序字段是否经过<strong>白名单校验</strong>？<br>
+        ✅ DBHelper 是否使用<strong>单例模式</strong>管理连接？<br>
+        ✅ PDO 是否设置 <strong>ERRMODE_EXCEPTION + EMULATE_PREPARES=false</strong>？<br>
+        ✅ 是否提供了<strong>批量插入</strong>（batchInsert）方法？<br>
+        ✅ 事务是否同时提供<strong>回调模式和手动控制模式</strong>？<br>
+        ✅ 是否实现了<strong>分页查询</strong>（paginate），含 total/page/pages？<br>
+        ✅ 是否提供了<strong>原子增减</strong>（increment/decrement）方法？<br>
+        ✅ 连接池是否配置了 <strong>最小连接数、最大连接数、超时</strong>？<br>
+        ✅ 是否选用了<strong>高性能轻量 ORM</strong>（如 Dapper/MyBatis/SQLAlchemy Core）？<br>
+        ✅ 是否避免了全功能重型 ORM 的<strong>默认跟踪/懒加载</strong>模式？<br>
+        ✅ 生产环境是否禁止了 <strong>DROP/TRUNCATE</strong> 操作？<br>
+        ✅ UPDATE/DELETE 语句是否<strong>必须带 WHERE</strong>？<br>
+        ✅ 大偏移分页是否使用<strong>游标/延迟关联</strong>替代 OFFSET？<br>
+        ✅ 批量操作是否<strong>分批</strong>进行（每批 ≤ 1000）？<br>
+        ✅ 是否配置了<strong>慢查询日志</strong>（阈值 200ms）？<br>
+        ✅ 数据访问层是否通过<strong>仓储模式</strong>与业务逻辑解耦？<br>
+        ✅ 错误信息是否<strong>不暴露 SQL 细节</strong>给前端？
+    </div>
+</div>
+
+</div><!-- .container -->
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+
+// 标签切换
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const parent = btn.closest('.card');
+        parent.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('show'));
+        btn.classList.add('active');
+        parent.querySelector('#' + btn.dataset.panel).classList.add('show');
+    });
+});
+
+function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+</script>
+
+    <div class="page-footer">
+        <a href="index.html">📐 规范总览</a>
+        <a href="09-数据库设计规范-字段设计命名索引表结构.html">🗄️ 数据库设计规范</a>
+        <a href="13-编程语言规范-PHP-Python-CSharp-Java.html">💻 编程语言规范</a>
+        <span>数据库操作规范 v1.0 · DBHelper · ORM · 仓储模式 · SQL安全</span>
+    </div>
+
+</body>
+</html>

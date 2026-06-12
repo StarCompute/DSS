@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布局框架规范 | 栅格 · 间距 · 页面框架 · 响应式 · 层级</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            /* 布局专用设计令牌 */
+            --grid-columns:24; --gutter-width:16px;
+            --container-padding-desktop:24px; --container-padding-tablet:20px; --container-padding-mobile:16px;
+            --header-height-desktop:64px; --header-height-mobile:56px;
+            --sidebar-width-expanded:240px; --sidebar-width-collapsed:72px;
+            --spacing-1:4px; --spacing-2:8px; --spacing-3:12px; --spacing-4:16px;
+            --spacing-5:24px; --spacing-6:32px; --spacing-7:40px; --spacing-8:48px; --spacing-9:64px;
+            --breakpoint-sm:576px; --breakpoint-md:768px; --breakpoint-lg:1024px;
+            --breakpoint-xl:1280px; --breakpoint-2xl:1536px;
+            --z-base:0; --z-elevated:10; --z-dropdown:100; --z-sticky:200;
+            --z-modal-overlay:1000; --z-modal:1010; --z-toast:1200; --z-tooltip:1300;
+        }
+
+        /* ===== 栅格系统演示（布局规范专用） ===== */
+        .row { display:flex; flex-wrap:wrap; margin-left:calc(-1 * var(--gutter-width) / 2); margin-right:calc(-1 * var(--gutter-width) / 2); }
+        [class*="col-"] { padding-left:calc(var(--gutter-width) / 2); padding-right:calc(var(--gutter-width) / 2); flex-shrink:0; width:100%; }
+
+        .col-1 { width:calc(100% / 24 * 1); } .col-2 { width:calc(100% / 24 * 2); }
+        .col-3 { width:calc(100% / 24 * 3); } .col-4 { width:calc(100% / 24 * 4); }
+        .col-5 { width:calc(100% / 24 * 5); } .col-6 { width:calc(100% / 24 * 6); }
+        .col-7 { width:calc(100% / 24 * 7); } .col-8 { width:calc(100% / 24 * 8); }
+        .col-9 { width:calc(100% / 24 * 9); } .col-10 { width:calc(100% / 24 * 10); }
+        .col-11 { width:calc(100% / 24 * 11); } .col-12 { width:calc(100% / 24 * 12); }
+        .col-13 { width:calc(100% / 24 * 13); } .col-14 { width:calc(100% / 24 * 14); }
+        .col-15 { width:calc(100% / 24 * 15); } .col-16 { width:calc(100% / 24 * 16); }
+        .col-17 { width:calc(100% / 24 * 17); } .col-18 { width:calc(100% / 24 * 18); }
+        .col-19 { width:calc(100% / 24 * 19); } .col-20 { width:calc(100% / 24 * 20); }
+        .col-21 { width:calc(100% / 24 * 21); } .col-22 { width:calc(100% / 24 * 22); }
+        .col-23 { width:calc(100% / 24 * 23); } .col-24 { width:100%; }
+
+        @media (min-width:768px) {
+            .col-md-1 { width:calc(100% / 24 * 1); } .col-md-2 { width:calc(100% / 24 * 2); }
+            .col-md-3 { width:calc(100% / 24 * 3); } .col-md-4 { width:calc(100% / 24 * 4); }
+            .col-md-6 { width:calc(100% / 24 * 6); } .col-md-8 { width:calc(100% / 24 * 8); }
+            .col-md-12 { width:calc(100% / 24 * 12); } .col-md-24 { width:100%; }
+        }
+        @media (min-width:1024px) {
+            .col-lg-3 { width:calc(100% / 24 * 3); } .col-lg-4 { width:calc(100% / 24 * 4); }
+            .col-lg-6 { width:calc(100% / 24 * 6); } .col-lg-8 { width:calc(100% / 24 * 8); }
+            .col-lg-9 { width:calc(100% / 24 * 9); } .col-lg-12 { width:calc(100% / 24 * 12); }
+            .col-lg-16 { width:calc(100% / 24 * 16); } .col-lg-18 { width:calc(100% / 24 * 18); }
+            .col-lg-20 { width:calc(100% / 24 * 20); } .col-lg-24 { width:100%; }
+        }
+
+        .grid-demo [class*="col-"] > div { background:var(--primary-light); border-radius:8px; padding:16px 8px; text-align:center; font-size:13px; border:1px solid var(--primary-border); }
+
+        .spacing-demo { background:var(--primary-light); border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; color:var(--primary); }
+
+        .layer-box { background:var(--surface); border-radius:12px; padding:16px; box-shadow:0 4px 6px -2px rgba(0,0,0,.05); border:1px solid var(--border); font-size:13px; }
+
+        .demo-card { background:var(--surface); border-radius:12px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.05); border:1px solid var(--border); }
+
+        .section-desc { font-size:14px; color:var(--text-secondary); margin-bottom:20px; line-height:1.7; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ==================== 导航面包屑 ==================== -->
+    <div class="nav-breadcrumb">
+        <a href="index.html">📐 设计系统规范库</a><span class="sep">›</span>
+        <a href="index.html">📏 布局框架</a><span class="sep">›</span>
+        <span class="current">📏 布局框架规范</span>
+    </div>
+
+    <!-- ==================== 页面头部 ==================== -->
+    <div class="page-header">
+        <h1><span class="icon">📐</span>布局框架规范</h1>
+        <div class="subtitle">
+            <span>栅格系统</span><span>间距尺规</span><span>页面框架</span><span>响应式断点</span><span>层级体系</span>
+        </div>
+        <div class="doc-meta">📅 版本 v1.0 · 🔖 布局层 · 🏷️ 栅格间距响应式层级</div>
+        <div class="doc-summary">本规范定义了系统的布局框架标准，包括24列栅格系统、8px基准间距体系、页面框架模板、响应式断点策略和z-index层级体系。所有布局组件均基于此规范构建，确保全系统视觉一致性。</div>
+    </div>
+
+    <!-- ==================== 一、栅格系统 ==================== -->
+    <div class="card" id="sec-grid">
+        <h2><span class="section-icon">📐</span>一、栅格系统</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>采用 24 列栅格 + 16px 水槽 + 24px 两侧留白（桌面端），基于 Flex 实现。
+            支持响应式前缀 <code>.col-*</code> / <code>.col-md-*</code> / <code>.col-lg-*</code>。
+        </div>
+
+        <h3>栅格规范定义</h3>
+        <table class="spec-table">
+            <thead><tr><th>参数</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>总列数</strong></td><td><code>24列</code></td><td>24 可被 2、3、4、6、8、12 整除，组合灵活</td></tr>
+                <tr><td><strong>水槽宽度</strong></td><td><code>16px</code></td><td>列间距，通过负 margin + padding 实现</td></tr>
+                <tr><td><strong>两侧留白(桌面)</strong></td><td><code>24px</code></td><td>容器 padding，保证内容不贴边</td></tr>
+                <tr><td><strong>两侧留白(平板)</strong></td><td><code>20px</code></td><td>中屏适度缩小</td></tr>
+                <tr><td><strong>两侧留白(手机)</strong></td><td><code>16px</code></td><td>小屏紧凑但保留呼吸空间</td></tr>
+                <tr><td><strong>实现方式</strong></td><td><code>Flexbox</code></td><td>主流浏览器兼容性好，无需额外 polyfill</td></tr>
+            </tbody>
+        </table>
+
+        <h3>列宽比例演示</h3>
+        <div class="row grid-demo" style="margin-bottom:20px;">
+            <div class="col-6"><div>col-6（25%）</div></div>
+            <div class="col-6"><div>col-6（25%）</div></div>
+            <div class="col-6"><div>col-6（25%）</div></div>
+            <div class="col-6"><div>col-6（25%）</div></div>
+        </div>
+        <div class="row grid-demo" style="margin-bottom:20px;">
+            <div class="col-8"><div>col-8（33.3%）</div></div>
+            <div class="col-16"><div>col-16（66.7%）</div></div>
+        </div>
+        <div class="row grid-demo">
+            <div class="col-12"><div>col-12（50%）</div></div>
+            <div class="col-12"><div>col-12（50%）</div></div>
+        </div>
+
+        <h3>CSS 栅格实现</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">/* 24列栅格系统核心 CSS */</span><br>
+            <span style="color:#93C5FD;">.row</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">flex</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">flex-wrap</span>: <span style="color:#C084FC;">wrap</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-left</span>: <span style="color:#C084FC;">-8px</span>;  <span style="color:#F59E0B;">/* 负 gutter/2 */</span><br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-right</span>: <span style="color:#C084FC;">-8px</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.col-6</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 6)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
+            <span style="color:#93C5FD;">.col-8</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 8)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
+            <span style="color:#93C5FD;">.col-12</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 12)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
+            <span style="color:#93C5FD;">.col-16</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 16)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }
+        </div>
+    </div>
+
+    <!-- ==================== 二、间距尺规 ==================== -->
+    <div class="card" id="sec-spacing">
+        <h2><span class="section-icon">📏</span>二、间距尺规</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>所有外边距、内边距统一使用 8px 网格系统。
+            组件内用小尺度，区块间用中尺度，页面大模块间用大尺度。
+        </div>
+
+        <h3>间距令牌（8px 网格）</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:16px 0;">
+            <div class="spacing-demo" style="padding:var(--spacing-1);">4px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-2);">8px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-3);">12px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-4);">16px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-5);">24px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-6);">32px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-7);">40px</div>
+            <div class="spacing-demo" style="padding:var(--spacing-8);">48px</div>
+        </div>
+
+        <h3>间距使用指南</h3>
+        <table class="spec-table">
+            <thead><tr><th>尺度</th><th>值</th><th>适用场景</th></tr></thead>
+            <tbody>
+                <tr><td><strong>微小</strong></td><td><code>4px, 8px</code></td><td>图标与文字间距、标签内边距、表单字段间微调</td></tr>
+                <tr><td><strong>小</strong></td><td><code>12px, 16px</code></td><td>组件内部元素间距、卡片内边距、列表项间距</td></tr>
+                <tr><td><strong>中</strong></td><td><code>24px, 32px</code></td><td>区块之间间距、章节分隔、表单分组间距</td></tr>
+                <tr><td><strong>大</strong></td><td><code>40px, 48px, 64px</code></td><td>页面大模块之间、页面上下留白</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip-block tip-success">
+            <strong>✅ 最佳实践：</strong>使用 CSS 变量定义间距令牌（如 <code>var(--spacing-4)</code>），一处修改全局生效，杜绝散落不一致的硬编码数字。
+        </div>
+    </div>
+
+    <!-- ==================== 三、标准页面框架 ==================== -->
+    <div class="card" id="sec-layout">
+        <h2><span class="section-icon">🧱</span>三、标准页面框架</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>中后台系统采用经典的三区布局：顶部固定导航栏 + 左侧边栏 + 主内容区域（自适应）。
+            这是经过大量企业级项目验证的最稳定布局模式。
+        </div>
+
+        <h3>框架参数定义</h3>
+        <table class="spec-table">
+            <thead><tr><th>区域</th><th>规格</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Header（顶部导航）</strong></td><td>高度 <code>64px</code>（桌面）/ <code>56px</code>（移动端）</td><td>position: sticky，背景半透明毛玻璃效果</td></tr>
+                <tr><td><strong>Sidebar（侧边栏）</strong></td><td>展开 <code>240px</code> / 折叠 <code>72px</code></td><td>支持折叠切换，平板端自动折叠</td></tr>
+                <tr><td><strong>Main（主内容）</strong></td><td>flex: 1 自适应</td><td>内边距 24px，内容区最大宽度 1440px 居中</td></tr>
+            </tbody>
+        </table>
+
+        <h3>框架布局演示</h3>
+        <div class="demo-card" style="background:var(--gray-50);">
+            <div style="background:#E2E8F0;height:48px;border-radius:8px;display:flex;align-items:center;padding:0 16px;margin-bottom:16px;">
+                <span style="font-weight:600;">🏷️ Header（64px · position: sticky）</span>
+            </div>
+            <div style="display:flex;gap:16px;">
+                <div style="width:240px;background:#F1F5F9;border-radius:12px;min-height:200px;padding:16px;">
+                    ⬅️ Sidebar（240px / 折叠72px）
+                </div>
+                <div style="flex:1;background:var(--surface);border-radius:12px;padding:20px;border:1px solid var(--border);">
+                    <strong>📄 Main Content</strong><br>
+                    <span style="font-size:13px;color:var(--text-secondary);">自适应区域，内边距 24px，内容区最大宽度 1440px 居中</span>
+                </div>
+            </div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-top:16px;">* 支持折叠侧边栏变 72px，移动端侧边栏默认隐藏（通过汉堡菜单唤起）</div>
+        </div>
+
+        <h3>CSS 实现</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">/* 三区布局核心 */</span><br>
+            <span style="color:#93C5FD;">.app-header</span> {<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">position</span>: <span style="color:#C084FC;">sticky</span>; <span style="color:#6EE7B7;">top</span>: <span style="color:#C084FC;">0</span>; <span style="color:#6EE7B7;">z-index</span>: <span style="color:#C084FC;">200</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">height</span>: <span style="color:#C084FC;">64px</span>; <span style="color:#6EE7B7;">background</span>: <span style="color:#C084FC;">rgba(255,255,255,.92)</span>;<br>
+            &nbsp;&nbsp;<span style="color:#6EE7B7;">backdrop-filter</span>: <span style="color:#C084FC;">blur(8px)</span>;<br>
+            }<br>
+            <span style="color:#93C5FD;">.app-layout</span> { <span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">flex</span>; }<br>
+            <span style="color:#93C5FD;">.app-sidebar</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">240px</span>; <span style="color:#6EE7B7;">flex-shrink</span>: <span style="color:#C084FC;">0</span>; }<br>
+            <span style="color:#93C5FD;">.app-main</span> { <span style="color:#6EE7B7;">flex</span>: <span style="color:#C084FC;">1</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">24px</span>; }
+        </div>
+
+        <h3>布局使用示例</h3>
+        <div class="row" style="margin:16px 0;">
+            <div class="col-24 col-lg-16">
+                <div class="demo-card">
+                    <h4>主要内容区（col-lg-16）</h4>
+                    <p style="font-size:13px;color:var(--text-secondary);">采用 24 列栅格构建内容模块，搭配间距尺规。</p>
+                    <div class="row" style="margin-top:12px;">
+                        <div class="col-12"><div class="spacing-demo" style="background:var(--primary-light);padding:16px;width:100%;">内层卡片 1</div></div>
+                        <div class="col-12"><div class="spacing-demo" style="background:var(--primary-light);padding:16px;width:100%;">内层卡片 2</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-24 col-lg-8">
+                <div class="demo-card">
+                    <h4>侧边区域（col-lg-8）</h4>
+                    <p style="font-size:13px;color:var(--text-secondary);">快捷操作、元信息或统计摘要。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 四、响应式断点 ==================== -->
+    <div class="card" id="sec-responsive">
+        <h2><span class="section-icon">📱</span>四、响应式断点</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>采用移动优先（Mobile First）策略，基于主流设备宽度定义 5 级断点。
+            从小屏开始写基础样式，通过 <code>@media (min-width)</code> 逐级增强。
+        </div>
+
+        <h3>断点定义</h3>
+        <table class="spec-table">
+            <thead><tr><th>断点</th><th>宽度</th><th>设备</th><th>典型适配</th></tr></thead>
+            <tbody>
+                <tr><td><strong>xs</strong></td><td><code>&lt; 576px</code></td><td>小手机</td><td>单列布局、汉堡菜单</td></tr>
+                <tr><td><strong>sm</strong></td><td><code>≥ 576px</code></td><td>大手机</td><td>双列、底部导航</td></tr>
+                <tr><td><strong>md</strong></td><td><code>≥ 768px</code></td><td>平板</td><td>栅格自适应、侧边栏折叠</td></tr>
+                <tr><td><strong>lg</strong></td><td><code>≥ 1024px</code></td><td>桌面</td><td>完整栅格、侧边栏展开</td></tr>
+                <tr><td><strong>xl</strong></td><td><code>≥ 1280px</code></td><td>大屏</td><td>内容区最大 1440px 居中</td></tr>
+            </tbody>
+        </table>
+
+        <h3>断点场景演示</h3>
+        <div class="row" style="margin-bottom:16px;">
+            <div class="col-24 col-md-8 col-lg-6"><div class="demo-card"><strong>📱 手机</strong><br><span style="font-size:12px;color:var(--text-secondary);">&lt; 768px · 100%宽度 · 无侧边栏</span></div></div>
+            <div class="col-24 col-md-8 col-lg-6"><div class="demo-card"><strong>📋 平板</strong><br><span style="font-size:12px;color:var(--text-secondary);">768-1024px · 栅格自适应 · 侧边栏折叠</span></div></div>
+            <div class="col-24 col-md-8 col-lg-6"><div class="demo-card"><strong>🖥️ 桌面</strong><br><span style="font-size:12px;color:var(--text-secondary);">≥ 1024px · 完整栅格 · 展开侧边栏</span></div></div>
+            <div class="col-24 col-md-24 col-lg-6"><div class="demo-card"><strong>🖵 大屏</strong><br><span style="font-size:12px;color:var(--text-secondary);">≥ 1280px · max-width 1440px</span></div></div>
+        </div>
+
+        <h3>响应式 CSS 写法</h3>
+        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
+            <span style="color:#F59E0B;">/* 移动优先：基础样式为手机 */</span><br>
+            <span style="color:#93C5FD;">.col-24</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">100%</span>; }<br><br>
+            <span style="color:#F59E0B;">/* 平板增强 */</span><br>
+            <span style="color:#C084FC;">@media (min-width: 768px)</span> {<br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">.col-md-8</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 8)</span>; }<br>
+            }<br><br>
+            <span style="color:#F59E0B;">/* 桌面增强 */</span><br>
+            <span style="color:#C084FC;">@media (min-width: 1024px)</span> {<br>
+            &nbsp;&nbsp;<span style="color:#93C5FD;">.col-lg-6</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 6)</span>; }<br>
+            }
+        </div>
+    </div>
+
+    <!-- ==================== 五、层级体系 ==================== -->
+    <div class="card" id="sec-zindex">
+        <h2><span class="section-icon">🗂️</span>五、层级体系（z-index）</h2>
+        <div class="tip-block tip-info">
+            <strong>核心原则：</strong>统一 z-index 层级标准，避免各组件随意设置导致的覆盖混乱。
+            层级从低到高：Base → 浮层 → 弹窗 → 全局提示。
+        </div>
+
+        <h3>层级定义表</h3>
+        <table class="spec-table">
+            <thead><tr><th>层级</th><th>z-index 值</th><th>CSS 变量</th><th>适用组件</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Base</strong></td><td><code>0</code></td><td><code>--z-base</code></td><td>页面正常流内容</td></tr>
+                <tr><td><strong>Elevated</strong></td><td><code>10</code></td><td><code>--z-elevated</code></td><td>卡片 hover 悬浮效果</td></tr>
+                <tr><td><strong>Dropdown</strong></td><td><code>100</code></td><td><code>--z-dropdown</code></td><td>下拉菜单、选择器弹出层</td></tr>
+                <tr><td><strong>Sticky</strong></td><td><code>200</code></td><td><code>--z-sticky</code></td><td>固定头部、吸顶导航</td></tr>
+                <tr><td><strong>Modal Overlay</strong></td><td><code>1000</code></td><td><code>--z-modal-overlay</code></td><td>弹窗遮罩层</td></tr>
+                <tr><td><strong>Modal</strong></td><td><code>1010</code></td><td><code>--z-modal</code></td><td>弹窗内容</td></tr>
+                <tr><td><strong>Toast</strong></td><td><code>1200</code></td><td><code>--z-toast</code></td><td>全局消息提示</td></tr>
+                <tr><td><strong>Tooltip</strong></td><td><code>1300</code></td><td><code>--z-tooltip</code></td><td>工具提示（最高优先级）</td></tr>
+            </tbody>
+        </table>
+
+        <h3>层级可视化</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px,1fr));gap:12px;margin:16px 0;">
+            <div class="layer-box" style="border-left:4px solid #9CA3AF;">🔹 <strong>Base (0)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">页面内容</span></div>
+            <div class="layer-box" style="border-left:4px solid #6B7280;">🔸 <strong>Elevated (10)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">卡片悬浮</span></div>
+            <div class="layer-box" style="border-left:4px solid #F59E0B;">🔹 <strong>Dropdown (100)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">下拉菜单</span></div>
+            <div class="layer-box" style="border-left:4px solid #10B981;">🔸 <strong>Sticky (200)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">固定头部</span></div>
+            <div class="layer-box" style="border-left:4px solid #EF4444;">🔹 <strong>Overlay (1000)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">遮罩层</span></div>
+            <div class="layer-box" style="border-left:4px solid #DC2626;">🔸 <strong>Modal (1010)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">弹窗内容</span></div>
+            <div class="layer-box" style="border-left:4px solid #8B5CF6;">🔹 <strong>Toast (1200)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">全局提示</span></div>
+            <div class="layer-box" style="border-left:4px solid #3B82F6;">🔸 <strong>Tooltip (1300)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">工具提示</span></div>
+        </div>
+
+        <div class="tip-block tip-warn">
+            <strong>⚠️ 红线：</strong>禁止在组件中硬编码 z-index 数字（如 <code>z-index: 9999</code>），必须使用 CSS 变量引用层级令牌。避免出现 z-index 競賽。
+        </div>
+    </div>
+
+    <!-- ==================== 六、设计令牌速查 ==================== -->
+    <div class="card" id="sec-tokens" style="background:var(--gray-50);">
+        <h2><span class="section-icon">📌</span>六、布局框架 · 设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--grid-columns</span><span class="token-value">24</span></div>
+            <div class="token-item"><span class="token-name">--gutter-width</span><span class="token-value">16px</span></div>
+            <div class="token-item"><span class="token-name">--header-height-desktop</span><span class="token-value">64px</span></div>
+            <div class="token-item"><span class="token-name">--header-height-mobile</span><span class="token-value">56px</span></div>
+            <div class="token-item"><span class="token-name">--sidebar-width-expanded</span><span class="token-value">240px</span></div>
+            <div class="token-item"><span class="token-name">--sidebar-width-collapsed</span><span class="token-value">72px</span></div>
+            <div class="token-item"><span class="token-name">--spacing-1 ~ --spacing-9</span><span class="token-value">4px ~ 64px</span></div>
+            <div class="token-item"><span class="token-name">--breakpoint-sm</span><span class="token-value">576px</span></div>
+            <div class="token-item"><span class="token-name">--breakpoint-md</span><span class="token-value">768px</span></div>
+            <div class="token-item"><span class="token-name">--breakpoint-lg</span><span class="token-value">1024px</span></div>
+            <div class="token-item"><span class="token-name">--breakpoint-xl</span><span class="token-value">1280px</span></div>
+            <div class="token-item"><span class="token-name">--z-base ~ --z-tooltip</span><span class="token-value">0 ~ 1300</span></div>
+            <div class="token-item"><span class="token-name">--container-padding-desktop</span><span class="token-value">24px</span></div>
+            <div class="token-item"><span class="token-name">--container-padding-mobile</span><span class="token-value">16px</span></div>
+        </div>
+    </div>
+
+    <!-- ==================== 七、检查清单 ==================== -->
+    <div class="card" id="sec-checklist">
+        <h2><span class="section-icon">✅</span>七、布局框架 · 检查清单</h2>
+        <div style="font-size:13px;color:var(--text);line-height:2;padding:16px;background:var(--gray-50);border-radius:var(--radius);">
+            ✅ 栅格系统是否采用 <strong>24 列 + 16px 水槽</strong>？<br>
+            ✅ 两侧留白桌面端是否为 <strong>24px</strong>，移动端 <strong>16px</strong>？<br>
+            ✅ 所有间距是否使用 <strong>8px 倍数</strong>（4/8/12/16/24/32/40/48/64）？<br>
+            ✅ 页面框架是否包含 <strong>Header + Sidebar + Main</strong> 三区？<br>
+            ✅ z-index 是否使用 <strong>CSS 变量</strong>引用层级令牌，而非硬编码数字？<br>
+            ✅ 响应式断点是否覆盖 <strong>手机、平板、桌面、大屏</strong> 四级？<br>
+            ✅ 是否采用 <strong>移动优先</strong>（min-width）策略？<br>
+            ✅ 侧边栏是否支持 <strong>展开（240px）/ 折叠（72px）</strong>两种状态？<br>
+            ✅ 内容区最大宽度是否 ≤ <strong>1440px</strong> 居中？<br>
+            ✅ 顶部导航是否使用 <strong>position: sticky</strong> 固定？<br>
+            ✅ 间距是否使用 <strong>CSS 变量</strong>（如 <code>var(--spacing-4)</code>）而非硬编码？<br>
+            ✅ 响应式列类是否提供 <strong>col-* / col-md-* / col-lg-*</strong> 三级前缀？
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">📐 规范总览</a>
+        <a href="01-设计基础规范-颜色字体排版表格反馈表单.html">🎨 设计基础规范</a>
+        <a href="03-组件交互规范-按钮输入框弹窗选择标签页开关.html">🔘 组件交互规范</a>
+        <span>布局框架规范 v1.0 · 24列栅格 · 8px间距 · 响应式 · z-index层级</span>
+    </div>
+
+</div>
+</body>
+</html>
+</html>

@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设计系统规范库 · 总览</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #0066CC;
+            --primary-light: #EFF6FF;
+            --primary-border: #BFDBFE;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --border: #E2E8F0;
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --text-tertiary: #94A3B8;
+            --nav-width: 300px;
+            --header-height: 56px;
+            /* 分组主题色 */
+            --group-design: #0066CC;      /* 设计基础 */
+            --group-layout: #8B5CF6;      /* 布局框架 */
+            --group-component: #10B981;   /* 组件交互 */
+            --group-visual: #F59E0B;      /* 图标规范 */
+            --group-display: #EF4444;     /* 数据可视化 & 状态 */
+            --group-nav: #EC4899;         /* 导航 & 搜索筛选 */
+            --group-content: #7C3AED;     /* 内容展示 */
+            --group-persist: #06B6D4;     /* 数据库 & 字段映射 */
+            --group-composite: #84CC16;   /* 控件库 */
+            --group-data: #0EA5E9;        /* 数据列表 & CRUD */
+            --group-dbops: #14B8A6;       /* 数据库操作 */
+            --group-codelang: #6366F1;    /* 编程语言规范 */
+            --group-interact: #0EA5E9;    /* API 数据交互 */
+            --group-security: #DC2626;    /* 安全认证 */
+            --group-server: #F97316;      /* Nginx & 部署 */
+            --group-perf: #0891B2;        /* 前端性能优化 */
+        }
+
+        body {
+            font-family: var(--font-family, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ===== 顶部栏 ===== */
+        .topbar {
+            height: var(--header-height);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 12px;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        .topbar .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+        }
+        .topbar .logo span { color: var(--text-secondary); font-weight: 400; margin-left: 6px; font-size: 13px; }
+        .topbar .current-title {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 5px 14px;
+            border-radius: 6px;
+        }
+
+        /* ===== 主体布局 ===== */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== 侧边导航 ===== */
+        .sidebar {
+            width: var(--nav-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0;
+            gap: 0;
+        }
+
+        /* 搜索过滤 */
+        .nav-search {
+            padding: 0 14px 12px;
+            position: sticky; top: 0; background: var(--surface); z-index: 2;
+        }
+        .nav-search input {
+            width: 100%; height: 36px; padding: 0 12px 0 34px;
+            border: 1px solid var(--border); border-radius: 8px;
+            font-size: 13px; color: var(--text); outline: none;
+            background: var(--bg);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .nav-search input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,102,204,.08); }
+        .nav-search .search-icon {
+            position: absolute; left: 24px; top: 22px;
+            color: var(--text-tertiary); font-size: 14px; pointer-events: none;
+            transition: color .15s;
+        }
+        .nav-search input:focus + .search-icon,
+        .nav-search input:focus ~ .search-icon { color: var(--primary); }
+
+        /* 分组 */
+        .nav-group {
+            margin-bottom: 6px;
+            position: relative;
+            border-left: 3px solid transparent;
+            transition: border-color .2s;
+        }
+        .nav-group:hover {
+            border-left-color: var(--border);
+        }
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 18px 6px 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: background .15s;
+        }
+        .nav-group-header:hover {
+            background: rgba(0,0,0,.01);
+        }
+        .nav-group-header .group-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px rgba(0,0,0,.04);
+            transition: transform .15s, box-shadow .15s;
+        }
+        .nav-group:hover .group-dot {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 5px rgba(0,0,0,.06);
+        }
+        .nav-group-header .group-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            transition: color .15s;
+        }
+        .nav-group-header .group-count {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+            font-weight: 600;
+            transition: background .15s, color .15s;
+        }
+        .nav-group:hover .group-count {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        /* 折叠箭头 */
+        .nav-group-header .collapse-arrow {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+            margin-right: 2px;
+        }
+        .nav-group.collapsed .collapse-arrow {
+            transform: rotate(-90deg);
+        }
+        .nav-group.collapsed .nav-sub {
+            display: none;
+        }
+
+        /* 子项 */
+        .nav-sub {
+            padding: 0 6px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            margin: 1px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-item:hover {
+            background: var(--bg);
+            color: var(--text);
+            transform: translateX(2px);
+        }
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary-border);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,102,204,.06);
+        }
+        .nav-item .item-num {
+            font-size: 11px;
+            font-weight: 700;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+            transition: all .15s;
+        }
+        .nav-item:hover .item-num {
+            background: var(--border);
+            color: var(--text-secondary);
+        }
+        .nav-item.active .item-num {
+            background: var(--primary);
+            color: #fff;
+        }
+        .nav-item .item-icon {
+            font-size: 16px;
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .nav-item .item-text {
+            flex: 1;
+            line-height: 1.3;
+        }
+        .nav-item .item-arrow {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            opacity: 0;
+            transition: all .15s;
+        }
+        .nav-item:hover .item-arrow { opacity: 1; color: var(--primary); }
+        .nav-item.active .item-arrow { opacity: 1; color: var(--primary); }
+
+        /* 子项标签 */
+        .nav-item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 2px 14px 8px 52px;
+        }
+        .nav-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text-tertiary);
+            cursor: pointer;
+            transition: all .15s;
+            border: 1px solid transparent;
+        }
+        .nav-tag:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary-border);
+        }
+
+        /* 分隔线（已废弃，用 border-left 替代） */
+        .nav-divider {
+            display: none;
+        }
+
+        /* ===== 内容区 ===== */
+        .content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg);
+        }
+        .content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            gap: 16px;
+        }
+        .empty-state .icon-big {
+            font-size: 56px;
+            opacity: 0.2;
+        }
+        .empty-state .text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .empty-state .sub {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 900px) {
+            .sidebar { width: 260px; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+            .nav-group { border-left: none; }
+            .main-layout { flex-direction: column; }
+            .content { height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部栏 -->
+    <div class="topbar">
+        <div class="logo">📐 设计系统规范<span>Design System Specs</span></div>
+        <div class="current-title" id="currentTitle">📄 统一文档规范</div>
+    </div>
+
+    <!-- 主体 -->
+    <div class="main-layout">
+        <!-- 侧边导航 -->
+        <nav class="sidebar" id="sidebar">
+            <!-- 搜索 -->
+            <div class="nav-search" style="position:relative;">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="navSearch" placeholder="搜索规范...">
+            </div>
+
+            <!-- 分组 0：统一文档规范 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#7C3AED;"></span>
+                    <span class="group-label">规范标准</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item active" data-file="00-统一文档规范-页面结构与样式标准.html" data-title="统一文档规范" data-keywords="页面结构 CSS变量 设计令牌 导航分类 组件样式 规范模板">
+                        <span class="item-num">00</span>
+                        <span class="item-icon">📐</span>
+                        <span class="item-text">统一文档规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-tokens">设计令牌</span>
+                        <span class="nav-tag" data-anchor="sec-structure">页面结构</span>
+                        <span class="nav-tag" data-anchor="sec-components">标准组件</span>
+                        <span class="nav-tag" data-anchor="sec-navgroups">导航分类</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 1：设计基础 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#0066CC;"></span>
+                    <span class="group-label">设计基础</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="01-设计基础规范-颜色字体排版表格反馈表单.html" data-title="设计基础规范" data-keywords="颜色系统 字体排版 表格 反馈组件 表单全局">
+                        <span class="item-num">01</span>
+                        <span class="item-icon">🎨</span>
+                        <span class="item-text">设计基础规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-colors">颜色系统</span>
+                        <span class="nav-tag" data-anchor="sec-button-colors">按钮配色</span>
+                        <span class="nav-tag" data-anchor="sec-typography">字体排版</span>
+                        <span class="nav-tag" data-anchor="sec-table">表格</span>
+                        <span class="nav-tag" data-anchor="sec-feedback">反馈组件</span>
+                        <span class="nav-tag" data-anchor="sec-form">表单全局</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 2：布局框架 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#8B5CF6;"></span>
+                    <span class="group-label">布局框架</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="02-布局框架规范-栅格间距页面框架响应式层级.html" data-title="布局框架规范" data-keywords="24列栅格 8px间距 页面框架 响应式 z-index">
+                        <span class="item-num">02</span>
+                        <span class="item-icon">📏</span>
+                        <span class="item-text">布局框架规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-grid">24列栅格</span>
+                        <span class="nav-tag" data-anchor="sec-spacing">8px间距</span>
+                        <span class="nav-tag" data-anchor="sec-layout">页面框架</span>
+                        <span class="nav-tag" data-anchor="sec-responsive">响应式</span>
+                        <span class="nav-tag" data-anchor="sec-zindex">z-index</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 3：组件交互 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#10B981;"></span>
+                    <span class="group-label">组件交互</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="03-组件交互规范-按钮输入框弹窗选择标签页开关.html" data-title="组件交互规范" data-keywords="按钮 输入框 弹窗 选择器 标签页 Tooltip 尺寸一致性">
+                        <span class="item-num">03</span>
+                        <span class="item-icon">🔘</span>
+                        <span class="item-text">组件交互规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-button">按钮</span>
+                        <span class="nav-tag" data-anchor="sec-input">输入框</span>
+                        <span class="nav-tag" data-anchor="sec-modal">弹窗</span>
+                        <span class="nav-tag" data-anchor="sec-select">选择器</span>
+                        <span class="nav-tag" data-anchor="sec-tabs">标签页</span>
+                        <span class="nav-tag" data-anchor="sec-sizing">尺寸一致性</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 4：图标规范 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#F59E0B;"></span>
+                    <span class="group-label">图标规范</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="04-图标规范-Icon库尺寸风格使用场景.html" data-title="图标规范" data-keywords="Icon库 尺寸梯度 颜色语义 使用场景">
+                        <span class="item-num">04</span>
+                        <span class="item-icon">🔣</span>
+                        <span class="item-text">图标规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-iconlib">Icon库</span>
+                        <span class="nav-tag" data-anchor="sec-iconsize">尺寸梯度</span>
+                        <span class="nav-tag" data-anchor="sec-iconcolor">颜色语义</span>
+                        <span class="nav-tag" data-anchor="sec-iconscene">使用场景</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 5：数据可视化 & 状态 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#EF4444;"></span>
+                    <span class="group-label">数据可视化 & 状态</span>
+                    <span class="group-count">2</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="05-数据可视化规范-图表配色卡片数据统计面板.html" data-title="数据可视化规范" data-keywords="图表配色 统计卡片 柱饼折线图 数据表格">
+                        <span class="item-num">05</span>
+                        <span class="item-icon">📊</span>
+                        <span class="item-text">数据可视化规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-chartcolor">图表配色</span>
+                        <span class="nav-tag" data-anchor="sec-statcard">统计卡片</span>
+                        <span class="nav-tag" data-anchor="sec-charts">柱/饼/折线图</span>
+                        <span class="nav-tag" data-anchor="sec-datatable">数据表格</span>
+                    </div>
+                    <a class="nav-item" data-file="06-空状态异常规范-空数据404错误加载失败.html" data-title="空状态 & 异常规范" data-keywords="空数据 404 500 骨架屏 权限不足 网络异常">
+                        <span class="item-num">06</span>
+                        <span class="item-icon">🚫</span>
+                        <span class="item-text">空状态 & 异常规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-empty">空数据</span>
+                        <span class="nav-tag" data-anchor="sec-404">404/500</span>
+                        <span class="nav-tag" data-anchor="sec-skeleton">骨架屏</span>
+                        <span class="nav-tag" data-anchor="sec-forbidden">权限不足</span>
+                        <span class="nav-tag" data-anchor="sec-network">网络异常</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 6：导航 & 搜索筛选 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#EC4899;"></span>
+                    <span class="group-label">导航 & 搜索筛选</span>
+                    <span class="group-count">2</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="07-导航菜单规范-面包屑侧边菜单分页步骤条.html" data-title="导航 & 菜单规范" data-keywords="面包屑 侧边菜单 分页器 步骤条 下拉菜单">
+                        <span class="item-num">07</span>
+                        <span class="item-icon">🧭</span>
+                        <span class="item-text">导航 & 菜单规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-breadcrumb">面包屑</span>
+                        <span class="nav-tag" data-anchor="sec-sidemenu">侧边菜单</span>
+                        <span class="nav-tag" data-anchor="sec-pagination">分页器</span>
+                        <span class="nav-tag" data-anchor="sec-stepper">步骤条</span>
+                        <span class="nav-tag" data-anchor="sec-dropdown">下拉菜单</span>
+                    </div>
+                    <a class="nav-item" data-file="08-搜索筛选规范-搜索框筛选面板标签过滤排序.html" data-title="搜索 & 筛选规范" data-keywords="搜索框 筛选面板 标签过滤 排序 高级搜索">
+                        <span class="item-num">08</span>
+                        <span class="item-icon">🔍</span>
+                        <span class="item-text">搜索 & 筛选规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-searchbox">搜索框</span>
+                        <span class="nav-tag" data-anchor="sec-filterpanel">筛选面板</span>
+                        <span class="nav-tag" data-anchor="sec-tagfilter">标签过滤</span>
+                        <span class="nav-tag" data-anchor="sec-sort">排序</span>
+                        <span class="nav-tag" data-anchor="sec-advsearch">高级搜索</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 7：内容展示 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#7C3AED;"></span>
+                    <span class="group-label">内容展示</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="17-文本内容展示规范-文章详情标题作者日期段落配图.html" data-title="文本内容展示规范" data-keywords="文章详情 标题层级 作者日期 段落行距 配图题注 引用块 代码块 链接 打印样式 元数据">
+                        <span class="item-num">17</span>
+                        <span class="item-icon">📝</span>
+                        <span class="item-text">文本内容展示规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-framework">五区框架</span>
+                        <span class="nav-tag" data-anchor="sec-headings">标题层级</span>
+                        <span class="nav-tag" data-anchor="sec-paragraph">段落行距</span>
+                        <span class="nav-tag" data-anchor="sec-meta">作者日期</span>
+                        <span class="nav-tag" data-anchor="sec-lists">列表样式</span>
+                        <span class="nav-tag" data-anchor="sec-blockquote">引用块</span>
+                        <span class="nav-tag" data-anchor="sec-code">代码展示</span>
+                        <span class="nav-tag" data-anchor="sec-images">配图规范</span>
+                        <span class="nav-tag" data-anchor="sec-responsive">响应式打印</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 8：数据库 & 字段映射 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#06B6D4;"></span>
+                    <span class="group-label">数据库 & 字段映射</span>
+                    <span class="group-count">2</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="09-数据库设计规范-字段设计命名索引表结构.html" data-title="数据库设计规范" data-keywords="字段设计 命名规范 索引策略 表结构 SQL规范">
+                        <span class="item-num">09</span>
+                        <span class="item-icon">🗄️</span>
+                        <span class="item-text">数据库设计规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-fielddesign">字段设计</span>
+                        <span class="nav-tag" data-anchor="sec-naming">命名规范</span>
+                        <span class="nav-tag" data-anchor="sec-index">索引策略</span>
+                        <span class="nav-tag" data-anchor="sec-tablestruct">表结构</span>
+                        <span class="nav-tag" data-anchor="sec-sqlspec">SQL规范</span>
+                    </div>
+                    <a class="nav-item" data-file="11-字段类型映射规范-数据库字段与表单控件对应关系.html" data-title="字段类型映射规范" data-keywords="类型映射 表单控件 校验规则 正则 业务场景">
+                        <span class="item-num">11</span>
+                        <span class="item-icon">🔗</span>
+                        <span class="item-text">字段类型映射规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-typemapping">类型映射</span>
+                        <span class="nav-tag" data-anchor="sec-formcontrol">表单控件</span>
+                        <span class="nav-tag" data-anchor="sec-validation">校验规则</span>
+                        <span class="nav-tag" data-anchor="sec-regex">正则表达式</span>
+                        <span class="nav-tag" data-anchor="sec-bizscene">业务场景</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 9：控件库 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#84CC16;"></span>
+                    <span class="group-label">控件库</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="10-控件规范库-日期选择下拉搜索穿梭框文件上传树形选择.html" data-title="控件规范库" data-keywords="日期范围 搜索下拉 标签输入 穿梭框 文件上传 级联选择">
+                        <span class="item-num">10</span>
+                        <span class="item-icon">🎛️</span>
+                        <span class="item-text">控件规范库</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-daterange">日期范围</span>
+                        <span class="nav-tag" data-anchor="sec-searchdropdown">搜索下拉</span>
+                        <span class="nav-tag" data-anchor="sec-taginput">标签输入</span>
+                        <span class="nav-tag" data-anchor="sec-transfer">穿梭框</span>
+                        <span class="nav-tag" data-anchor="sec-fileupload">文件上传</span>
+                        <span class="nav-tag" data-anchor="sec-cascade">级联选择</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 10：数据列表 & CRUD -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#0EA5E9;"></span>
+                    <span class="group-label">数据列表 & CRUD</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="12-数据列表与CRUD规范-列表页布局表格分页搜索新增编辑删除.html" data-title="数据列表 & CRUD 规范" data-keywords="数据列表 分页 搜索 拖拽列宽 排序 增删改查 表单">
+                        <span class="item-num">12</span>
+                        <span class="item-icon">📋</span>
+                        <span class="item-text">数据列表 & CRUD 规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-listlayout">列表布局</span>
+                        <span class="nav-tag" data-anchor="sec-columnresize">拖拽列宽</span>
+                        <span class="nav-tag" data-anchor="sec-searchlink">搜索联动</span>
+                        <span class="nav-tag" data-anchor="sec-crud">增删改查</span>
+                        <span class="nav-tag" data-anchor="sec-formvalid">表单校验</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 11：数据库操作 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#14B8A6;"></span>
+                    <span class="group-label">数据库操作</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="14-数据库操作规范-DBHelper与ORM设计.html" data-title="数据库操作规范" data-keywords="DBHelper ORM PDO 事务 连接池 仓储模式 SQL注入 参数化">
+                        <span class="item-num">14</span>
+                        <span class="item-icon">🗃️</span>
+                        <span class="item-text">数据库操作规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-dbhelper">DBHelper</span>
+                        <span class="nav-tag" data-anchor="sec-orm">ORM</span>
+                        <span class="nav-tag" data-anchor="sec-pdo">PDO</span>
+                        <span class="nav-tag" data-anchor="sec-transaction">事务管理</span>
+                        <span class="nav-tag" data-anchor="sec-repository">仓储模式</span>
+                        <span class="nav-tag" data-anchor="sec-sqlsafe">SQL安全</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 12：编程语言规范 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#6366F1;"></span>
+                    <span class="group-label">编程语言规范</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="13-编程语言规范-PHP-Python-CSharp-Java.html" data-title="多语言编码规范" data-keywords="PHP Python C# Java 变量命名 类结构 编码风格 PSR PEP8 camelCase PascalCase">
+                        <span class="item-num">13</span>
+                        <span class="item-icon">💻</span>
+                        <span class="item-text">多语言编码规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-php">PHP PSR</span>
+                        <span class="nav-tag" data-anchor="sec-python">Python PEP8</span>
+                        <span class="nav-tag" data-anchor="sec-csharp">C# 规范</span>
+                        <span class="nav-tag" data-anchor="sec-java">Java 规范</span>
+                        <span class="nav-tag" data-anchor="sec-namingconv">命名约定</span>
+                        <span class="nav-tag" data-anchor="sec-classstruct">类结构</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 13：API 数据交互 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#0EA5E9;"></span>
+                    <span class="group-label">API 数据交互</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="18-数据交互规范-API请求响应格式与错误处理.html" data-title="数据交互规范" data-keywords="API请求 axios封装 响应格式 错误码 文件上传 超时重试 序列化 RESTful Content-Type">
+                        <span class="item-num">18</span>
+                        <span class="item-icon">🔌</span>
+                        <span class="item-text">数据交互规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-client">HTTP客户端</span>
+                        <span class="nav-tag" data-anchor="sec-request">请求格式</span>
+                        <span class="nav-tag" data-anchor="sec-response">响应格式</span>
+                        <span class="nav-tag" data-anchor="sec-headers">请求头管理</span>
+                        <span class="nav-tag" data-anchor="sec-error">错误处理</span>
+                        <span class="nav-tag" data-anchor="sec-upload">文件上传</span>
+                        <span class="nav-tag" data-anchor="sec-serialization">序列化约定</span>
+                        <span class="nav-tag" data-anchor="sec-resilience">超时重试</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 14：安全认证 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#DC2626;"></span>
+                    <span class="group-label">安全认证</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="19-身份认证与安全规范-登录注册权限JWT安全策略.html" data-title="身份认证与安全规范" data-keywords="JWT 登录 注册 RBAC CSRF XSS 密码策略 Token管理 审计日志 权限模型">
+                        <span class="item-num">19</span>
+                        <span class="item-icon">🔐</span>
+                        <span class="item-text">身份认证与安全规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-auth-mechanism">认证选型</span>
+                        <span class="nav-tag" data-anchor="sec-jwt">JWT设计</span>
+                        <span class="nav-tag" data-anchor="sec-login">登录注册</span>
+                        <span class="nav-tag" data-anchor="sec-rbac">RBAC权限</span>
+                        <span class="nav-tag" data-anchor="sec-csrf">CSRF防护</span>
+                        <span class="nav-tag" data-anchor="sec-xss">XSS防护</span>
+                        <span class="nav-tag" data-anchor="sec-password">密码策略</span>
+                        <span class="nav-tag" data-anchor="sec-sensitive">敏感数据</span>
+                        <span class="nav-tag" data-anchor="sec-audit">审计日志</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 15：Nginx & 部署 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#F97316;"></span>
+                    <span class="group-label">Nginx & 部署</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="15-Nginx配置规范-反向代理负载均衡HTTPS配置生成器.html" data-title="Nginx 配置规范" data-keywords="Nginx 反向代理 负载均衡 HTTPS SSL 配置生成器 性能优化 安全头 访问控制">
+                        <span class="item-num">15</span>
+                        <span class="item-icon">⚙️</span>
+                        <span class="item-text">Nginx 配置规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-configgen">配置生成器</span>
+                        <span class="nav-tag" data-anchor="sec-proxy">反向代理</span>
+                        <span class="nav-tag" data-anchor="sec-ssl">HTTPS/SSL</span>
+                        <span class="nav-tag" data-anchor="sec-fileaccess">访问控制</span>
+                        <span class="nav-tag" data-anchor="sec-headers">安全头</span>
+                        <span class="nav-tag" data-anchor="sec-perf">性能调优</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分组 16：前端性能优化 -->
+            <div class="nav-group">
+                <div class="nav-group-header">
+                    <span class="collapse-arrow">▼</span>
+                    <span class="group-dot" style="background:#0891B2;"></span>
+                    <span class="group-label">前端性能优化</span>
+                    <span class="group-count">1</span>
+                </div>
+                <div class="nav-sub">
+                    <a class="nav-item" data-file="16-前端性能优化规范-CSS引入JS位置DOM优化重排重绘.html" data-title="前端性能优化规范" data-keywords="CSS引入位置 JS加载策略 DOM嵌套 重排重绘 预加载 虚拟滚动 布局抖动">
+                        <span class="item-num">16</span>
+                        <span class="item-icon">⚡</span>
+                        <span class="item-text">前端性能优化规范</span>
+                        <span class="item-arrow">→</span>
+                    </a>
+                    <div class="nav-item-tags">
+                        <span class="nav-tag" data-anchor="sec-css-loading">CSS引入位置</span>
+                        <span class="nav-tag" data-anchor="sec-js-loading">JS加载策略</span>
+                        <span class="nav-tag" data-anchor="sec-dom-structure">DOM嵌套优化</span>
+                        <span class="nav-tag" data-anchor="sec-reflow-repaint">重排重绘</span>
+                        <span class="nav-tag" data-anchor="sec-list-render">列表渲染</span>
+                        <span class="nav-tag" data-anchor="sec-css-selector">CSS选择器</span>
+                        <span class="nav-tag" data-anchor="sec-checklist">检查清单</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 内容区 -->
+        <div class="content" id="contentArea">
+            <div class="empty-state" id="emptyState">
+                <div class="icon-big">📋</div>
+                <div class="text">设计系统规范库</div>
+                <div class="sub">从左侧导航选择要查看的规范文档</div>
+            </div>
+            <iframe id="specFrame" style="display:none;" src="" title="规范文档"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const specFrame = document.getElementById('specFrame');
+        const emptyState = document.getElementById('emptyState');
+        const currentTitle = document.getElementById('currentTitle');
+        const searchInput = document.getElementById('navSearch');
+
+        // ===== 锚点导航跟踪 =====
+        let currentFile = null;
+        let pendingAnchor = null;
+
+        // iframe 加载完成后处理锚点跳转
+        specFrame.addEventListener('load', function() {
+            if (pendingAnchor) {
+                navigateToAnchor(pendingAnchor);
+                pendingAnchor = null;
+            }
+        });
+
+        function navigateToAnchor(anchorId) {
+            try {
+                const doc = specFrame.contentDocument;
+                if (!doc) return;
+                const el = doc.getElementById(anchorId);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch(e) {
+                // 同源策略无问题，忽略
+            }
+        }
+
+        // ===== 折叠状态持久化 =====
+        const COLLAPSE_STORAGE_KEY = 'spec_nav_collapsed';
+        let collapsedGroups = {};
+
+        try {
+            collapsedGroups = JSON.parse(localStorage.getItem(COLLAPSE_STORAGE_KEY)) || {};
+        } catch(e) { collapsedGroups = {}; }
+
+        const navGroups = document.querySelectorAll('.nav-group');
+        navGroups.forEach((group, idx) => {
+            const groupLabel = group.querySelector('.group-label');
+            const groupId = groupLabel ? groupLabel.textContent.trim() : 'group-' + idx;
+            const header = group.querySelector('.nav-group-header');
+
+            // 恢复折叠状态
+            if (collapsedGroups[groupId]) {
+                group.classList.add('collapsed');
+            }
+
+            // 点击折叠/展开
+            if (header) {
+                header.addEventListener('click', function(e) {
+                    // 不阻止子元素的点击
+                    if (e.target.closest('.nav-item') || e.target.closest('.nav-tag')) return;
+                    group.classList.toggle('collapsed');
+                    collapsedGroups[groupId] = group.classList.contains('collapsed');
+                    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(collapsedGroups));
+                });
+            }
+        });
+
+        function switchSpec(item, anchor) {
+            navItems.forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+
+            const file = item.getAttribute('data-file');
+            const title = item.getAttribute('data-title');
+
+            specFrame.style.display = 'block';
+            emptyState.style.display = 'none';
+            currentTitle.textContent = '📄 ' + title;
+
+            // 同一文件内切换锚点 → 直接滚动，不重载 iframe
+            if (currentFile === file && anchor) {
+                navigateToAnchor(anchor);
+                return;
+            }
+
+            // 不同文件，或首次加载 → 设置 src 重新加载
+            currentFile = file;
+            pendingAnchor = anchor || null;
+            specFrame.src = file;
+        }
+
+        // 子项标签点击：切换到对应文件并定位锚点
+        document.querySelectorAll('.nav-tag').forEach(tag => {
+            tag.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const anchor = this.getAttribute('data-anchor');
+                if (!anchor) return;
+                // 找到所属的 nav-item-tags 容器，再取前一个兄弟 nav-item（精确匹配，避免多条目分组取错）
+                const tagsDiv = this.closest('.nav-item-tags');
+                const navItem = tagsDiv ? tagsDiv.previousElementSibling : null;
+                if (navItem && navItem.classList.contains('nav-item')) {
+                    switchSpec(navItem, anchor);
+                }
+            });
+        });
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSpec(item, null);
+            });
+        });
+
+        // 搜索过滤
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const groups = document.querySelectorAll('.nav-group');
+
+            groups.forEach(group => {
+                const items = group.querySelectorAll('.nav-item');
+                let groupVisible = false;
+
+                items.forEach(item => {
+                    const keywords = (item.getAttribute('data-keywords') || '').toLowerCase();
+                    const text = item.querySelector('.item-text').textContent.toLowerCase();
+                    const match = !query || text.includes(query) || keywords.includes(query);
+
+                    item.style.display = match ? '' : 'none';
+                    // 同时控制 tags 显示
+                    const tagsRow = item.nextElementSibling;
+                    if (tagsRow && tagsRow.classList.contains('nav-item-tags')) {
+                        tagsRow.style.display = match ? '' : 'none';
+                    }
+                    if (match) groupVisible = true;
+                });
+
+                group.style.display = groupVisible ? '' : 'none';
+            });
+        });
+
+        // 默认加载第一项
+        const firstItem = navItems[0];
+        if (firstItem) {
+            switchSpec(firstItem, null);
+        }
+    </script>
+
+</body>
+</html>

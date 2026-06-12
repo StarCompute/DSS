@@ -1,0 +1,717 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据列表 &amp; CRUD 规范 | 列表页布局 · 表格分页 · 搜索联动 · 增删改查</title>
+    <link rel="stylesheet" href="standard.css">
+<style>
+/* File-specific overrides */
+:root {
+    --primary:#06B6D4; --primary-hover:#0891B2; --primary-light:#ECFEFF; --primary-border:#A5F3FC;
+}
+.container { max-width:1400px; }
+.card-desc { color:var(--text-secondary); font-size:14px; margin-bottom:20px; }
+
+/* ===== 通用按钮 ===== */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:0 20px; height:36px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:none; font-family:inherit; transition:all 0.15s; white-space:nowrap; line-height:1; }
+.btn-primary { background:var(--primary); color:white; }
+.btn-primary:hover { background:var(--primary-hover); }
+.btn-outline { background:white; color:var(--primary); border:1px solid var(--primary); }
+.btn-outline:hover { background:var(--primary-light); }
+.btn-ghost { background:transparent; color:var(--gray-700); border:1px solid var(--gray-200); }
+.btn-ghost:hover { background:var(--gray-50); border-color:var(--gray-300); }
+.btn-danger { background:var(--error); color:white; }
+.btn-danger:hover { background:#B91C1C; }
+.btn-danger-ghost { background:transparent; color:var(--error); border:1px solid transparent; }
+.btn-danger-ghost:hover { background:var(--error-bg); border-color:var(--error-border); }
+.btn-sm { padding:0 14px; height:32px; font-size:13px; border-radius:6px; }
+.btn-xs { padding:0 8px; height:26px; font-size:12px; border-radius:4px; }
+
+/* ===== 列表页整体框架 ===== */
+.demo-page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+.demo-page-header .title { font-size:18px; font-weight:600; }
+.demo-page-header .actions { display:flex; gap:8px; }
+
+/* 搜索条件区域 */
+.search-area { background:white; border:1px solid var(--gray-200); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+.search-field { display:flex; flex-direction:column; gap:4px; }
+.search-field .field-label { font-size:12px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.3px; }
+.search-field input, .search-field select { height:36px; padding:0 12px; border:1px solid var(--gray-300); border-radius:8px; font-size:13px; color:var(--gray-900); font-family:inherit; outline:none; transition:border-color 0.15s; background:white; min-width:140px; }
+.search-field input:focus, .search-field select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(6,182,212,0.1); }
+.search-field input::placeholder { color:var(--gray-400); }
+.search-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; width:100%; }
+.search-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:14px; font-size:12px; background:var(--primary-light); color:var(--primary); border:1px solid var(--primary-border); }
+.search-tag .remove { cursor:pointer; font-size:10px; opacity:0.6; }
+.search-tag .remove:hover { opacity:1; }
+
+/* 工具栏 */
+.toolbar { display:flex; align-items:center; justify-content:space-between; padding:12px 0; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+.toolbar-right { display:flex; gap:8px; align-items:center; color:var(--gray-500); font-size:13px; }
+.batch-actions { display:flex; gap:8px; align-items:center; }
+.batch-actions .selected-count { font-size:13px; color:var(--primary); font-weight:500; }
+
+/* 数据表格 */
+.table-wrapper { border:1px solid var(--gray-200); border-radius:12px; overflow:hidden; background:white; position:relative; }
+.table-scroll { overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; font-size:14px; table-layout:fixed; min-width:900px; }
+.data-table thead { position:sticky; top:0; z-index:3; }
+.data-table th { background:var(--gray-50); text-align:left; padding:12px 16px; font-weight:600; font-size:13px; color:var(--gray-700); border-bottom:2px solid var(--gray-200); white-space:nowrap; position:relative; user-select:none; cursor:pointer; transition:background 0.12s; }
+.data-table th:hover { background:var(--gray-100); }
+.data-table th .th-content { display:flex; align-items:center; gap:6px; }
+.data-table th .sort-icon { font-size:11px; color:var(--gray-400); opacity:0; transition:all 0.15s; }
+.data-table th:hover .sort-icon, .data-table th.sorted .sort-icon { opacity:1; }
+.data-table th.sorted .sort-icon { color:var(--primary); }
+.data-table th.sorted-asc .sort-icon::after { content:' ▲'; }
+.data-table th.sorted-desc .sort-icon::after { content:' ▼'; }
+.data-table th .resize-handle { position:absolute; right:0; top:0; bottom:0; width:6px; cursor:col-resize; background:transparent; z-index:5; transition:background 0.12s; }
+.data-table th .resize-handle:hover, .data-table th .resize-handle.active { background:var(--primary); opacity:0.3; }
+.resize-indicator { position:absolute; top:0; bottom:0; width:2px; background:var(--primary); pointer-events:none; z-index:10; display:none; }
+.data-table td { padding:12px 16px; border-bottom:1px solid var(--gray-100); color:var(--gray-700); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.data-table tbody tr { transition:background 0.1s; }
+.data-table tbody tr:hover td { background:var(--gray-50); }
+.data-table tbody tr.selected td { background:var(--primary-light); }
+
+.status-tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:500; }
+.status-active { background:#D1FAE5; color:#065F46; }
+.status-inactive { background:var(--gray-100); color:var(--gray-500); }
+.status-pending { background:#FEF3C7; color:#92400E; }
+.row-actions { display:flex; gap:4px; }
+
+/* 分页 */
+.pagination-area { display:flex; align-items:center; justify-content:space-between; padding:16px 0; flex-wrap:wrap; gap:12px; }
+.pagination-info { font-size:13px; color:var(--gray-500); }
+.pagination { display:flex; align-items:center; gap:4px; }
+.page-btn { min-width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid var(--gray-200); border-radius:8px; background:white; font-size:14px; color:var(--gray-700); cursor:pointer; transition:all 0.15s; font-family:inherit; padding:0 8px; }
+.page-btn:hover:not(:disabled):not(.active) { border-color:var(--primary); color:var(--primary); }
+.page-btn.active { background:var(--primary); color:white; border-color:var(--primary); }
+.page-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.page-size-select { height:36px; padding:0 8px; border:1px solid var(--gray-200); border-radius:8px; font-size:13px; color:var(--gray-700); font-family:inherit; cursor:pointer; }
+.page-jump { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray-500); }
+.page-jump input { width:48px; height:36px; text-align:center; border:1px solid var(--gray-200); border-radius:6px; font-size:13px; font-family:inherit; }
+
+/* 弹窗 */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.15s ease; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+.modal { background:white; border-radius:16px; width:620px; max-width:94vw; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.15); animation:slideUp 0.2s ease; }
+@keyframes slideUp { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+.modal-sm { width:420px; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--gray-200); }
+.modal-header h3 { font-size:16px; font-weight:600; }
+.modal-close { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; background:transparent; font-size:18px; color:var(--gray-400); transition:all 0.15s; }
+.modal-close:hover { background:var(--gray-100); color:var(--gray-700); }
+.modal-body { padding:24px; }
+.modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:16px 24px; border-top:1px solid var(--gray-100); }
+
+/* 表单 */
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column:1 / -1; }
+.form-group .form-label { font-size:13px; font-weight:600; color:var(--gray-700); }
+.form-group .form-label .required { color:var(--error); margin-left:2px; }
+.form-group .form-hint { font-size:12px; color:var(--gray-400); }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:8px 12px; border:1px solid var(--gray-300); border-radius:8px; font-size:14px; color:var(--gray-900); font-family:inherit; outline:none; transition:all 0.15s; background:white; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(6,182,212,0.1); }
+.form-group input.error, .form-group select.error { border-color:var(--error); }
+.form-group .error-msg { font-size:12px; color:var(--error); display:none; }
+.form-group input.error + .error-msg, .form-group select.error + .error-msg { display:block; }
+.form-group textarea { resize:vertical; min-height:80px; }
+
+/* 详情页 */
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.detail-item { padding:14px 20px; border-bottom:1px solid var(--gray-100); display:flex; flex-direction:column; gap:4px; }
+.detail-item:nth-child(odd) { background:var(--gray-50); }
+.detail-item .detail-label { font-size:12px; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
+.detail-item .detail-value { font-size:14px; color:var(--gray-900); }
+.detail-item.full { grid-column:1 / -1; }
+
+.checkbox-custom { width:16px; height:16px; accent-color:var(--primary); cursor:pointer; }
+
+.flex-row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+.muted { color:var(--gray-500); font-size:13px; margin-top:8px; }
+.mt-12 { margin-top:12px; }
+.mt-20 { margin-top:20px; }
+.col-width-tag { font-size:11px; padding:1px 6px; border-radius:3px; background:var(--gray-100); color:var(--gray-500); margin-left:6px; }
+
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-blue { background:var(--primary-light); color:var(--primary); }
+.badge-green { background:#D1FAE5; color:#065F46; }
+.badge-red { background:var(--error-bg); color:#991B1B; }
+.badge-gray { background:var(--gray-100); color:var(--gray-500); }
+
+.demo-list-page { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:16px; overflow:hidden; }
+.demo-list-page .demo-inner { padding:20px; }
+
+@media (max-width:768px) { .demo-list-page { border-radius:0; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">数据与持久层</a>
+        <span class="sep">›</span>
+        <span class="current">12-数据列表与CRUD规范</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">📋</span> 数据列表 &amp; CRUD 规范</h1>
+        <div class="subtitle">
+            <span>列表页布局</span><span>搜索联动</span><span>可拖拽排序表格</span><span>分页</span><span>CRUD完整闭环</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 12</span><span>🎨 主题色: #06B6D4</span><span>📂 分类: 数据与持久层</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义数据列表页的完整设计规范，包括列表页整体布局框架、搜索条件与字段类型映射、表格列规范、可拖拽列宽、操作按钮、分页器、CRUD完整流程和响应式适配。下方提供可交互演示。
+        </div>
+    </div>
+
+    <!-- 一、列表页整体布局框架 -->
+    <div class="card" id="sec-listlayout">
+        <h2><span class="section-icon">📐</span> 一、列表页整体布局框架</h2>
+        <p class="card-desc">标准数据列表页由 5 个区域组成：页面标题+操作区 → 搜索条件区 → 工具栏 → 数据表格 → 分页器</p>
+        <table class="spec-table">
+            <thead><tr><th>区域</th><th>位置</th><th>内容</th><th>规范要点</th></tr></thead>
+            <tbody>
+                <tr><td><strong>① 页面标题区</strong></td><td>顶部</td><td>标题 + 操作按钮（新增/导出等）</td><td>主操作按钮在右侧，用 primary 样式</td></tr>
+                <tr><td><strong>② 搜索条件区</strong></td><td>标题下方</td><td>N 个搜索字段 + 搜索/重置按钮 + 已选条件标签</td><td>字段关联数据字段类型，输入即搜索（300ms防抖）</td></tr>
+                <tr><td><strong>③ 工具栏</strong></td><td>表格上方</td><td>批量操作按钮 + 选中计数 + 视图切换</td><td>选中项 ≥1 时才显示批量操作</td></tr>
+                <tr><td><strong>④ 数据表格</strong></td><td>核心区域</td><td>表头（可拖拽列宽+点击排序） + 数据行 + 行内操作</td><td>行高 ≥48px，列宽可拖拽，hover 高亮</td></tr>
+                <tr><td><strong>⑤ 分页器</strong></td><td>表格下方</td><td>总数 + 每页条数 + 页码 + 跳转</td><td>默认 20 条/页，选项 10/20/50/100</td></tr>
+            </tbody>
+        </table>
+
+        <!-- 完整列表页演示 -->
+        <div class="demo-list-page mt-20">
+            <div class="demo-inner">
+                <div class="demo-page-header">
+                    <span class="title">用户管理</span>
+                    <div class="actions">
+                        <button class="btn btn-outline btn-sm">📥 导出</button>
+                        <button class="btn btn-primary btn-sm" onclick="openAddModal()">＋ 新增用户</button>
+                    </div>
+                </div>
+
+                <div class="search-area" id="searchArea">
+                    <div class="search-field"><span class="field-label">用户名（模糊搜索）</span><input type="text" id="sUsername" placeholder="输入用户名…" oninput="searchDebounce()"></div>
+                    <div class="search-field"><span class="field-label">手机号（精确匹配）</span><input type="text" id="sPhone" placeholder="输入手机号…" oninput="searchDebounce()"></div>
+                    <div class="search-field"><span class="field-label">状态（下拉选择）</span><select id="sStatus" onchange="searchDebounce()"><option value="">全部</option><option value="active">启用</option><option value="inactive">禁用</option><option value="pending">待审核</option></select></div>
+                    <div class="search-field"><span class="field-label">角色（下拉选择）</span><select id="sRole" onchange="searchDebounce()"><option value="">全部</option><option value="admin">管理员</option><option value="editor">编辑</option><option value="viewer">只读</option></select></div>
+                    <button class="btn btn-primary btn-sm" onclick="doSearch()">🔍 搜索</button>
+                    <button class="btn btn-ghost btn-sm" onclick="resetSearch()">↺ 重置</button>
+                    <div class="search-tags" id="searchTags"></div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="batch-actions" id="batchActions" style="display:none;">
+                        <span class="selected-count" id="selectedCount">已选 0 项</span>
+                        <button class="btn btn-outline btn-sm" onclick="batchEnable()">✓ 批量启用</button>
+                        <button class="btn btn-danger-ghost btn-sm" onclick="batchDelete()">🗑 批量删除</button>
+                    </div>
+                    <div class="toolbar-right">共 <strong id="totalCount">12</strong> 条记录</div>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-scroll" id="tableScroll">
+                        <table class="data-table" id="demoTable">
+                            <colgroup>
+                                <col style="width:48px;"><col style="width:100px;"><col style="width:140px;">
+                                <col style="width:140px;"><col style="width:220px;"><col style="width:100px;">
+                                <col style="width:100px;"><col style="width:160px;"><col style="width:180px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th style="width:48px;cursor:default;"><input type="checkbox" class="checkbox-custom" id="selectAll" onchange="toggleSelectAll()" title="全选"></th>
+                                    <th data-sort="id" onclick="sortTable('id')"><span class="th-content">ID <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="1"></span></th>
+                                    <th data-sort="username" onclick="sortTable('username')"><span class="th-content">用户名 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="2"></span></th>
+                                    <th data-sort="phone" onclick="sortTable('phone')"><span class="th-content">手机号 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="3"></span></th>
+                                    <th data-sort="email" onclick="sortTable('email')"><span class="th-content">邮箱 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="4"></span></th>
+                                    <th data-sort="role" onclick="sortTable('role')"><span class="th-content">角色 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="5"></span></th>
+                                    <th data-sort="status" onclick="sortTable('status')"><span class="th-content">状态 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="6"></span></th>
+                                    <th data-sort="createTime" onclick="sortTable('createTime')"><span class="th-content">创建时间 <span class="sort-icon">⇅</span></span><span class="resize-handle" data-col="7"></span></th>
+                                    <th style="cursor:default;width:180px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="resize-indicator" id="resizeIndicator"></div>
+                </div>
+
+                <div class="pagination-area">
+                    <div class="pagination-info">
+                        第 <strong id="pageRange">1-10</strong> 条，共 <strong id="pageTotal">12</strong> 条
+                        <select class="page-size-select" id="pageSize" onchange="changePageSize()" style="margin-left:12px;">
+                            <option value="10">10 条/页</option><option value="20" selected>20 条/页</option><option value="50">50 条/页</option><option value="100">100 条/页</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <div class="pagination" id="paginationBtns"></div>
+                        <div class="page-jump">跳至 <input type="number" id="jumpPage" min="1" value="1" onkeydown="if(event.key==='Enter') jumpToPage()"> 页</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="muted">👆 上方为可交互演示：搜索条件关联数据字段类型；表格支持拖拽列宽和点击排序；支持全选/批量操作；分页支持切换条数和跳页。</div>
+    </div>
+
+    <!-- 二、搜索条件映射 -->
+    <div class="card" id="sec-searchlink">
+        <h2><span class="section-icon">🔗</span> 二、搜索条件 ↔ 数据字段映射规范</h2>
+        <p class="card-desc">搜索条件应根据数据字段类型选择对应的搜索控件，而非全部用文本输入框。</p>
+        <table class="spec-table">
+            <thead><tr><th>数据字段类型</th><th>搜索控件</th><th>匹配方式</th><th>示例</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>短文本（姓名/编号）</td><td><span class="badge badge-blue">文本输入框</span></td><td>模糊 LIKE %keyword%</td><td>用户名、订单号、SKU</td><td>防抖 300ms，支持 Enter 触发</td></tr>
+                <tr><td>手机/电话</td><td><span class="badge badge-blue">文本输入框</span></td><td>精确 = 或 右模糊</td><td>138****1234</td><td>自动过滤非数字字符</td></tr>
+                <tr><td>状态/类型（有限枚举）</td><td><span class="badge badge-green">下拉选择</span></td><td>精确 =</td><td>启用/禁用/待审核</td><td>必须提供「全部」选项</td></tr>
+                <tr><td>日期/时间</td><td><span class="badge badge-blue">日期范围选择器</span></td><td>范围 BETWEEN</td><td>2024-01-01 ~ 2024-06-30</td><td>提供快捷选项</td></tr>
+                <tr><td>金额/数量</td><td><span class="badge badge-blue">数值范围（min~max）</span></td><td>范围 BETWEEN</td><td>金额 100 ~ 1000</td><td>注意精度，用 DECIMAL</td></tr>
+                <tr><td>布尔/开关</td><td><span class="badge badge-green">下拉（是/否/全部）</span></td><td>精确 =</td><td>是否已审核</td><td>可用 Switch 代替</td></tr>
+                <tr><td>长文本/富文本</td><td><span class="badge badge-gray">不提供搜索</span></td><td>—</td><td>文章正文、备注</td><td>性能考虑</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 三、表格列规范 -->
+    <div class="card">
+        <h2><span class="section-icon">📊</span> 三、数据表格列规范</h2>
+        <p class="card-desc">列宽策略、文字截断、排序标识、操作列固定——数据表格四大核心规范。</p>
+        <h3>3.1 列宽分配策略</h3>
+        <table class="spec-table">
+            <thead><tr><th>数据类型</th><th>推荐宽度</th><th>最小宽度</th><th>截断策略</th><th>示例</th></tr></thead>
+            <tbody>
+                <tr><td>复选框列</td><td><span class="col-width-tag">48px</span></td><td>48px</td><td>不可拖拽</td><td>☑️</td></tr>
+                <tr><td>序号/ID</td><td><span class="col-width-tag">80~100px</span></td><td>60px</td><td>不截断</td><td>10001</td></tr>
+                <tr><td>短文本</td><td><span class="col-width-tag">120~160px</span></td><td>100px</td><td>… 省略</td><td>张三</td></tr>
+                <tr><td>中文本</td><td><span class="col-width-tag">200~300px</span></td><td>150px</td><td>… 省略 + title</td><td>关于2024年度…</td></tr>
+                <tr><td>状态标签</td><td><span class="col-width-tag">100~120px</span></td><td>80px</td><td>不截断</td><td><span class="status-tag status-active">启用</span></td></tr>
+                <tr><td>日期时间</td><td><span class="col-width-tag">160~180px</span></td><td>140px</td><td>不截断</td><td>2024-06-12 14:30</td></tr>
+                <tr><td>操作列</td><td><span class="col-width-tag">160~200px</span></td><td>140px</td><td>不截断</td><td>查看 编辑 删除</td></tr>
+            </tbody>
+        </table>
+        <h3>3.2 表头排序规范</h3>
+        <table class="spec-table">
+            <thead><tr><th>状态</th><th>图标</th><th>表头样式</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>默认（未排序）</td><td>⇅（灰色）</td><td>悬停才显示图标</td><td>hover 时图标出现</td></tr>
+                <tr><td>升序（ASC）</td><td>▲（青色）</td><td>th 加 sorted-asc 类</td><td>图标始终显示</td></tr>
+                <tr><td>降序（DESC）</td><td>▼（青色）</td><td>th 加 sorted-desc 类</td><td>再次点击切换方向</td></tr>
+            </tbody>
+        </table>
+        <div class="tip-info tip-block">💡 <strong>排序交互：</strong>点击列头 → 升序 → 再点 → 降序 → 再点 → 取消排序（三态循环）| 同时只允许单列排序</div>
+    </div>
+
+    <!-- 四、可拖拽列宽 -->
+    <div class="card" id="sec-columnresize">
+        <h2><span class="section-icon">↔️</span> 四、可拖拽表格列宽</h2>
+        <p class="card-desc">表头右边缘提供拖拽手柄，用户拖拽调整列宽。拖拽过程有指示线，松手后列宽生效。</p>
+        <table class="spec-table">
+            <thead><tr><th>规范项</th><th>规范值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>拖拽手柄区域</td><td>表头 th 右侧 6px 宽</td><td>cursor: col-resize</td></tr>
+                <tr><td>拖拽指示线</td><td>2px 宽 青色竖线</td><td>position: absolute</td></tr>
+                <tr><td>最小列宽</td><td>60px</td><td>拖拽时检测 min-width</td></tr>
+                <tr><td>table-layout</td><td>fixed</td><td>列宽由 colgroup 控制</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 五、操作按钮规范 -->
+    <div class="card">
+        <h2><span class="section-icon">🔘</span> 五、操作按钮规范</h2>
+        <p class="card-desc">操作按钮分为页面级操作、行内操作、批量操作三类。</p>
+        <table class="spec-table">
+            <thead><tr><th>类型</th><th>位置</th><th>按钮样式</th><th>示例操作</th></tr></thead>
+            <tbody>
+                <tr><td><strong>页面级操作</strong></td><td>页面标题右侧</td><td>primary 实心按钮</td><td>新增、导入、批量导出</td></tr>
+                <tr><td><strong>行内操作（主要）</strong></td><td>每行操作列</td><td>ghost 文字按钮</td><td>查看、编辑</td></tr>
+                <tr><td><strong>行内操作（危险）</strong></td><td>每行操作列</td><td>danger-ghost 红色文字</td><td>删除</td></tr>
+                <tr><td><strong>批量操作</strong></td><td>工具栏左侧</td><td>outline 边框按钮</td><td>批量删除、批量启用</td></tr>
+                <tr><td><strong>更多操作（≥4个）</strong></td><td>操作列最后</td><td>⋯ 下拉菜单</td><td>复制、分享、归档</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 六、CRUD 完整流程 -->
+    <div class="card" id="sec-crud">
+        <h2><span class="section-icon">✏️</span> 六、新增 / 编辑 / 删除 / 详情（CRUD 完整流程）</h2>
+        <p class="card-desc">增删改查四大操作的页面形态、交互流程和设计规范。</p>
+        <div class="flex-row" style="margin-bottom:16px;">
+            <button class="btn btn-primary btn-sm" onclick="openAddModal()">＋ 点击预览新增/编辑表单</button>
+            <button class="btn btn-outline btn-sm" onclick="openDetailModal()">📄 点击预览详情页</button>
+        </div>
+
+        <h3 id="sec-formvalid">新增/编辑 —— 共用同一表单</h3>
+        <table class="spec-table">
+            <thead><tr><th>规范项</th><th>规范值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>展示方式</td><td>弹窗（Modal）或 独立页面</td><td>字段 ≤10 用弹窗</td></tr>
+                <tr><td>表单布局</td><td>双列栅格（1fr 1fr）</td><td>长字段跨两列</td></tr>
+                <tr><td>必填标识</td><td>红色 * 号在标签后</td><td>非必填标「（选填）」</td></tr>
+                <tr><td>校验时机</td><td>失焦（onBlur）+ 提交前</td><td>双重保险</td></tr>
+                <tr><td>提交成功</td><td>关闭弹窗 + 刷新列表 + Toast</td><td>「保存成功」</td></tr>
+            </tbody>
+        </table>
+
+        <h3>删除 —— 二次确认弹窗</h3>
+        <table class="spec-table">
+            <thead><tr><th>规范项</th><th>规范值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>触发方式</td><td>行内「删除」按钮 或 批量删除</td><td>红色文字/按钮</td></tr>
+                <tr><td>确认弹窗</td><td>居中 Modal 420px</td><td>小尺寸弹窗</td></tr>
+                <tr><td>文案</td><td>「确定删除 XXX 吗？此操作不可撤销。」</td><td>说出具体影响</td></tr>
+                <tr><td>按钮</td><td>「取消」（ghost）+ 「确定删除」（danger）</td><td>危险按钮用红色</td></tr>
+            </tbody>
+        </table>
+
+        <h3>CRUD 操作状态流转</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:20px;">
+            <div style="flex:1;min-width:240px;padding:20px;background:white;border:1px solid var(--gray-200);border-radius:12px;">
+                <div style="font-size:24px;margin-bottom:8px;">➕ 新增</div>
+                <div style="font-size:13px;color:var(--gray-500);line-height:1.8;">
+                    ① 点击「新增」→ 打开表单（空）<br>
+                    ② 填写 → 失焦校验 → 提交<br>
+                    ③ 后端返回成功 → 关闭弹窗<br>
+                    ④ Toast「新增成功」→ 跳到第一页
+                </div>
+            </div>
+            <div style="flex:1;min-width:240px;padding:20px;background:white;border:1px solid var(--gray-200);border-radius:12px;">
+                <div style="font-size:24px;margin-bottom:8px;">✏️ 编辑</div>
+                <div style="font-size:13px;color:var(--gray-500);line-height:1.8;">
+                    ① 点击「编辑」→ 打开表单（回填）<br>
+                    ② 修改 → 失焦校验 → 提交<br>
+                    ③ 成功 → 关闭弹窗 + Toast<br>
+                    ④ 当前页刷新（刷新该行）
+                </div>
+            </div>
+            <div style="flex:1;min-width:240px;padding:20px;background:white;border:1px solid var(--gray-200);border-radius:12px;">
+                <div style="font-size:24px;margin-bottom:8px;">🗑 删除</div>
+                <div style="font-size:13px;color:var(--gray-500);line-height:1.8;">
+                    ① 点击「删除」→ 确认弹窗<br>
+                    ② 确认 → 提交删除请求<br>
+                    ③ 成功 → 关闭弹窗 + Toast<br>
+                    ④ 列表刷新（空页则回退）
+                </div>
+            </div>
+        </div>
+        <div class="tip-success tip-block">💡 <strong>关键原则：</strong>① 新增成功后跳到第1页；② 编辑/删除成功后停留当前页；③ 删除导致当前页为空时自动回退；④ 操作完成后 Toast 反馈持续 3 秒。</div>
+    </div>
+
+    <!-- 七、设计令牌 -->
+    <div class="card">
+        <h2><span class="section-icon">🎨</span> 七、设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#06B6D4（数据青）</span></div>
+            <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#ECFEFF</span></div>
+            <div class="token-item"><span class="token-name">--success</span><span class="token-value">#059669</span></div>
+            <div class="token-item"><span class="token-name">--error</span><span class="token-value">#DC2626</span></div>
+            <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+            <div class="token-item"><span class="token-name">--shadow-sm</span><span class="token-value">0 1px 2px rgba(0,0,0,.05)</span></div>
+            <div class="token-item"><span class="token-name">--border</span><span class="token-value">#E2E8F0</span></div>
+            <div class="token-item"><span class="token-name">--bg</span><span class="token-value">#F8FAFC</span></div>
+        </div>
+    </div>
+
+    <!-- 八、CRUD规范检查清单 -->
+    <div class="card">
+        <h2><span class="section-icon">✅</span> 八、CRUD规范检查清单</h2>
+        <ul class="checklist">
+            <li>列表页包含 5 个标准区域（标题、搜索、工具栏、表格、分页）</li>
+            <li>搜索条件根据数据字段类型选择对应控件</li>
+            <li>表格列宽合理分配，支持拖拽调整</li>
+            <li>表头支持点击排序，三态循环</li>
+            <li>操作按钮分类清晰（页面级/行内/批量）</li>
+            <li>新增/编辑使用弹窗，字段≤10用双列栅格</li>
+            <li>删除操作有二次确认弹窗</li>
+            <li>分页默认 20 条/页，显示总数和跳页</li>
+            <li>所有操作完成后给出 Toast 反馈</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">← 返回总览</a>
+        <span>|</span>
+        <span>设计系统规范库 · 数据列表与CRUD规范 v2.0</span>
+        <span>|</span>
+        <a href="11-字段类型映射规范-数据库字段与表单控件对应关系.html">← 上一章</a>
+        <span>|</span>
+        <a href="13-编程语言规范-PHP-Python-CSharp-Java.html">下一章 →</a>
+    </div>
+
+</div>
+
+<!-- ===== 新增/编辑弹窗（隐藏） ===== -->
+<div class="modal-overlay" id="formModal" style="display:none;">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="formModalTitle">新增用户</h3>
+            <button class="modal-close" onclick="closeFormModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid" id="formGrid">
+                <div class="form-group"><label class="form-label">用户名<span class="required">*</span></label><input type="text" id="fUsername" placeholder="请输入用户名" onblur="validateField(this,'required')"><span class="error-msg">请输入用户名</span></div>
+                <div class="form-group"><label class="form-label">手机号<span class="required">*</span></label><input type="text" id="fPhone" placeholder="请输入手机号" onblur="validateField(this,'phone')"><span class="error-msg">请输入有效的手机号</span></div>
+                <div class="form-group"><label class="form-label">邮箱<span class="required">*</span></label><input type="email" id="fEmail" placeholder="请输入邮箱" onblur="validateField(this,'email')"><span class="error-msg">请输入有效的邮箱地址</span></div>
+                <div class="form-group"><label class="form-label">角色<span class="required">*</span></label><select id="fRole"><option value="">请选择角色</option><option value="admin">管理员</option><option value="editor">编辑</option><option value="viewer">只读</option></select></div>
+                <div class="form-group"><label class="form-label">状态</label><select id="fStatus"><option value="active">启用</option><option value="inactive">禁用</option><option value="pending">待审核</option></select></div>
+                <div class="form-group"><label class="form-label">备注</label><textarea id="fRemark" placeholder="选填"></textarea></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeFormModal()">取消</button>
+            <button class="btn btn-primary" id="formSubmitBtn" onclick="submitForm()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 详情弹窗（隐藏） ===== -->
+<div class="modal-overlay" id="detailModal" style="display:none;">
+    <div class="modal">
+        <div class="modal-header"><h3>用户详情</h3><button class="modal-close" onclick="closeDetailModal()">✕</button></div>
+        <div class="modal-body">
+            <div class="detail-grid">
+                <div class="detail-item"><span class="detail-label">ID</span><span class="detail-value">1001</span></div>
+                <div class="detail-item"><span class="detail-label">用户名</span><span class="detail-value">张三</span></div>
+                <div class="detail-item"><span class="detail-label">手机号</span><span class="detail-value">13812341234</span></div>
+                <div class="detail-item"><span class="detail-label">邮箱</span><span class="detail-value">zhangsan@example.com</span></div>
+                <div class="detail-item"><span class="detail-label">角色</span><span class="detail-value">管理员</span></div>
+                <div class="detail-item"><span class="detail-label">状态</span><span class="detail-value"><span class="status-tag status-active">启用</span></span></div>
+                <div class="detail-item"><span class="detail-label">创建时间</span><span class="detail-value">2024-06-01 10:30</span></div>
+                <div class="detail-item"><span class="detail-label">更新时间</span><span class="detail-value">2024-06-10 14:22</span></div>
+                <div class="detail-item full"><span class="detail-label">备注</span><span class="detail-value">核心管理员账号，拥有全部权限</span></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeDetailModal()">关闭</button>
+            <button class="btn btn-primary" onclick="closeDetailModal();openAddModal();">编辑</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 删除确认弹窗（隐藏） ===== -->
+<div class="modal-overlay" id="deleteModal" style="display:none;">
+    <div class="modal modal-sm">
+        <div class="modal-header"><h3>⚠️ 确认删除</h3><button class="modal-close" onclick="closeDeleteModal()">✕</button></div>
+        <div class="modal-body" style="text-align:center;padding:32px 24px;">
+            <div style="font-size:40px;margin-bottom:12px;">🗑️</div>
+            <div style="font-size:15px;color:var(--gray-700);margin-bottom:6px;" id="deleteMsg">确定要删除该用户吗？</div>
+            <div style="font-size:13px;color:var(--gray-500);">此操作不可撤销。</div>
+        </div>
+        <div class="modal-footer" style="justify-content:center;">
+            <button class="btn btn-ghost" onclick="closeDeleteModal()">取消</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">确定删除</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" style="position:fixed;top:24px;right:24px;background:var(--success);color:white;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:500;z-index:200;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
+
+<script>
+const allData = [
+    { id:1001, username:'张三', phone:'13812341234', email:'zhangsan@example.com', role:'admin', roleName:'管理员', status:'active', createTime:'2024-06-01 10:30', remark:'核心管理员账号' },
+    { id:1002, username:'李四', phone:'13923452345', email:'lisi@example.com', role:'editor', roleName:'编辑', status:'active', createTime:'2024-06-02 14:20', remark:'' },
+    { id:1003, username:'王五', phone:'13734563456', email:'wangwu@example.com', role:'viewer', roleName:'只读', status:'inactive', createTime:'2024-06-03 09:15', remark:'长期不活跃用户' },
+    { id:1004, username:'赵六', phone:'13645674567', email:'zhaoliu@example.com', role:'editor', roleName:'编辑', status:'active', createTime:'2024-06-04 16:45', remark:'' },
+    { id:1005, username:'孙七', phone:'13556785678', email:'sunqi@example.com', role:'admin', roleName:'管理员', status:'pending', createTime:'2024-06-05 08:00', remark:'待审核' },
+    { id:1006, username:'周八', phone:'13467896789', email:'zhouba@example.com', role:'viewer', roleName:'只读', status:'active', createTime:'2024-06-06 11:20', remark:'' },
+    { id:1007, username:'吴九关于年度预算审批的通知文件标题较长', phone:'13378907890', email:'wujiu@company-example.com', role:'editor', roleName:'编辑', status:'active', createTime:'2024-06-07 13:10', remark:'' },
+    { id:1008, username:'郑十', phone:'13289018901', email:'zhengshi@example.com', role:'viewer', roleName:'只读', status:'inactive', createTime:'2024-06-08 15:30', remark:'' },
+    { id:1009, username:'冯十一', phone:'13190129012', email:'fengshiyi@example.com', role:'admin', roleName:'管理员', status:'active', createTime:'2024-06-09 10:00', remark:'' },
+    { id:1010, username:'陈十二', phone:'13001230012', email:'chenshier@example.com', role:'editor', roleName:'编辑', status:'active', createTime:'2024-06-10 12:45', remark:'' },
+    { id:1011, username:'褚十三', phone:'15012341235', email:'chushisan@example.com', role:'viewer', roleName:'只读', status:'pending', createTime:'2024-06-11 08:30', remark:'新注册' },
+    { id:1012, username:'卫十四', phone:'15123452346', email:'weishisi@example.com', role:'editor', roleName:'编辑', status:'active', createTime:'2024-06-12 09:15', remark:'' },
+];
+let currentPage = 1;
+let pageSizeVal = 10;
+let filteredData = [...allData];
+let sortField = null;
+let sortDir = 'asc';
+let selectedRows = new Set();
+let searchTimeout = null;
+
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const start = (currentPage - 1) * pageSizeVal;
+    const pageData = filteredData.slice(start, start + pageSizeVal);
+    const statusMap = { active: ['启用','status-active'], inactive: ['禁用','status-inactive'], pending: ['待审核','status-pending'] };
+    tbody.innerHTML = pageData.map(d => {
+        const [sText, sClass] = statusMap[d.status] || ['未知',''];
+        const shortName = d.username.length > 12 ? d.username.substring(0,12)+'…' : d.username;
+        const shortEmail = d.email.length > 18 ? d.email.substring(0,18)+'…' : d.email;
+        const checked = selectedRows.has(d.id) ? 'checked' : '';
+        return `<tr class="${selectedRows.has(d.id)?'selected':''}">
+            <td style="width:48px;"><input type="checkbox" class="checkbox-custom row-checkbox" data-id="${d.id}" ${checked} onchange="toggleRow(${d.id}, this.checked)"></td>
+            <td>${d.id}</td><td title="${d.username}">${shortName}</td><td>${d.phone}</td><td title="${d.email}">${shortEmail}</td>
+            <td>${d.roleName}</td><td><span class="status-tag ${sClass}">${sText}</span></td><td>${d.createTime}</td>
+            <td><div class="row-actions">
+                <button class="btn btn-outline btn-xs" onclick="openDetailModal()">查看</button>
+                <button class="btn btn-outline btn-xs" onclick="openEditModal(${d.id})">编辑</button>
+                <button class="btn btn-danger-ghost btn-xs" onclick="openDeleteModal(${d.id})">删除</button>
+            </div></td>
+        </tr>`;
+    });
+    const total = filteredData.length;
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('pageTotal').textContent = total;
+    document.getElementById('pageRange').textContent = total === 0 ? '0-0' : `${start+1}-${Math.min(start+pageSizeVal, total)}`;
+    document.getElementById('jumpPage').value = currentPage;
+    document.getElementById('jumpPage').max = Math.ceil(total / pageSizeVal) || 1;
+    const pageIds = pageData.map(d => d.id);
+    document.getElementById('selectAll').checked = pageIds.length > 0 && pageIds.every(id => selectedRows.has(id));
+    updateBatchActions();
+    renderPagination(total);
+}
+
+function renderPagination(total) {
+    const totalPages = Math.ceil(total / pageSizeVal) || 1;
+    const container = document.getElementById('paginationBtns');
+    let html = `<button class="page-btn" ${currentPage===1?'disabled':''} onclick="goToPage(${currentPage-1})" title="上一页">‹</button>`;
+    const maxBtns = 7;
+    let pages = [];
+    if (totalPages <= maxBtns) { for (let i = 1; i <= totalPages; i++) pages.push(i); }
+    else {
+        pages.push(1);
+        let start = Math.max(2, currentPage - 2);
+        let end = Math.min(totalPages - 1, currentPage + 2);
+        if (currentPage <= 3) end = 5;
+        if (currentPage >= totalPages - 2) start = totalPages - 4;
+        if (start > 2) pages.push('…');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push('…');
+        pages.push(totalPages);
+    }
+    pages.forEach(p => {
+        if (p === '…') html += `<span style="padding:0 4px;color:var(--gray-400);">…</span>`;
+        else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goToPage(${p})">${p}</button>`;
+    });
+    html += `<button class="page-btn" ${currentPage===totalPages?'disabled':''} onclick="goToPage(${currentPage+1})" title="下一页">›</button>`;
+    container.innerHTML = html;
+}
+
+function goToPage(page) { const totalPages = Math.ceil(filteredData.length / pageSizeVal) || 1; currentPage = Math.max(1, Math.min(page, totalPages)); renderTable(); document.querySelector('.table-scroll').scrollTop = 0; }
+function changePageSize() { pageSizeVal = parseInt(document.getElementById('pageSize').value); currentPage = 1; renderTable(); }
+function jumpToPage() { const p = parseInt(document.getElementById('jumpPage').value); if (p >= 1) goToPage(p); }
+
+function sortTable(field) {
+    if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : (sortDir === 'desc' ? null : 'asc');
+    else { sortField = field; sortDir = 'asc'; }
+    document.querySelectorAll('.data-table th').forEach(th => { th.classList.remove('sorted', 'sorted-asc', 'sorted-desc'); });
+    if (sortField && sortDir) {
+        const th = document.querySelector(`.data-table th[data-sort="${sortField}"]`);
+        if (th) { th.classList.add('sorted', sortDir==='asc'?'sorted-asc':'sorted-desc'); }
+        filteredData.sort((a,b) => { const va = a[sortField], vb = b[sortField]; if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va; return sortDir === 'asc' ? String(va).localeCompare(String(vb), 'zh') : String(vb).localeCompare(String(va), 'zh'); });
+    } else { filteredData = [...allData]; applyFilters(); }
+    currentPage = 1; renderTable();
+}
+
+function applyFilters() {
+    const username = document.getElementById('sUsername').value.trim().toLowerCase();
+    const phone = document.getElementById('sPhone').value.trim();
+    const status = document.getElementById('sStatus').value;
+    const role = document.getElementById('sRole').value;
+    filteredData = allData.filter(d => { if (username && !d.username.toLowerCase().includes(username)) return false; if (phone && !d.phone.includes(phone)) return false; if (status && d.status !== status) return false; if (role && d.role !== role) return false; return true; });
+    if (sortField && sortDir) { filteredData.sort((a,b) => { const va = a[sortField], vb = b[sortField]; if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va; return sortDir === 'asc' ? String(va).localeCompare(String(vb), 'zh') : String(vb).localeCompare(String(va), 'zh'); }); }
+    renderSearchTags();
+}
+
+function renderSearchTags() {
+    const tagsContainer = document.getElementById('searchTags');
+    const tags = [];
+    const username = document.getElementById('sUsername').value.trim();
+    const phone = document.getElementById('sPhone').value.trim();
+    const status = document.getElementById('sStatus').value;
+    const statusText = {active:'状态：启用',inactive:'状态：禁用',pending:'状态：待审核'};
+    const role = document.getElementById('sRole').value;
+    const roleText = {admin:'角色：管理员',editor:'角色：编辑',viewer:'角色：只读'};
+    if (username) tags.push({label:'用户名：'+username, field:'sUsername'});
+    if (phone) tags.push({label:'手机号：'+phone, field:'sPhone'});
+    if (status) tags.push({label:statusText[status], field:'sStatus'});
+    if (role) tags.push({label:roleText[role], field:'sRole'});
+    tagsContainer.innerHTML = tags.map(t => `<span class="search-tag">${t.label}<span class="remove" onclick="removeSearchTag('${t.field}')">✕</span></span>`).join('');
+}
+
+function removeSearchTag(field) { document.getElementById(field).value = ''; doSearch(); }
+function searchDebounce() { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 300); }
+function doSearch() { clearTimeout(searchTimeout); applyFilters(); currentPage = 1; selectedRows.clear(); renderTable(); }
+function resetSearch() { document.getElementById('sUsername').value = ''; document.getElementById('sPhone').value = ''; document.getElementById('sStatus').value = ''; document.getElementById('sRole').value = ''; doSearch(); }
+
+function toggleRow(id, checked) { if (checked) selectedRows.add(id); else selectedRows.delete(id); renderTable(); }
+function toggleSelectAll() { const checked = document.getElementById('selectAll').checked; const start = (currentPage - 1) * pageSizeVal; const pageData = filteredData.slice(start, start + pageSizeVal); pageData.forEach(d => { if (checked) selectedRows.add(d.id); else selectedRows.delete(d.id); }); renderTable(); }
+function updateBatchActions() { const batchDiv = document.getElementById('batchActions'); const countEl = document.getElementById('selectedCount'); batchDiv.style.display = selectedRows.size > 0 ? 'flex' : 'none'; countEl.textContent = `已选 ${selectedRows.size} 项`; }
+function batchEnable() { showToast('已批量启用 ' + selectedRows.size + ' 项'); selectedRows.clear(); renderTable(); }
+function batchDelete() { if (selectedRows.size === 0) return; document.getElementById('deleteMsg').textContent = `确定要删除已选的 ${selectedRows.size} 项吗？`; document.getElementById('deleteModal').style.display = 'flex'; document.getElementById('deleteModal')._batch = true; }
+
+function openAddModal() { document.getElementById('formModalTitle').textContent = '新增用户'; document.getElementById('formSubmitBtn').textContent = '确认新增'; document.getElementById('formModal')._editId = null; ['fUsername','fPhone','fEmail','fRemark'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('error'); }); document.getElementById('fRole').value = ''; document.getElementById('fStatus').value = 'active'; document.getElementById('formModal').style.display = 'flex'; document.getElementById('fUsername').focus(); }
+function openEditModal(id) { const d = allData.find(x => x.id === id); if (!d) return; document.getElementById('formModalTitle').textContent = '编辑用户'; document.getElementById('formSubmitBtn').textContent = '保存修改'; document.getElementById('formModal')._editId = id; document.getElementById('fUsername').value = d.username; document.getElementById('fPhone').value = d.phone; document.getElementById('fEmail').value = d.email; document.getElementById('fRole').value = d.role; document.getElementById('fStatus').value = d.status; document.getElementById('fRemark').value = d.remark || ''; document.querySelectorAll('#formGrid input, #formGrid select').forEach(el => el.classList.remove('error')); document.getElementById('formModal').style.display = 'flex'; }
+function closeFormModal() { document.getElementById('formModal').style.display = 'none'; }
+
+function submitForm() {
+    const fields = [{id:'fUsername', rule:'required', msg:'请输入用户名'},{id:'fPhone', rule:'phone', msg:'请输入有效手机号'},{id:'fEmail', rule:'email', msg:'请输入有效邮箱'},{id:'fRole', rule:'required', msg:'请选择角色'}];
+    let valid = true;
+    fields.forEach(f => { const el = document.getElementById(f.id); if (f.rule === 'required' && !el.value.trim()) { el.classList.add('error'); valid = false; } else if (f.rule === 'phone' && !/^1\d{10}$/.test(el.value.trim())) { el.classList.add('error'); valid = false; } else if (f.rule === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim())) { el.classList.add('error'); valid = false; } else { el.classList.remove('error'); } });
+    if (!valid) return;
+    const isEdit = !!document.getElementById('formModal')._editId;
+    closeFormModal();
+    showToast(isEdit ? '编辑成功' : '新增成功');
+    if (!isEdit) currentPage = 1;
+    renderTable();
+}
+
+function validateField(el, rule) { el.classList.remove('error'); if (rule === 'required' && !el.value.trim()) el.classList.add('error'); if (rule === 'phone' && !/^1\d{10}$/.test(el.value.trim())) el.classList.add('error'); if (rule === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value.trim())) el.classList.add('error'); }
+function openDetailModal() { document.getElementById('detailModal').style.display = 'flex'; }
+function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+function openDeleteModal(id) { document.getElementById('deleteMsg').textContent = '确定要删除该用户吗？'; document.getElementById('deleteModal').style.display = 'flex'; document.getElementById('deleteModal')._batch = false; document.getElementById('deleteModal')._deleteId = id; }
+function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+function confirmDelete() { const modal = document.getElementById('deleteModal'); if (modal._batch) { selectedRows.clear(); } modal.style.display = 'none'; showToast('删除成功'); const total = filteredData.length; const totalPages = Math.ceil(total / pageSizeVal); if (currentPage > totalPages && totalPages > 0) currentPage = totalPages; renderTable(); }
+
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._timeout); t._timeout = setTimeout(() => { t.style.display = 'none'; }, 2500); }
+
+document.getElementById('formModal').addEventListener('click', function(e) { if (e.target === this) closeFormModal(); });
+document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
+document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
+
+let resizeCol = null, resizeStartX = 0, resizeStartW = 0;
+const resizeIndicator = document.getElementById('resizeIndicator'), tableScroll = document.getElementById('tableScroll');
+document.querySelectorAll('.data-table th .resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        const th = this.parentElement;
+        const colIndex = parseInt(this.getAttribute('data-col'));
+        resizeCol = colIndex;
+        const thRect = th.getBoundingClientRect();
+        const scrollRect = tableScroll.getBoundingClientRect();
+        resizeStartX = e.clientX; resizeStartW = thRect.width;
+        resizeIndicator.style.display = 'block';
+        resizeIndicator.style.top = scrollRect.top + 'px';
+        resizeIndicator.style.height = scrollRect.height + 'px';
+        resizeIndicator.style.left = (thRect.right - scrollRect.left) + 'px';
+        this.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    });
+});
+document.addEventListener('mousemove', function(e) {
+    if (!resizeCol) return;
+    const delta = e.clientX - resizeStartX;
+    const newWidth = Math.max(60, resizeStartW + delta);
+    const col = document.querySelector(`#demoTable colgroup col:nth-child(${resizeCol + 1})`);
+    if (col) col.style.width = newWidth + 'px';
+    const th = document.querySelectorAll(`#demoTable thead th`)[resizeCol];
+    if (th) th.style.width = newWidth + 'px';
+    const thRect = th.getBoundingClientRect();
+    const scrollRect = tableScroll.getBoundingClientRect();
+    resizeIndicator.style.left = (thRect.right - scrollRect.left) + 'px';
+    document.querySelectorAll(`#demoTable tbody tr`).forEach(row => { const td = row.children[resizeCol]; if (td) td.style.width = newWidth + 'px'; });
+});
+document.addEventListener('mouseup', function() { if (!resizeCol) return; resizeIndicator.style.display = 'none'; document.body.style.cursor = ''; document.body.style.userSelect = ''; const handle = document.querySelectorAll('.resize-handle')[resizeCol - 1]; if (handle) handle.classList.remove('active'); resizeCol = null; });
+
+applyFilters();
+renderTable();
+</script>
+
+</body>
+</html>

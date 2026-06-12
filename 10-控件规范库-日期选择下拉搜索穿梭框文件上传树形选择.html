@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<!--
+    Third-party notice:
+    This file uses highlight.js (https://highlightjs.org/)
+    Copyright (c) 2006, Ivan Sagalaev
+    Licensed under the BSD-3-Clause license
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控件规范库 | 日期选择 · 下拉搜索 · 穿梭框 · 文件上传 · 树形选择</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#06B6D4; --primary-hover:#0891B2; --primary-light:#ECFEFF; --primary-border:#A5F3FC;
+        }
+
+        .control-preview {
+            background: var(--gray-50); border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm); padding: 24px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap; min-height: 80px;
+        }
+        .control-preview.column { flex-direction: column; align-items: stretch; }
+
+        /* 规格表 */
+        .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
+        .spec-table thead th {
+            background: var(--gray-50); text-align: left; padding: 10px 14px;
+            font-weight: 600; font-size: 13px; color: var(--text-secondary);
+            border-bottom: 2px solid var(--border); white-space: nowrap;
+        }
+        .spec-table tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .spec-table tbody tr:hover { background: #F8FAFC; }
+        .spec-table tbody tr:last-child td { border-bottom: none; }
+
+        .tag { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .tag-required { background: #FEF2F2; color: #DC2626; }
+        .tag-optional { background: #F0FDF4; color: #16A34A; }
+
+        code {
+            background: #F1F5F9; padding: 2px 8px; border-radius: 4px;
+            font-family: 'SF Mono','Fira Code','Consolas',monospace;
+            font-size: 13px; color: var(--primary); white-space: nowrap;
+        }
+
+        .callout {
+            padding: 14px 18px; border-radius: 8px; font-size: 14px;
+            margin-top: 12px; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .callout.info  { background: #EFF6FF; border-left: 3px solid var(--primary); }
+        .callout.warn  { background: #FFFBEB; border-left: 3px solid var(--warning); }
+        .callout.success { background: #F0FDF4; border-left: 3px solid var(--success); }
+        .callout .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+        /* ===== 代码展示区 ===== */
+        .code-block-wrap { margin-top: 12px; position: relative; }
+        .code-block-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 16px; background: #1E293B; border-radius: 8px 8px 0 0;
+            color: #94A3B8; font-size: 12px; font-weight: 600;
+        }
+        .code-block-header .lang { text-transform: uppercase; letter-spacing: 0.5px; }
+        .code-block-header .copy-btn {
+            background: transparent; border: 1px solid #475569; color: #CBD5E1;
+            padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;
+            transition: all .15s; font-family: inherit;
+        }
+        .code-block-header .copy-btn:hover { background: #334155; border-color: #64748B; }
+        .code-block-header .copy-btn.copied { background: #065F46; border-color: #059669; color: #D1FAE5; }
+        .code-block {
+            background: #0F172A; color: #E2E8F0; padding: 16px 20px;
+            border-radius: 0 0 8px 8px; font-family: 'SF Mono','Fira Code','Consolas',monospace;
+            font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre;
+            max-height: 400px; overflow-y: auto; margin: 0;
+        }
+        .code-block .cmt { color: #64748B; }
+        .code-block .tag-name { color: #7DD3FC; }
+        .code-block .attr { color: #CBD5E1; }
+        .code-block .attr-name { color: #94A3B8; }
+        .code-block .attr-value { color: #A5B4FC; }
+        .code-block .fn { color: #67E8F9; }
+        .code-block .str { color: #86EFAC; }
+        .code-block .keyword { color: #C084FC; }
+        .code-block .num { color: #FBBF24; }
+
+        /* ===== 许可证标签 ===== */
+        .license-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+        }
+        .license-mit { background: #D1FAE5; color: #065F46; }
+        .license-apache { background: #FEF3C7; color: #92400E; }
+        .license-bsd { background: #DBEAFE; color: #1E40AF; }
+        .license-commercial { background: #F3E8FF; color: #6B21A8; }
+        .license-gpl { background: #FEE2E2; color: #991B1B; }
+
+        /* ===== 控件样式 ===== */
+        .input-base {
+            height: 38px; padding: 0 12px; border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm); font-size: 14px; color: var(--text);
+            background: #fff; outline: none; transition: border-color .15s;
+            font-family: inherit;
+        }
+        .input-base:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,102,204,.1); }
+        .input-base:disabled { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; }
+        .input-base::placeholder { color: var(--gray-400); }
+        .input-sm { height: 32px; font-size: 13px; padding: 0 10px; }
+        .input-md { height: 38px; font-size: 14px; padding: 0 12px; }
+        .input-lg { height: 44px; font-size: 15px; padding: 0 14px; }
+
+        .date-range { display: flex; align-items: center; gap: 8px; }
+        .date-range .separator { color: var(--gray-400); font-size: 14px; }
+
+        /* 可搜索下拉 */
+        .searchable-select { position: relative; width: 280px; }
+        .searchable-select .input-base { width: 100%; padding-right: 36px; }
+        .searchable-select .arrow {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--gray-400); font-size: 12px; pointer-events: none;
+            transition: transform .2s;
+        }
+        .searchable-select.open .arrow { transform: translateY(-50%) rotate(180deg); }
+        .searchable-dropdown {
+            position: absolute; top: 42px; left: 0; right: 0;
+            background: #fff; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);
+            z-index: 10; max-height: 200px; overflow-y: auto; display: none;
+        }
+        .searchable-dropdown.show { display: block; }
+        .searchable-dropdown .option {
+            padding: 8px 14px; font-size: 14px; cursor: pointer; transition: background .1s;
+        }
+        .searchable-dropdown .option:hover { background: var(--primary-light); }
+        .searchable-dropdown .option.selected { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .searchable-dropdown .option .highlight { color: var(--primary); font-weight: 700; }
+        .searchable-dropdown .no-result { padding: 16px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+        /* 标签输入 */
+        .tag-input-wrap {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            padding: 6px 8px; border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm); background: #fff;
+            min-height: 38px; align-items: center; cursor: text;
+            transition: border-color .15s;
+        }
+        .tag-input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,102,204,.1); }
+        .tag-input-wrap .chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; background: var(--primary-light);
+            border: 1px solid var(--primary-border); border-radius: 16px;
+            font-size: 13px; color: var(--primary); font-weight: 500;
+        }
+        .tag-input-wrap .chip .close {
+            cursor: pointer; font-size: 14px; line-height: 1; opacity: .6;
+        }
+        .tag-input-wrap .chip .close:hover { opacity: 1; }
+        .tag-input-wrap input {
+            border: none; outline: none; font-size: 14px; min-width: 120px;
+            flex: 1; padding: 2px 4px; font-family: inherit;
+        }
+
+        /* 穿梭框 */
+        .transfer { display: flex; align-items: center; gap: 16px; }
+        .transfer-panel {
+            width: 240px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+            background: #fff; overflow: hidden;
+        }
+        .transfer-panel .panel-header {
+            padding: 10px 14px; font-size: 13px; font-weight: 600;
+            background: var(--gray-50); border-bottom: 1px solid var(--gray-200);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .transfer-panel .panel-header .count { color: var(--text-secondary); font-weight: 400; }
+        .transfer-panel .panel-body { max-height: 240px; overflow-y: auto; padding: 4px 0; }
+        .transfer-panel .panel-body .item {
+            padding: 8px 14px; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: background .1s;
+        }
+        .transfer-panel .panel-body .item:hover { background: var(--gray-50); }
+        .transfer-panel .panel-body .item.selected { background: var(--primary-light); }
+        .transfer-actions { display: flex; flex-direction: column; gap: 8px; }
+        .transfer-btn {
+            width: 36px; height: 36px; border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-300); background: #fff;
+            cursor: pointer; font-size: 16px; display: flex;
+            align-items: center; justify-content: center; transition: all .15s;
+        }
+        .transfer-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        /* 文件上传 */
+        .upload-zone {
+            border: 2px dashed var(--gray-300); border-radius: var(--radius-sm);
+            padding: 32px 24px; text-align: center; cursor: pointer;
+            transition: all .2s; background: var(--gray-50);
+        }
+        .upload-zone:hover, .upload-zone.drag-over { border-color: var(--primary); background: var(--primary-light); }
+        .upload-zone .upload-icon { font-size: 36px; margin-bottom: 8px; }
+        .upload-zone .upload-text { font-size: 14px; color: var(--text-secondary); }
+        .upload-zone .upload-hint { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+        .upload-file-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .upload-file-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 14px; background: #fff; border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm); font-size: 13px;
+        }
+        .upload-file-item .file-icon { font-size: 20px; }
+        .upload-file-item .file-info { flex: 1; }
+        .upload-file-item .file-name { font-weight: 500; }
+        .upload-file-item .file-size { color: var(--gray-400); font-size: 12px; }
+        .upload-file-item .file-remove { cursor: pointer; color: var(--gray-400); font-size: 18px; }
+        .upload-file-item .file-remove:hover { color: var(--error); }
+        .upload-file-item .file-progress {
+            width: 80px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;
+        }
+        .upload-file-item .file-progress .bar {
+            height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s;
+        }
+
+        /* 级联选择器 */
+        .cascader {
+            display: flex; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+            background: #fff; overflow: hidden; box-shadow: var(--shadow-lg);
+        }
+        .cascader-col {
+            width: 180px; border-right: 1px solid var(--gray-100);
+            max-height: 240px; overflow-y: auto;
+        }
+        .cascader-col:last-child { border-right: none; }
+        .cascader-col .cas-item {
+            padding: 8px 14px; font-size: 14px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background .1s;
+        }
+        .cascader-col .cas-item:hover { background: var(--gray-50); }
+        .cascader-col .cas-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .cascader-col .cas-item .arrow { color: var(--gray-400); font-size: 12px; }
+
+        /* 时间选择器 */
+        .time-picker { display: flex; align-items: center; gap: 6px; }
+        .time-picker input { width: 52px; text-align: center; }
+        .time-picker .colon { font-size: 18px; font-weight: 600; color: var(--gray-500); }
+
+        /* 颜色选择器 */
+        .color-picker-row { display: flex; align-items: center; gap: 12px; }
+        .color-swatch {
+            width: 38px; height: 38px; border-radius: var(--radius-sm);
+            border: 2px solid var(--gray-200); cursor: pointer; transition: border-color .15s;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff;
+        }
+        .color-swatch:hover { border-color: var(--primary); }
+        .color-swatch.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,102,204,.3); }
+        .color-input { width: 120px; }
+
+        /* 星级评分 */
+        .star-rating { display: flex; gap: 4px; font-size: 28px; cursor: pointer; }
+        .star-rating .star { color: var(--gray-300); transition: color .15s; }
+        .star-rating .star.active { color: #F59E0B; }
+        .star-rating .star:hover { color: #F59E0B; }
+
+        /* 滑块 */
+        .slider-wrap { display: flex; align-items: center; gap: 14px; }
+        .slider-wrap input[type="range"] { width: 200px; accent-color: var(--primary); }
+        .slider-wrap .slider-value { font-size: 14px; font-weight: 600; color: var(--primary); min-width: 40px; }
+
+        /* 分段控制器 */
+        .btn-group { display: inline-flex; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); overflow: hidden; }
+        .btn-group .btn-item {
+            padding: 0 16px; height: 38px; font-size: 13px; cursor: pointer; line-height: 1;
+            border: none; background: #fff; border-right: 1px solid var(--gray-200);
+            font-family: inherit; transition: all .15s; color: var(--text-secondary);
+        }
+        .btn-group .btn-item:last-child { border-right: none; }
+        .btn-group .btn-item:hover { background: var(--gray-50); }
+        .btn-group .btn-item.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .transfer { flex-direction: column; }
+        }
+
+        /* ===== 代码块 ===== */
+        .tag-green { background:var(--success-bg); color:var(--success); }
+        .tag-red { background:var(--error-bg); color:var(--error); }
+        .tag-yellow { background:var(--warning-bg); color:var(--warning); }
+        .tag-blue { background:var(--info-bg); color:var(--info); }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📐 设计系统规范库</a><span class="sep">›</span>
+        <a href="index.html">🎛️ 控件库</a><span class="sep">›</span>
+        <span class="current">🎛️ 控件规范库</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">🎛️</span>控件规范库</h1>
+        <div class="subtitle">复合控件 · Vue 生态优先 · 数据获取接口 · 界面稳定无闪烁 · 第三方库许可证说明</div>
+        <div class="doc-meta">📅 版本 v2.1 · 🔖 控件层 · 🏷️ 复合控件 · 📦 零依赖原生JS</div>
+        <div class="doc-summary">本规范库涵盖系统中使用的所有复合控件，包括日期时间选择、可搜索下拉、标签输入、穿梭框、文件上传、级联选择器等。每个控件提供完整的交互演示、规格说明、复制即用的源码以及 Vue 生态第三方库推荐。所有控件均提供 getValue()/getFiles()/getTags() 等数据获取接口。</div>
+    </div>
+
+    <!-- ==================== 一、日期 & 时间控件 ==================== -->
+    <div class="card" id="sec-daterange">
+        <h2><span class="section-icon">📅</span>一、日期 & 时间选择控件</h2>
+
+        <!-- 日期输入框 -->
+        <div class="control-preview">
+            <div style="flex:1;min-width:200px;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">📌 日期输入框 (Input Date)</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <input type="date" class="input-base input-md" value="2026-06-12" style="width:200px;">
+                    <input type="date" class="input-base input-sm" style="width:180px;" placeholder="小尺寸">
+                    <input type="date" class="input-base input-md" disabled style="width:200px;">
+                </div>
+            </div>
+            <div style="flex:1;min-width:240px;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">📌 日期范围 (Range)</p>
+                <div class="date-range">
+                    <input type="date" class="input-base input-md" value="2026-06-01" style="width:156px;">
+                    <span class="separator">—</span>
+                    <input type="date" class="input-base input-md" value="2026-06-30" style="width:156px;">
+                </div>
+                <div style="margin-top:12px;font-size:13px;color:var(--text-secondary);">
+                    快捷选项：
+                    <span style="display:inline-flex;gap:6px;margin-left:6px;">
+                        <span style="padding:2px 10px;background:var(--primary-light);border-radius:12px;font-size:12px;color:var(--primary);cursor:pointer;">今天</span>
+                        <span style="padding:2px 10px;background:var(--gray-100);border-radius:12px;font-size:12px;color:var(--text-secondary);cursor:pointer;">本周</span>
+                        <span style="padding:2px 10px;background:var(--gray-100);border-radius:12px;font-size:12px;color:var(--text-secondary);cursor:pointer;">本月</span>
+                        <span style="padding:2px 10px;background:var(--gray-100);border-radius:12px;font-size:12px;color:var(--text-secondary);cursor:pointer;">近7天</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:120px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>控件类型</td><td><code>&lt;input type="date"&gt;</code></td><td>原生浏览器控件，零依赖，兼容所有现代浏览器</td></tr>
+                <tr><td>尺寸</td><td>sm 32px / md 38px / lg 44px</td><td>与 Input 组件统一</td></tr>
+                <tr><td>日期范围</td><td>双输入框 + 分隔符 "—"</td><td>可搭配快捷选项</td></tr>
+                <tr><td>日期格式</td><td>yyyy-MM-dd</td><td>存储用 ISO 格式，前端显示可本地化</td></tr>
+                <tr><td>边界限制</td><td><code>min</code> / <code>max</code> 属性</td><td>限制可选范围</td></tr>
+                <tr><td>快捷选项</td><td>今天/昨天/本周/本月/近7天/近30天</td><td>自定义快捷标签组</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生</span></td><td>浏览器内置，无需第三方库</td></tr>
+            </tbody>
+        </table>
+
+        <!-- 时间选择器 -->
+        <div class="control-preview" style="margin-top:16px;">
+            <div>
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">⏰ 时间选择器 (Time Picker)</p>
+                <div class="time-picker">
+                    <input type="number" class="input-base input-md" value="14" min="0" max="23" placeholder="时" onchange="this.value=Math.max(0,Math.min(23,parseInt(this.value)||0))">
+                    <span class="colon">:</span>
+                    <input type="number" class="input-base input-md" value="30" min="0" max="59" placeholder="分" onchange="this.value=Math.max(0,Math.min(59,parseInt(this.value)||0))">
+                    <span class="colon">:</span>
+                    <input type="number" class="input-base input-md" value="00" min="0" max="59" placeholder="秒" onchange="this.value=Math.max(0,Math.min(59,parseInt(this.value)||0))">
+                </div>
+            </div>
+            <div style="margin-left:40px;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">📅 月份选择器</p>
+                <input type="month" class="input-base input-md" value="2026-06" style="width:180px;">
+            </div>
+        </div>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">HTML — 日期控件完整代码（复制即用）</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-date')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-date">&lt;!-- 单个日期选择 --&gt;
+&lt;input type="date" class="input-base" value="2026-06-12"
+       min="2020-01-01" max="2030-12-31"&gt;
+
+&lt;!-- 日期范围 --&gt;
+&lt;div class="date-range"&gt;
+    &lt;input type="date" class="input-base" value="2026-06-01"&gt;
+    &lt;span class="separator"&gt;—&lt;/span&gt;
+    &lt;input type="date" class="input-base" value="2026-06-30"&gt;
+&lt;/div&gt;
+
+&lt;!-- 时间选择（时:分:秒） --&gt;
+&lt;div class="time-picker"&gt;
+    &lt;input type="number" min="0" max="23" placeholder="时"&gt;
+    &lt;span class="colon"&gt;:&lt;/span&gt;
+    &lt;input type="number" min="0" max="59" placeholder="分"&gt;
+    &lt;span class="colon"&gt;:&lt;/span&gt;
+    &lt;input type="number" min="0" max="59" placeholder="秒"&gt;
+&lt;/div&gt;
+
+&lt;!-- 月份选择 --&gt;
+&lt;input type="month" class="input-base"&gt;
+
+&lt;style&gt;
+.date-range { display: flex; align-items: center; gap: 8px; }
+.date-range .separator { color: #9CA3AF; font-size: 14px; }
+.time-picker { display: flex; align-items: center; gap: 6px; }
+.time-picker input { width: 52px; text-align: center; }
+.time-picker .colon { font-size: 18px; font-weight: 600; color: #6B7280; }
+.input-base {
+    height: 38px; padding: 0 12px; border: 1px solid #D1D5DB;
+    border-radius: 6px; font-size: 14px; outline: none;
+    font-family: system-ui, sans-serif; background: #fff;
+}
+.input-base:focus { border-color: #0066CC; box-shadow: 0 0 0 3px rgba(0,102,204,.1); }
+&lt;/style&gt;</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 二、下拉 & 搜索控件 ==================== -->
+    <div class="card" id="sec-searchdropdown">
+        <h2><span class="section-icon">🔽</span>二、下拉选择 & 搜索过滤控件</h2>
+
+        <div class="control-preview">
+            <div style="flex:1;min-width:280px;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">🔍 可搜索下拉选择器 <span style="font-size:12px;color:var(--success);">（可交互）</span></p>
+                <div class="searchable-select" id="searchableSelect">
+                    <input type="text" class="input-base input-md" placeholder="输入关键词筛选..." id="searchInput" autocomplete="off">
+                    <span class="arrow">▼</span>
+                    <div class="searchable-dropdown" id="searchDropdown">
+                        <div class="option" data-value="frontend">前端开发工程师</div>
+                        <div class="option" data-value="backend">后端开发工程师</div>
+                        <div class="option selected" data-value="fullstack">全栈工程师</div>
+                        <div class="option" data-value="devops">DevOps 运维工程师</div>
+                        <div class="option" data-value="data">数据工程师</div>
+                        <div class="option" data-value="pm">产品经理</div>
+                        <div class="option" data-value="design">UI/UX 设计师</div>
+                        <div class="no-result" style="display:none;">无匹配结果</div>
+                    </div>
+                </div>
+            </div>
+            <div style="flex:1;min-width:240px;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">📌 多选下拉 (原生 &lt;select multiple&gt;)</p>
+                <select class="input-base input-md" multiple style="width:100%;height:120px;padding:8px;">
+                    <option selected>前端开发</option>
+                    <option>后端开发</option>
+                    <option selected>全栈开发</option>
+                    <option>数据分析</option>
+                    <option>产品经理</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:140px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>单选搜索</td><td>输入框 + 下拉列表</td><td>输入即过滤，高亮匹配文字；纯原生 JS，无依赖</td></tr>
+                <tr><td>多选</td><td><code>&lt;select multiple&gt;</code></td><td>或自定义多选面板</td></tr>
+                <tr><td>远程搜索</td><td>输入后防抖 300ms 请求</td><td>数据量大时用后端搜索</td></tr>
+                <tr><td>下拉高度</td><td>max-height: 200px</td><td>超出滚动，5~6 项可见</td></tr>
+                <tr><td>空状态</td><td>显示 "无匹配结果"</td><td>居中灰色文字</td></tr>
+                <tr><td>已选高亮</td><td>蓝色背景 + 加粗</td><td><code>selected</code> 类名</td></tr>
+                <tr><td>键盘导航</td><td>↑↓ 导航 + Enter 选中 + Esc 关闭</td><td>完全支持</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生 JS</span></td><td>零依赖，可自由商用</td></tr>
+            </tbody>
+        </table>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <span><strong>Vue 生态第三方库推荐（如需更丰富的下拉功能）：</strong><br>
+            ① <strong>Element Plus</strong> — <code>&lt;el-select&gt;</code> 支持远程搜索/虚拟滚动/多选，<span class="license-tag license-mit">MIT</span>（免费商用），Vue 3 首选<br>
+            ② <strong>Ant Design Vue</strong> — <code>&lt;a-select&gt;</code> 企业级下拉组件，<span class="license-tag license-mit">MIT</span>，支持标签模式<br>
+            ③ <strong>Naive UI</strong> — <code>&lt;n-select&gt;</code> 树摇优化、TypeScript 优先，<span class="license-tag license-mit">MIT</span><br>
+            ④ <strong>Vuestic UI</strong> — <code>&lt;va-select&gt;</code> 无障碍友好，<span class="license-tag license-mit">MIT</span><br>
+            ⚠️ 不推荐 jQuery 库（如 Select2），Vue 项目中 jQuery 会导致 DOM 冲突和响应式失效</span>
+        </div>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">JavaScript — 可搜索下拉完整逻辑（复制即用）</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-search')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-search">// === 可搜索下拉选择器（纯 JS，零依赖，可商用） ===
+// 数据获取方式：调用 getValue() → { value, text }
+// 数据变化时：仅更新 className 和 display，不替换 DOM，界面稳定无闪烁
+class SearchableSelect {
+    constructor(container) {
+        this.container = container;
+        this.input = container.querySelector('input');
+        this.dropdown = container.querySelector('.searchable-dropdown');
+        this.options = [...this.dropdown.querySelectorAll('.option')];
+        this.noResult = this.dropdown.querySelector('.no-result');
+        this._selectedValue = null;
+        this._selectedText = null;
+        this._originalTexts = this.options.map(o => o.textContent); // 保存原始文本，避免 innerHTML 丢失
+        this._bindEvents();
+    }
+
+    _bindEvents() {
+        // 聚焦展开
+        this.input.addEventListener('focus', () => {
+            this.dropdown.classList.add('show');
+            this.container.classList.add('open');
+        });
+
+        // 输入过滤 + 高亮（只改 display，不改 innerHTML 结构）
+        this.input.addEventListener('input', () => {
+            const val = this.input.value.toLowerCase();
+            let hasResult = false;
+            this.options.forEach((opt, i) => {
+                const text = this._originalTexts[i].toLowerCase();
+                if (!val || text.includes(val)) {
+                    opt.style.display = '';
+                    hasResult = true;
+                    // 用 data-* 存储高亮范围，通过 CSS ::after 或子节点更新
+                    if (val && text.includes(val)) {
+                        const idx = text.indexOf(val);
+                        const before = this._originalTexts[i].substring(0, idx);
+                        const match = this._originalTexts[i].substring(idx, idx + val.length);
+                        const after = this._originalTexts[i].substring(idx + val.length);
+                        // 使用 textContent + span 精确更新，不丢失事件
+                        opt.textContent = '';
+                        opt.appendChild(document.createTextNode(before));
+                        const hl = document.createElement('span');
+                        hl.className = 'highlight';
+                        hl.textContent = match;
+                        opt.appendChild(hl);
+                        opt.appendChild(document.createTextNode(after));
+                    } else {
+                        opt.textContent = this._originalTexts[i];
+                    }
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+            if (this.noResult) this.noResult.style.display = hasResult ? 'none' : '';
+        });
+
+        // 点击选项 — 界面稳定更新
+        this.options.forEach((opt, i) => {
+            opt.addEventListener('click', () => {
+                this.options.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                this._selectedValue = opt.getAttribute('data-value');
+                this._selectedText = this._originalTexts[i];
+                // 仅修改 input.value，不重新渲染整个列表
+                this.input.value = this._selectedValue;
+                this.dropdown.classList.remove('show');
+                this.container.classList.remove('open');
+            });
+        });
+
+        // 键盘导航
+        this.input.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const visible = this.options.filter(o => o.style.display !== 'none');
+                const cur = visible.findIndex(o => o.classList.contains('hover'));
+                let next = e.key === 'ArrowDown' ? cur + 1 : cur - 1;
+                if (next >= visible.length) next = 0;
+                if (next < 0) next = visible.length - 1;
+                visible.forEach(o => o.classList.remove('hover'));
+                if (visible[next]) visible[next].classList.add('hover');
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const hovered = this.dropdown.querySelector('.option.hover');
+                if (hovered) hovered.click();
+            }
+            if (e.key === 'Escape') {
+                this.dropdown.classList.remove('show');
+                this.container.classList.remove('open');
+            }
+        });
+
+        // 点击外部关闭
+        document.addEventListener('click', (e) => {
+            if (!this.container.contains(e.target)) {
+                this.dropdown.classList.remove('show');
+                this.container.classList.remove('open');
+            }
+        });
+    }
+
+    /** 获取当前选中值（数据获取接口） */
+    getValue() {
+        return { value: this._selectedValue, text: this._selectedText };
+    }
+
+    /** 程序化设置值（不触发界面闪烁） */
+    setValue(value) {
+        this.options.forEach((opt, i) => {
+            opt.classList.toggle('selected', opt.getAttribute('data-value') === value);
+            if (opt.getAttribute('data-value') === value) {
+                this._selectedValue = value;
+                this._selectedText = this._originalTexts[i];
+                this.input.value = value;
+            }
+        });
+    }
+}
+
+// 初始化
+const searchSelect = new SearchableSelect(document.getElementById('searchableSelect'));
+// 获取当前选中值
+// const { value, text } = searchSelect.getValue();
+// 程序化设置值
+// searchSelect.setValue('backend');</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 三、标签输入控件 ==================== -->
+    <div class="card" id="sec-taginput">
+        <h2><span class="section-icon">🏷️</span>三、标签输入控件 (Tag Input)</h2>
+
+        <div class="control-preview column">
+            <p style="font-weight:600;font-size:14px;margin-bottom:8px;">输入后按 Enter / 逗号 添加标签 <span style="font-size:12px;color:var(--success);">（可交互）</span></p>
+            <div class="tag-input-wrap" id="tagInputWrap">
+                <span class="chip">前端 <span class="close">×</span></span>
+                <span class="chip">React <span class="close">×</span></span>
+                <span class="chip">TypeScript <span class="close">×</span></span>
+                <input type="text" placeholder="输入标签后按 Enter..." id="tagInput">
+            </div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:6px;">试试输入 "Vue" 然后按 Enter，或点击标签上的 × 删除</div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:120px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>触发方式</td><td>Enter / 逗号 / 失焦</td><td>输入分隔符时创建标签</td></tr>
+                <tr><td>标签样式</td><td>圆角胶囊形</td><td>border-radius: 16px, 浅蓝底</td></tr>
+                <tr><td>删除方式</td><td>× 按钮 / Backspace</td><td>点击 × 或退格删除</td></tr>
+                <tr><td>去重</td><td>自动去重</td><td>不允许重复标签</td></tr>
+                <tr><td>上限</td><td>建议 ≤ 20 个</td><td>超出提示或禁用输入</td></tr>
+                <tr><td>最大长度</td><td>单标签 ≤ 30 字符</td><td>—</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生 JS</span></td><td>零依赖</td></tr>
+            </tbody>
+        </table>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">JavaScript — 标签输入完整逻辑（复制即用）</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-tag')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-tag">// === 标签输入控件（纯 JS，零依赖） ===
+// 数据获取方式：调用 getTags() → string[]
+// 数据变化时：仅操作单个 chip DOM，不重新渲染整个列表，界面稳定无闪烁
+class TagInput {
+    constructor(wrap) {
+        this.wrap = wrap;
+        this.input = wrap.querySelector('input');
+        this.maxTags = 20;
+        this.maxLen = 30;
+        this._bindEvents();
+    }
+
+    _bindEvents() {
+        // 初始化已有标签的删除按钮
+        this.wrap.querySelectorAll('.chip .close').forEach(btn => {
+            btn.addEventListener('click', () => btn.parentElement.remove());
+        });
+
+        this.input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                this._addTag(this.input.value);
+                this.input.value = '';
+            }
+            if (e.key === 'Backspace' && this.input.value === '') {
+                const chips = this.wrap.querySelectorAll('.chip');
+                if (chips.length) chips[chips.length - 1].remove();
+            }
+        });
+
+        this.input.addEventListener('blur', () => {
+            if (this.input.value.trim()) {
+                this._addTag(this.input.value);
+                this.input.value = '';
+            }
+        });
+    }
+
+    _addTag(text) {
+        text = text.trim();
+        if (!text) return;
+        // 去重
+        for (let chip of this.wrap.querySelectorAll('.chip')) {
+            if (chip.textContent.replace('×','').trim() === text) return;
+        }
+        // 上限检查
+        const chips = this.wrap.querySelectorAll('.chip');
+        if (chips.length >= this.maxTags) return;
+        // 长度截断
+        if (text.length > this.maxLen) text = text.substring(0, this.maxLen);
+
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = text + ' &lt;span class="close"&gt;×&lt;/span&gt;';
+        chip.querySelector('.close').addEventListener('click', () => chip.remove());
+        this.wrap.insertBefore(chip, this.input);
+    }
+
+    /** 获取所有标签值（数据获取接口） */
+    getTags() {
+        return [...this.wrap.querySelectorAll('.chip')].map(c =>
+            c.textContent.replace('×','').trim()
+        );
+    }
+
+    /** 程序化设置标签列表（不触发界面闪烁） */
+    setTags(tags) {
+        // 清除现有标签
+        this.wrap.querySelectorAll('.chip').forEach(c => c.remove());
+        // 逐个添加
+        tags.forEach(t => this._addTag(t));
+    }
+}
+
+// 初始化
+const tagInput = new TagInput(document.getElementById('tagInputWrap'));
+// 获取所有标签：tagInput.getTags()  →  ['前端','React','TypeScript']
+// 设置标签：tagInput.setTags(['Vue','Pinia','TypeScript'])</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 四、穿梭框控件 ==================== -->
+    <div class="card" id="sec-transfer">
+        <h2><span class="section-icon">⇆</span>四、穿梭框控件 (Transfer)</h2>
+
+        <div class="control-preview" style="justify-content:center;">
+            <div class="transfer" id="transferDemo">
+                <div class="transfer-panel">
+                    <div class="panel-header">
+                        <span>可选列表</span>
+                        <span class="count" id="leftCount">6 项</span>
+                    </div>
+                    <div class="panel-body" id="leftPanel">
+                        <div class="item"><input type="checkbox" value="zhangsan"> 张三</div>
+                        <div class="item"><input type="checkbox" value="lisi"> 李四</div>
+                        <div class="item"><input type="checkbox" value="wangwu"> 王五</div>
+                        <div class="item"><input type="checkbox" value="zhaoliu"> 赵六</div>
+                        <div class="item"><input type="checkbox" value="qianqi"> 钱七</div>
+                        <div class="item"><input type="checkbox" value="sunba"> 孙八</div>
+                    </div>
+                </div>
+                <div class="transfer-actions">
+                    <button class="transfer-btn" id="btnRight" title="添加选中 →">→</button>
+                    <button class="transfer-btn" id="btnLeft" title="移除选中 ←">←</button>
+                </div>
+                <div class="transfer-panel">
+                    <div class="panel-header">
+                        <span>已选列表</span>
+                        <span class="count" id="rightCount">2 项</span>
+                    </div>
+                    <div class="panel-body" id="rightPanel">
+                        <div class="item"><input type="checkbox" value="liujiu"> 刘九</div>
+                        <div class="item"><input type="checkbox" value="zhoushi"> 周十</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:120px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>面板宽度</td><td>240px</td><td>可根据内容调整</td></tr>
+                <tr><td>面板高度</td><td>max-height: 240px</td><td>超出滚动</td></tr>
+                <tr><td>操作按钮</td><td>→ 添加 / ← 移除</td><td>选中后点击移动</td></tr>
+                <tr><td>搜索</td><td>面板顶部可选搜索框</td><td>数据量大时必备</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生 JS</span></td><td>零依赖</td></tr>
+            </tbody>
+        </table>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">JavaScript — 穿梭框完整逻辑（复制即用）</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-transfer')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-transfer">// === 穿梭框控件（纯 JS，零依赖） ===
+// 数据获取方式：调用 getSelectedValues() → string[]
+// 数据变化时：仅移动单个 DOM 节点，不重新渲染，界面稳定无闪烁
+function initTransfer(leftPanel, rightPanel, btnRight, btnLeft) {
+    function moveItems(fromPanel, toPanel) {
+        const checked = fromPanel.querySelectorAll('input[type="checkbox"]:checked');
+        checked.forEach(cb => {
+            const item = cb.parentElement;
+            cb.checked = false;
+            // 直接移动 DOM 节点，不重建，保持事件绑定和状态
+            toPanel.appendChild(item);
+        });
+        updateCounts();
+    }
+
+    function updateCounts() {
+        document.getElementById('leftCount').textContent =
+            leftPanel.querySelectorAll('.item').length + ' 项';
+        document.getElementById('rightCount').textContent =
+            rightPanel.querySelectorAll('.item').length + ' 项';
+    }
+
+    btnRight.addEventListener('click', () => moveItems(leftPanel, rightPanel));
+    btnLeft.addEventListener('click', () => moveItems(rightPanel, leftPanel));
+
+    // 双击快速移动
+    [leftPanel, rightPanel].forEach(panel => {
+        panel.addEventListener('dblclick', (e) => {
+            const item = e.target.closest('.item');
+            if (!item) return;
+            const targetPanel = panel === leftPanel ? rightPanel : leftPanel;
+            item.querySelector('input').checked = false;
+            targetPanel.appendChild(item);
+            updateCounts();
+        });
+    });
+
+    /** 获取右侧已选值列表（数据获取接口） */
+    function getSelectedValues() {
+        return [...rightPanel.querySelectorAll('.item')].map(item => {
+            const cb = item.querySelector('input[type="checkbox"]');
+            return cb ? cb.value : '';
+        }).filter(Boolean);
+    }
+
+    return { getSelectedValues };
+}
+
+// 初始化
+const transfer = initTransfer(
+    document.getElementById('leftPanel'),
+    document.getElementById('rightPanel'),
+    document.getElementById('btnRight'),
+    document.getElementById('btnLeft')
+);
+// 获取已选值：transfer.getSelectedValues()  →  ['liujiu','zhoushi']</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 五、文件上传控件 ==================== -->
+    <div class="card" id="sec-fileupload">
+        <h2><span class="section-icon">📎</span>五、文件上传控件 (Upload)</h2>
+
+        <div class="control-preview column">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽文件到此区域上传</div>
+                <div class="upload-hint">支持 .pdf .doc .xlsx .jpg .png 格式，单文件不超过 10MB</div>
+                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" style="display:none;">
+            </div>
+            <div class="upload-file-list" id="uploadFileList">
+                <div class="upload-file-item" data-name="系统设计规范_v2.0.pdf">
+                    <span class="file-icon">📄</span>
+                    <div class="file-info">
+                        <div class="file-name">系统设计规范_v2.0.pdf</div>
+                        <div class="file-size">2.4 MB · 已上传</div>
+                    </div>
+                    <div class="file-progress"><div class="bar" style="width:100%;"></div></div>
+                    <span class="file-remove" onclick="this.parentElement.remove()">×</span>
+                </div>
+            </div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:140px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>上传方式</td><td>点击 + 拖拽</td><td>拖拽区域有视觉反馈</td></tr>
+                <tr><td>区域样式</td><td>虚线边框 + 浅灰底</td><td>hover 时变蓝色虚线</td></tr>
+                <tr><td>文件列表</td><td>文件名 + 大小 + 进度 + 删除</td><td>上传中显示进度条</td></tr>
+                <tr><td>格式限制</td><td>accept 属性 + 前端校验</td><td>不合法格式即时提示</td></tr>
+                <tr><td>大小限制</td><td>前端 + 后端双重校验</td><td>超限即时提示</td></tr>
+                <tr><td>数量限制</td><td>建议 ≤ 20 个</td><td>超出禁用上传区域</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生 JS</span></td><td>基础上传零依赖；高级功能见下方推荐</td></tr>
+            </tbody>
+        </table>
+
+        <div class="callout warn">
+            <span class="callout-icon">⚠️</span>
+            <span><strong>安全规范：</strong> 前端校验仅提升体验，后端必须校验文件类型（MIME + 魔数）、大小、数量；文件名防路径穿越；存储与数据库分离。</span>
+        </div>
+
+        <div class="callout info" style="margin-top:8px;">
+            <span class="callout-icon">📦</span>
+            <span><strong>Vue 生态第三方上传库推荐：</strong><br>
+            ① <strong>Element Plus</strong> — <code>&lt;el-upload&gt;</code> 支持拖拽/缩略图/分片/断点续传，<span class="license-tag license-mit">MIT</span>（免费商用），Vue 3 首选<br>
+            ② <strong>Ant Design Vue</strong> — <code>&lt;a-upload&gt;</code> 支持拖拽/图片墙/手动上传，<span class="license-tag license-mit">MIT</span><br>
+            ③ <strong>FilePond</strong> — 独立库，支持 Vue 适配器 <code>vue-filepond</code>，<span class="license-tag license-mit">MIT</span>（免费商用），支持图片裁剪/优化<br>
+            ④ <strong>Uppy</strong> — 独立库（可搭配 Vue），支持分片/断点续传/Webcam/Tus，<span class="license-tag license-mit">MIT</span>（免费商用）<br>
+            ⑤ <strong>SparkMD5</strong> — 前端计算文件 MD5，<span class="license-tag license-mit">MIT</span>，用于秒传/断点续传<br>
+            ⚠️ 不推荐 Dropzone.js（依赖 jQuery 模式），Vue 中请用上述 Vue 原生方案</span>
+        </div>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">JavaScript — 拖拽上传基础逻辑（复制即用）</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-upload')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-upload">// === 文件上传控件（拖拽 + 点击，纯 JS） ===
+// 数据获取方式：调用 getFiles() → File[]
+// 数据变化时：仅操作单个文件项 DOM，不重新渲染整个列表，界面稳定无闪烁
+class FileUpload {
+    constructor(zone, input, list, maxSize = 10 * 1024 * 1024) {
+        this.zone = zone;
+        this.input = input;
+        this.list = list;
+        this.maxSize = maxSize;
+        this._fileStore = [];  // 存储原始 File 对象，用于数据获取
+        this._bindEvents();
+    }
+
+    _bindEvents() {
+        // 点击触发
+        this.zone.addEventListener('click', () => this.input.click());
+
+        this.input.addEventListener('change', (e) => {
+            [...e.target.files].forEach(f => this._addFile(f));
+            this.input.value = '';
+        });
+
+        // 拖拽
+        this.zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            this.zone.classList.add('drag-over');
+        });
+        this.zone.addEventListener('dragleave', () => {
+            this.zone.classList.remove('drag-over');
+        });
+        this.zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            this.zone.classList.remove('drag-over');
+            [...e.dataTransfer.files].forEach(f => this._addFile(f));
+        });
+    }
+
+    _addFile(file) {
+        // 大小校验
+        if (file.size > this.maxSize) {
+            alert('文件 ' + file.name + ' 超过大小限制');
+            return;
+        }
+
+        this._fileStore.push(file);
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        const iconMap = { pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊',
+                         jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️' };
+
+        const item = document.createElement('div');
+        item.className = 'upload-file-item';
+        item.dataset.fileId = file.name + '_' + Date.now();
+        item.innerHTML = `
+            &lt;span class="file-icon"&gt;${iconMap[ext] || '📎'}&lt;/span&gt;
+            &lt;div class="file-info"&gt;
+                &lt;div class="file-name"&gt;${file.name}&lt;/div&gt;
+                &lt;div class="file-size"&gt;${(file.size/1024).toFixed(1)} KB · 上传中...&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="file-progress"&gt;&lt;div class="bar" style="width:0%"&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;span class="file-remove"&gt;×&lt;/span&gt;
+        `;
+        item.querySelector('.file-remove').addEventListener('click', () => {
+            const idx = [...this.list.children].indexOf(item);
+            if (idx >= 0) this._fileStore.splice(idx, 1);
+            item.remove();
+        });
+        this.list.appendChild(item);
+
+        // 模拟进度（实际应通过 XHR/Fetch 上传）
+        this._simulateProgress(item);
+    }
+
+    _simulateProgress(item) {
+        const bar = item.querySelector('.bar');
+        let progress = 0;
+        const timer = setInterval(() => {
+            progress += Math.random() * 30;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(timer);
+                item.querySelector('.file-size').textContent += ' ✓ 完成';
+            }
+            bar.style.width = progress + '%';
+        }, 300);
+    }
+
+    /** 获取待上传的文件列表（数据获取接口） */
+    getFiles() {
+        return this._fileStore.filter((_, i) => {
+            // 排除已从 DOM 中删除的
+            return !!this.list.children[i];
+        });
+    }
+}
+
+// 初始化
+const uploader = new FileUpload(
+    document.getElementById('uploadZone'),
+    document.getElementById('fileInput'),
+    document.getElementById('uploadFileList')
+);
+// 获取文件列表：uploader.getFiles()  →  File[]</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 六、级联 & 树形选择控件 ==================== -->
+    <div class="card" id="sec-cascade">
+        <h2><span class="section-icon">🌳</span>六、级联选择 & 树形选择控件</h2>
+
+        <div class="control-preview" style="justify-content:center;">
+            <div class="cascader" id="cascaderDemo">
+                <div class="cascader-col" id="casCol0">
+                    <div class="cas-item active" data-index="0">📁 中国大陆 <span class="arrow">›</span></div>
+                    <div class="cas-item" data-index="1">📁 港澳台 <span class="arrow">›</span></div>
+                    <div class="cas-item" data-index="2">📁 海外 <span class="arrow">›</span></div>
+                </div>
+                <div class="cascader-col" id="casCol1">
+                    <div class="cas-item active" data-index="0">广东省 <span class="arrow">›</span></div>
+                    <div class="cas-item" data-index="1">北京市 <span class="arrow">›</span></div>
+                    <div class="cas-item" data-index="2">上海市 <span class="arrow">›</span></div>
+                    <div class="cas-item" data-index="3">浙江省 <span class="arrow">›</span></div>
+                </div>
+                <div class="cascader-col" id="casCol2">
+                    <div class="cas-item">深圳市</div>
+                    <div class="cas-item active">广州市</div>
+                    <div class="cas-item">东莞市</div>
+                    <div class="cas-item">佛山市</div>
+                </div>
+            </div>
+            <div id="casResult" style="margin-left:20px;font-size:14px;color:var(--primary);font-weight:500;"></div>
+        </div>
+
+        <table class="spec-table">
+            <thead><tr><th style="width:140px">规格项</th><th>值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>级联列宽</td><td>180px / 列</td><td>根据内容调整</td></tr>
+                <tr><td>列最大高度</td><td>240px</td><td>超出滚动</td></tr>
+                <tr><td>展开方式</td><td>click 展开</td><td>click 更可控，hover 更流畅</td></tr>
+                <tr><td>选中方式</td><td>任意级 / 仅末级</td><td>根据业务决定</td></tr>
+                <tr><td>回显</td><td>路径拼接显示</td><td>如 "中国大陆 / 广东省 / 广州市"</td></tr>
+                <tr><td>许可证</td><td><span class="license-tag license-mit">原生 JS</span></td><td>基础级联零依赖</td></tr>
+            </tbody>
+        </table>
+
+        <div class="callout info">
+            <span class="callout-icon">📦</span>
+            <span><strong>Vue 生态级联/树形选择库推荐：</strong><br>
+            ① <strong>Element Plus</strong> — <code>&lt;el-cascader&gt;</code> / <code>&lt;el-tree-select&gt;</code> 企业级级联/树形选择，<span class="license-tag license-mit">MIT</span>（免费商用），Vue 3 首选<br>
+            ② <strong>Ant Design Vue</strong> — <code>&lt;a-cascader&gt;</code> / <code>&lt;a-tree-select&gt;</code> 支持搜索/懒加载/自定义节点，<span class="license-tag license-mit">MIT</span><br>
+            ③ <strong>Naive UI</strong> — <code>&lt;n-cascader&gt;</code> / <code>&lt;n-tree-select&gt;</code> TypeScript 优先，Tree-shaking，<span class="license-tag license-mit">MIT</span><br>
+            ④ <strong>Treeselectjs</strong> — 独立轻量树形选择器（~9KB gzip），<span class="license-tag license-mit">MIT</span>（免费商用），支持单选/多选/搜索，可配合 Vue 使用<br>
+            ⚠️ 不推荐 jsTree（依赖 jQuery），Vue 中请用上述方案</span>
+        </div>
+
+        <div class="code-block-wrap">
+            <div class="code-block-header">
+                <span class="lang">JavaScript — 级联选择器交互逻辑</span>
+                <button class="copy-btn" onclick="copyCode(this, 'code-cascader')">📋 复制代码</button>
+            </div>
+            <pre class="code-block" id="code-cascader">// === 级联选择器交互（纯 JS） ===
+// 数据获取方式：调用 getValue() → { path: string[], text: string }
+// 数据变化时：仅修改 className，不替换 DOM，界面稳定无闪烁
+const cascader = (() => {
+    const resultEl = document.getElementById('casResult');
+
+    function updatePath() {
+        const cols = document.querySelectorAll('#cascaderDemo .cascader-col');
+        let path = [];
+        cols.forEach(col => {
+            const active = col.querySelector('.cas-item.active');
+            if (active) path.push(active.textContent.replace(/[›\s📁]+/g,'').trim());
+        });
+        resultEl.textContent = '已选：' + path.join(' / ');
+        return path;
+    }
+
+    document.querySelectorAll('#cascaderDemo .cascader-col .cas-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // 只修改 className，不重建 DOM
+            this.parentElement.querySelectorAll('.cas-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            updatePath();
+        });
+    });
+
+    /** 获取当前选中路径（数据获取接口） */
+    function getValue() {
+        const path = updatePath();
+        return { path, text: path.join(' / ') };
+    }
+
+    return { getValue };
+})();
+// 获取选中值：cascader.getValue()  →  { path: ['中国大陆','广东省','广州市'], text: '中国大陆 / 广东省 / 广州市' }</pre>
+        </div>
+    </div>
+
+    <!-- ==================== 七、其他常用控件 ==================== -->
+    <div class="card">
+        <h2><span class="section-icon">🎚️</span>七、其他常用控件</h2>
+
+        <div class="grid-2">
+            <!-- 颜色选择器 -->
+            <div class="control-preview" style="flex-direction:column;align-items:flex-start;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">🎨 颜色选择器 <span style="font-size:12px;color:var(--success);">（可交互）</span></p>
+                <div class="color-picker-row">
+                    <input type="color" id="colorPickerNative" class="color-swatch" value="#0066CC" style="width:38px;height:38px;padding:2px;border-radius:6px;">
+                    <input type="text" id="colorHexInput" class="input-base input-sm color-input" value="#0066CC" placeholder="#000000" onchange="updateColorFromHex()">
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;" id="colorPresets">
+                    <span class="color-swatch active" style="background:#0066CC;" data-color="#0066CC" title="#0066CC"></span>
+                    <span class="color-swatch" style="background:#10B981;" data-color="#10B981" title="#10B981"></span>
+                    <span class="color-swatch" style="background:#F59E0B;" data-color="#F59E0B" title="#F59E0B"></span>
+                    <span class="color-swatch" style="background:#EF4444;" data-color="#EF4444" title="#EF4444"></span>
+                    <span class="color-swatch" style="background:#8B5CF6;" data-color="#8B5CF6" title="#8B5CF6"></span>
+                    <span class="color-swatch" style="background:#111827;" data-color="#111827" title="#111827"></span>
+                </div>
+            </div>
+
+            <!-- 星级评分 -->
+            <div class="control-preview" style="flex-direction:column;align-items:flex-start;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">⭐ 星级评分 <span style="font-size:12px;color:var(--success);">（可交互）</span></p>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <span style="font-size:13px;color:var(--text-secondary);margin-top:6px;" id="starValue">评分：0 / 5</span>
+            </div>
+
+            <!-- 滑块 -->
+            <div class="control-preview" style="flex-direction:column;align-items:flex-start;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">🎚️ 滑块 (Slider) <span style="font-size:12px;color:var(--success);">（联动）</span></p>
+                <div class="slider-wrap">
+                    <span style="font-size:13px;color:var(--text-secondary);">0</span>
+                    <input type="range" min="0" max="100" value="65" id="sliderDemo" oninput="document.getElementById('sliderVal').textContent=this.value">
+                    <span style="font-size:13px;color:var(--text-secondary);">100</span>
+                    <span class="slider-value" id="sliderVal">65</span>
+                </div>
+            </div>
+
+            <!-- 分段控制器 -->
+            <div class="control-preview" style="flex-direction:column;align-items:flex-start;">
+                <p style="font-weight:600;font-size:14px;margin-bottom:12px;">📎 分段控制器 (Segmented) <span style="font-size:12px;color:var(--success);">（可交互）</span></p>
+                <div class="btn-group" id="segmentedDemo1">
+                    <button class="btn-item active">列表</button>
+                    <button class="btn-item">卡片</button>
+                    <button class="btn-item">日历</button>
+                </div>
+                <div style="margin-top:10px;">
+                    <div class="btn-group" id="segmentedDemo2" style="font-size:12px;">
+                        <button class="btn-item" style="padding:4px 12px;font-size:12px;">日</button>
+                        <button class="btn-item active" style="padding:4px 12px;font-size:12px;">周</button>
+                        <button class="btn-item" style="padding:4px 12px;font-size:12px;">月</button>
+                        <button class="btn-item" style="padding:4px 12px;font-size:12px;">年</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控件速查总表 + 第三方库推荐（Vue 生态优先） -->
+        <table class="spec-table" style="margin-top:20px;">
+            <thead><tr><th>控件名称</th><th>适用场景</th><th>Vue 3 方案</th><th>独立/通用方案</th></tr></thead>
+            <tbody>
+                <tr><td><strong>颜色选择器</strong></td><td>主题色、标签色</td><td>Element Plus / Ant DV / Naive UI</td><td><code>&lt;input type="color"&gt;</code> 原生零依赖</td></tr>
+                <tr><td><strong>星级评分</strong></td><td>评价、满意度</td><td><code>&lt;el-rate&gt;</code> / <code>&lt;a-rate&gt;</code></td><td>纯 CSS + JS（约 20 行），零依赖</td></tr>
+                <tr><td><strong>滑块</strong></td><td>数值范围、音量</td><td><code>&lt;el-slider&gt;</code> / <code>&lt;a-slider&gt;</code></td><td><code>&lt;input type="range"&gt;</code> 原生；高级用 noUiSlider <span class="license-tag license-mit">MIT</span></td></tr>
+                <tr><td><strong>分段控制器</strong></td><td>视图切换、周期</td><td><code>&lt;el-radio-group&gt;</code> button 模式</td><td>纯 CSS + JS（约 15 行），零依赖</td></tr>
+                <tr><td><strong>数字输入框</strong></td><td>数量、价格</td><td><code>&lt;el-input-number&gt;</code></td><td><code>&lt;input type="number"&gt;</code> 原生零依赖</td></tr>
+                <tr><td><strong>可搜索下拉</strong></td><td>选项多、需搜索</td><td><code>&lt;el-select filterable&gt;</code></td><td>本文纯 JS 实现，零依赖</td></tr>
+                <tr><td><strong>穿梭框</strong></td><td>多选分配</td><td><code>&lt;el-transfer&gt;</code> / <code>&lt;a-transfer&gt;</code></td><td>本文纯 JS 实现，零依赖</td></tr>
+                <tr><td><strong>级联/树形</strong></td><td>层级数据选择</td><td><code>&lt;el-cascader&gt;</code> / <code>&lt;el-tree-select&gt;</code></td><td>Treeselectjs <span class="license-tag license-mit">MIT</span></td></tr>
+                <tr><td><strong>富文本编辑器</strong></td><td>文章编辑、公告</td><td><code>@tiptap/vue-3</code> <span class="license-tag license-mit">MIT</span>（推荐）</td><td>Quill <span class="license-bsd">BSD-3</span> / TinyMCE <span class="license-mit">MIT</span>（核心免费）</td></tr>
+                <tr><td><strong>图片裁剪上传</strong></td><td>头像、封面图</td><td><code>vue-cropper</code> 或 <code>vue-advanced-cropper</code></td><td>Cropper.js <span class="license-tag license-mit">MIT</span>（免费商用）</td></tr>
+                <tr><td><strong>拖拽排序列表</strong></td><td>排序管理、菜单</td><td><code>vuedraggable</code> <span class="license-tag license-mit">MIT</span>（推荐）</td><td>SortableJS <span class="license-tag license-mit">MIT</span>（免费商用）</td></tr>
+            </tbody>
+        </table>
+
+        <div class="callout success" style="margin-top:16px;">
+            <span class="callout-icon">✅</span>
+            <span><strong>所有推荐第三方库均为免费商业许可（MIT / BSD-3 / Apache-2.0）：</strong><br>
+            ① 优先推荐 <strong>Vue 3 原生组件库</strong>（Element Plus、Ant Design Vue、Naive UI），无 jQuery 依赖，与 Vue 响应式系统无缝集成<br>
+            ② 独立库（FilePond、SortableJS、Cropper.js、Treeselectjs）均有 Vue 适配器或可直接配合 Vue 使用<br>
+            ③ 注意避开 GPL 许可证库（如 CKEditor 5 GPL 版、jsTree 的 GPL 版），商业使用请选择 MIT/BSD/Apache 许可版本<br>
+            ④ 所有控件均提供 <code>getValue()</code> / <code>getFiles()</code> / <code>getTags()</code> 等数据获取接口</span>
+        </div>
+    </div>
+
+    <!-- ==================== 八、设计令牌速查 ==================== -->
+    <div class="card">
+        <h2><span class="section-icon">🎨</span>八、设计令牌速查</h2>
+        <div class="token-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#06B6D4</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-hover</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#0891B2</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-light</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#ECFEFF</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--primary-border</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#A5F3FC</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--success</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#059669</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--warning</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#D97706</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--error</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#DC2626</span></div>
+            <div class="token-item" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span class="token-name" style="font-family:var(--font-mono);font-size:12px;color:var(--primary);font-weight:500;">--info</span><span class="token-value" style="color:var(--text-secondary);font-size:12px;">#2563EB</span></div>
+        </div>
+    </div>
+
+    <!-- ==================== 九、规范检查清单 ==================== -->
+    <div class="card">
+        <h2><span class="section-icon">✅</span>九、规范检查清单</h2>
+        <ul class="checklist">
+            <li>所有控件是否提供 getValue()/getFiles()/getTags() 等数据获取接口</li>
+            <li>日期控件是否统一使用 ISO 格式 (yyyy-MM-dd)</li>
+            <li>下拉搜索是否支持键盘导航 (↑↓ Enter Esc)</li>
+            <li>文件上传是否做了前后端双重校验（类型+大小+数量）</li>
+            <li>标签输入是否做了去重和上限控制</li>
+            <li>第三方库是否确认了商业许可兼容（MIT/BSD/Apache）</li>
+            <li>控件界面更新是否稳定无闪烁（仅修改className，不重建DOM）</li>
+            <li>是否避免了 jQuery 依赖，优先 Vue 原生方案</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">📐 规范总览</a>
+        <a href="03-组件交互规范-按钮输入框弹窗选择标签页开关.html">🔘 组件交互规范</a>
+        <a href="11-字段类型映射规范-数据库字段与表单控件对应关系.html">🔗 字段类型映射规范</a>
+        <span>控件规范库 v2.1 · Vue 生态优先 · MIT/BSD/Apache-2.0 免费商业许可</span>
+    </div>
+
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// 语法高亮：将 code-block 内容包裹在 <code> 中
+document.querySelectorAll('pre.code-block').forEach(pre => {
+    const code = document.createElement('code');
+    code.className = 'language-javascript';
+    code.innerHTML = pre.innerHTML;
+    pre.innerHTML = '';
+    pre.appendChild(code);
+});
+hljs.highlightAll();
+});  // DOMContentLoaded end
+// ==================== 工具函数：复制代码 ====================
+function copyCode(btn, codeId) {
+    const code = document.getElementById(codeId).textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '✅ 已复制！';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 复制代码';
+            btn.classList.remove('copied');
+        }, 2000);
+    }).catch(() => {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = code; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制！';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 复制代码';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// ==================== 可搜索下拉（增强版 + 键盘导航） ====================
+(function() {
+    const container = document.getElementById('searchableSelect');
+    const input = document.getElementById('searchInput');
+    const dropdown = document.getElementById('searchDropdown');
+    const options = dropdown.querySelectorAll('.option');
+    const noResult = dropdown.querySelector('.no-result');
+    const originalHtml = [...options].map(o => o.textContent);
+
+    input.addEventListener('focus', () => {
+        dropdown.classList.add('show');
+        container.classList.add('open');
+    });
+
+    input.addEventListener('input', function() {
+        const val = this.value.toLowerCase();
+        let hasResult = false;
+        options.forEach((opt, i) => {
+            const text = originalHtml[i].toLowerCase();
+            if (!val || text.includes(val)) {
+                opt.style.display = '';
+                hasResult = true;
+                if (val && text.includes(val)) {
+                    const idx = text.indexOf(val);
+                    opt.innerHTML = originalHtml[i].substring(0, idx)
+                        + '<span class="highlight">'
+                        + originalHtml[i].substring(idx, idx + val.length)
+                        + '</span>'
+                        + originalHtml[i].substring(idx + val.length);
+                } else {
+                    opt.innerHTML = originalHtml[i];
+                }
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        if (noResult) noResult.style.display = hasResult ? 'none' : '';
+    });
+
+    options.forEach(opt => {
+        opt.addEventListener('click', function() {
+            options.forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            input.value = this.getAttribute('data-value');
+            dropdown.classList.remove('show');
+            container.classList.remove('open');
+        });
+    });
+
+    // 键盘导航
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const visible = [...options].filter(o => o.style.display !== 'none');
+            const curIdx = visible.findIndex(o => o.classList.contains('hover'));
+            let next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
+            if (next >= visible.length) next = 0;
+            if (next < 0) next = visible.length - 1;
+            visible.forEach(o => o.classList.remove('hover'));
+            if (visible[next]) { visible[next].classList.add('hover'); visible[next].scrollIntoView({block:'nearest'}); }
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const hovered = dropdown.querySelector('.option.hover');
+            if (hovered) hovered.click();
+        }
+        if (e.key === 'Escape') {
+            dropdown.classList.remove('show');
+            container.classList.remove('open');
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!container.contains(e.target)) {
+            dropdown.classList.remove('show');
+            container.classList.remove('open');
+        }
+    });
+})();
+
+// ==================== 标签输入 ====================
+(function() {
+    const wrap = document.getElementById('tagInputWrap');
+    const input = document.getElementById('tagInput');
+
+    function addTag(text) {
+        text = text.trim();
+        if (!text) return;
+        for (let chip of wrap.querySelectorAll('.chip')) {
+            if (chip.textContent.replace('×','').trim() === text) return;
+        }
+        if (wrap.querySelectorAll('.chip').length >= 20) return;
+        if (text.length > 30) text = text.substring(0, 30);
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = text + ' <span class="close">×</span>';
+        chip.querySelector('.close').addEventListener('click', () => chip.remove());
+        wrap.insertBefore(chip, input);
+    }
+
+    wrap.querySelectorAll('.chip .close').forEach(btn => {
+        btn.addEventListener('click', () => btn.parentElement.remove());
+    });
+
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTag(input.value);
+            input.value = '';
+        }
+        if (e.key === 'Backspace' && input.value === '') {
+            const chips = wrap.querySelectorAll('.chip');
+            if (chips.length) chips[chips.length - 1].remove();
+        }
+    });
+    input.addEventListener('blur', () => { addTag(input.value); input.value = ''; });
+})();
+
+// ==================== 穿梭框 ====================
+(function() {
+    const leftPanel = document.getElementById('leftPanel');
+    const rightPanel = document.getElementById('rightPanel');
+
+    function moveItems(from, to) {
+        const checked = from.querySelectorAll('input[type="checkbox"]:checked');
+        checked.forEach(cb => { cb.checked = false; to.appendChild(cb.parentElement); });
+        updateCounts();
+    }
+
+    function updateCounts() {
+        document.getElementById('leftCount').textContent = leftPanel.querySelectorAll('.item').length + ' 项';
+        document.getElementById('rightCount').textContent = rightPanel.querySelectorAll('.item').length + ' 项';
+    }
+
+    document.getElementById('btnRight').addEventListener('click', () => moveItems(leftPanel, rightPanel));
+    document.getElementById('btnLeft').addEventListener('click', () => moveItems(rightPanel, leftPanel));
+
+    [leftPanel, rightPanel].forEach(panel => {
+        panel.addEventListener('dblclick', (e) => {
+            const item = e.target.closest('.item');
+            if (!item) return;
+            const target = panel === leftPanel ? rightPanel : leftPanel;
+            item.querySelector('input').checked = false;
+            target.appendChild(item);
+            updateCounts();
+        });
+    });
+})();
+
+// ==================== 文件上传 ====================
+(function() {
+    const zone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('uploadFileList');
+    const MAX_SIZE = 10 * 1024 * 1024;
+    const iconMap = { pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️' };
+
+    function addFile(file) {
+        if (file.size > MAX_SIZE) { alert('文件 ' + file.name + ' 超过 10MB 限制'); return; }
+        const ext = file.name.split('.').pop().toLowerCase();
+        const item = document.createElement('div');
+        item.className = 'upload-file-item';
+        item.innerHTML = `
+            <span class="file-icon">${iconMap[ext] || '📎'}</span>
+            <div class="file-info"><div class="file-name">${file.name}</div><div class="file-size">${(file.size/1024).toFixed(1)} KB · 上传中...</div></div>
+            <div class="file-progress"><div class="bar" style="width:0%"></div></div>
+            <span class="file-remove">×</span>`;
+        item.querySelector('.file-remove').addEventListener('click', () => item.remove());
+        fileList.appendChild(item);
+
+        // 模拟进度
+        const bar = item.querySelector('.bar');
+        let p = 0;
+        const t = setInterval(() => { p += Math.random()*30; if(p>=100){p=100;clearInterval(t);item.querySelector('.file-size').textContent+=' ✓ 完成';} bar.style.width=p+'%'; }, 300);
+    }
+
+    zone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => { [...e.target.files].forEach(f => addFile(f)); fileInput.value = ''; });
+
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('drag-over'); [...e.dataTransfer.files].forEach(f => addFile(f)); });
+
+    // 已有文件的删除
+    fileList.querySelectorAll('.file-remove').forEach(btn => { btn.addEventListener('click', () => btn.parentElement.remove()); });
+})();
+
+// ==================== 级联选择器 ====================
+(function() {
+    document.querySelectorAll('#cascaderDemo .cascader-col .cas-item').forEach(item => {
+        item.addEventListener('click', function() {
+            this.parentElement.querySelectorAll('.cas-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            const cols = document.querySelectorAll('#cascaderDemo .cascader-col');
+            let path = [];
+            cols.forEach(col => {
+                const active = col.querySelector('.cas-item.active');
+                if (active) path.push(active.textContent.replace(/[›\s📁]+/g,'').trim());
+            });
+            document.getElementById('casResult').textContent = '已选：' + path.join(' / ');
+        });
+    });
+})();
+
+// ==================== 颜色选择器 ====================
+(function() {
+    const native = document.getElementById('colorPickerNative');
+    const hexInput = document.getElementById('colorHexInput');
+    const presets = document.querySelectorAll('#colorPresets .color-swatch');
+
+    native.addEventListener('input', () => {
+        hexInput.value = native.value;
+        presets.forEach(s => s.classList.remove('active'));
+    });
+
+    presets.forEach(s => {
+        s.addEventListener('click', () => {
+            const c = s.getAttribute('data-color');
+            native.value = c;
+            hexInput.value = c;
+            presets.forEach(x => x.classList.remove('active'));
+            s.classList.add('active');
+        });
+    });
+})();
+window.updateColorFromHex = function() {
+    const hex = document.getElementById('colorHexInput').value;
+    if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+        document.getElementById('colorPickerNative').value = hex;
+        document.querySelectorAll('#colorPresets .color-swatch').forEach(s => s.classList.remove('active'));
+    }
+};
+
+// ==================== 星级评分 ====================
+(function() {
+    const stars = document.querySelectorAll('#starRating .star');
+    const valueEl = document.getElementById('starValue');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const val = parseInt(this.getAttribute('data-value'));
+            stars.forEach((s, i) => s.classList.toggle('active', i < val));
+            valueEl.textContent = '评分：' + val + ' / 5';
+        });
+        star.addEventListener('mouseenter', function() {
+            const val = parseInt(this.getAttribute('data-value'));
+            stars.forEach((s, i) => s.classList.toggle('active', i < val));
+        });
+    });
+    document.getElementById('starRating').addEventListener('mouseleave', function() {
+        const activeCount = this.querySelectorAll('.star.active').length;
+        // 保持当前选中状态（不做回退，click 决定最终值）
+    });
+    // 初始状态 0
+    stars.forEach(s => s.classList.remove('active'));
+})();
+
+// ==================== 分段控制器 ====================
+document.querySelectorAll('.btn-group').forEach(group => {
+    group.querySelectorAll('.btn-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            group.querySelectorAll('.btn-item').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+
+// ==================== 数据获取演示（控制台输出） ====================
+console.log('🎛️ 控件规范库 v2.1 — 数据获取接口一览：');
+console.log('  可搜索下拉:  搜索输入后选中，获取 searchSelect.getValue()');
+console.log('  标签输入:    输入标签后，获取 [...tagInputWrap.querySelectorAll(".chip")].map(c=>c.textContent.replace("×","").trim())');
+console.log('  穿梭框:      移动后，获取 [...rightPanel.querySelectorAll("input")].map(cb=>cb.value)');
+console.log('  文件上传:    拖入文件后，获取 uploadZone._fileStore');
+console.log('  级联选择:    点击后，获取 cascader.getValue()');
+console.log('  颜色选择:    colorPickerNative.value');
+console.log('  星级评分:    [...starRating.querySelectorAll(".active")].length');
+console.log('  滑块:        sliderDemo.value');
+console.log('  分段控制器:  [...segmentedDemo1.querySelectorAll(".active")].map(b=>b.textContent)');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1818 @@
+﻿<!DOCTYPE html>
+<!--
+    Third-party notice:
+    This file uses highlight.js (https://highlightjs.org/)
+    Copyright (c) 2006, Ivan Sagalaev
+    Licensed under the BSD-3-Clause license
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 配置规范 | 反向代理 · 负载均衡 · HTTPS · 配置生成器</title>
+    <link rel="stylesheet" href="standard.css">
+<style>
+:root {
+    --primary:#F97316; --primary-hover:#EA580C; --primary-light:#FFF7ED; --primary-border:#FED7AA;
+}
+
+/* ===== 代码块（Nginx 专用：带标题栏 + 复制按钮 + 语法高亮）===== */
+.code-block {
+    background:#1E293B; color:#E2E8F0; border-radius:8px; overflow:hidden;
+    margin:12px 0; position:relative;
+}
+.code-block pre {
+    padding:20px; margin:0; overflow-x:auto;
+    font-family:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace;
+    font-size:13px; line-height:1.7;
+}
+.code-block .code-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; background:rgba(255,255,255,.04);
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+.code-block .code-header .code-title { font-size:12px; color:#94A3B8; font-weight:600; }
+.code-block .copy-btn {
+    font-size:12px; padding:3px 10px; border:1px solid rgba(255,255,255,.12);
+    border-radius:4px; color:#94A3B8; cursor:pointer; background:transparent;
+    transition:all .15s;
+}
+.code-block .copy-btn:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+.code-block .copy-btn.copied { color:#10B981; border-color:#10B981; }
+.code-block .hljs { background:transparent; padding:0; }
+
+/* ===== 配置生成器 ===== */
+.gen-layout { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.gen-left { padding:24px; border-right:1px solid var(--border); max-height:85vh; overflow-y:auto; }
+.gen-right { padding:24px; background:#1E293B; border-radius:0 var(--radius) var(--radius) 0; display:flex; flex-direction:column; max-height:85vh; overflow-y:auto; }
+.gen-right .gen-output-title { color:#94A3B8; font-size:12px; font-weight:600; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; justify-content:space-between; }
+.gen-right .gen-copy { font-size:11px; padding:3px 8px; border:1px solid rgba(255,255,255,.15); border-radius:4px; color:#94A3B8; cursor:pointer; background:transparent; transition:all .15s; text-transform:none; letter-spacing:0; }
+.gen-right .gen-copy:hover { background:rgba(255,255,255,.06); color:#E2E8F0; }
+.gen-right .gen-copy.copied { color:#10B981; border-color:#10B981; }
+.gen-right pre { font-family:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace; font-size:13px; line-height:1.7; color:#E2E8F0; margin:0; flex:1; overflow:auto; white-space:pre; }
+
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:13px; font-weight:600; color:var(--text); margin-bottom:5px; }
+.form-group .desc { font-size:12px; color:var(--text-tertiary); margin-bottom:4px; }
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; color:var(--text); background:var(--bg); outline:none; transition:border-color .15s; }
+.form-group input:focus,
+.form-group select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(249,115,22,.08); }
+.form-group select { cursor:pointer; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-check { display:flex; align-items:center; gap:8px; padding:6px 0; }
+.form-check input[type="checkbox"] { width:16px; height:16px; accent-color:var(--primary); cursor:pointer; }
+.form-check label { font-size:13px; color:var(--text-secondary); cursor:pointer; }
+
+/* inline code */
+p code, li code, td code { background:var(--primary-light); padding:1px 6px; border-radius:3px; font-size:12px; color:var(--primary); }
+p { margin:10px 0; font-size:14px; color:var(--text-secondary); }
+
+.token-item .token-name { font-family:var(--font-mono); font-size:12px; color:var(--primary); font-weight:500; }
+.token-item .token-value { color:var(--text-secondary); font-size:12px; }
+
+@media (max-width:768px) {
+    .gen-layout { grid-template-columns:1fr; }
+    .gen-left { border-right:none; border-bottom:1px solid var(--border); max-height:none; }
+    .gen-right { border-radius:0 0 var(--radius) var(--radius); min-height:300px; max-height:none; }
+    .form-row { grid-template-columns:1fr; }
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<div class="container">
+
+<div class="nav-breadcrumb">
+    <a href="index.html">📚 设计系统规范库</a>
+    <span class="sep">›</span>
+    <a href="index.html">服务与部署</a>
+    <span class="sep">›</span>
+    <span class="current">15-Nginx配置规范</span>
+</div>
+
+<div class="page-header">
+    <h1><span class="icon">⚙️</span>Nginx 配置规范</h1>
+    <div class="subtitle">
+        <span>反向代理</span><span>负载均衡</span><span>HTTPS/SSL</span><span>安全头</span><span>访问控制</span><span>性能调优</span><span>配置生成器</span>
+    </div>
+    <div class="doc-meta">
+        <span>📅 版本: v2.0</span><span>🔖 规范编号: 15</span><span>🎨 主题色: #F97316</span><span>📂 分类: 服务与部署</span>
+    </div>
+    <div class="doc-summary">
+        <strong>📖 概要：</strong>定义Nginx服务器配置的完整规范，涵盖反向代理、负载均衡、HTTPS/SSL证书、安全响应头、访问控制、性能调优和静态资源缓存策略。下方提供交互式配置生成器。
+    </div>
+</div>
+
+<!-- ====== 配置生成器 ====== -->
+<div class="card" id="sec-configgen">
+<h2><span class="section-icon">🛠️</span>配置生成器 — 交互式 Nginx 配置生成</h2>
+<div class="tip-block tip-info">
+    <strong>使用说明：</strong>填写以下选项，右侧实时生成对应的 Nginx 配置。生成的配置可直接用于生产环境（请根据实际情况调整域名、证书路径等）。
+    所有配置块均支持<strong>一键复制</strong>。
+</div>
+
+<div class="gen-layout">
+    <!-- 左侧：表单 -->
+    <div class="gen-left">
+        <div class="form-row">
+            <div class="form-group">
+                <label>域名 (server_name)</label>
+                <div class="desc">多个域名用空格分隔</div>
+                <input type="text" id="gDomain" value="example.com www.example.com" oninput="generateConfig()">
+            </div>
+            <div class="form-group">
+                <label>监听端口</label>
+                <select id="gPort" onchange="generateConfig()">
+                    <option value="80">80 (HTTP)</option>
+                    <option value="443 ssl">443 (HTTPS)</option>
+                    <option value="80;443" selected>80 + 443 (HTTP 跳转 HTTPS)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>后端代理地址</label>
+                <div class="desc">如 127.0.0.1:8080</div>
+                <input type="text" id="gProxy" value="127.0.0.1:8080" oninput="generateConfig()">
+            </div>
+            <div class="form-group">
+                <label>代理协议</label>
+                <select id="gProxyProto" onchange="generateConfig()">
+                    <option value="http" selected>HTTP</option>
+                    <option value="https">HTTPS</option>
+                    <option value="fastcgi">FastCGI (PHP-FPM)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>客户端最大请求体</label>
+                <select id="gBodySize" onchange="generateConfig()">
+                    <option value="10m" selected>10 MB</option>
+                    <option value="50m">50 MB</option>
+                    <option value="100m">100 MB</option>
+                    <option value="500m">500 MB</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>根目录 (root)</label>
+                <div class="desc">静态文件或留空代理模式</div>
+                <input type="text" id="gRoot" value="" placeholder="留空 = 纯代理模式" oninput="generateConfig()">
+            </div>
+        </div>
+
+        <h4 style="font-size:14px; margin-top:20px; margin-bottom:10px;">功能开关</h4>
+        <div class="form-row">
+            <div class="form-check">
+                <input type="checkbox" id="gGzip" checked onchange="generateConfig()">
+                <label>Gzip 压缩</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="gCors" checked onchange="generateConfig()">
+                <label>CORS 跨域</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="gCache" checked onchange="generateConfig()">
+                <label>静态资源缓存</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="gSecurity" checked onchange="generateConfig()">
+                <label>安全头 (HSTS/X-Frame等)</label>
+            </div>
+        </div>
+
+        <h4 style="font-size:14px; margin-top:16px; margin-bottom:10px;">高级选项</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label>负载均衡节点</label>
+                <div class="desc">每行一个 upstream 节点</div>
+                <textarea id="gUpstream" rows="3" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace;background:var(--bg);outline:none;resize:vertical;" placeholder="server 192.168.1.10:8080 weight=3;&#10;server 192.168.1.11:8080 weight=1;&#10;server 192.168.1.12:8080 backup;" oninput="generateConfig()"></textarea>
+            </div>
+            <div class="form-group">
+                <label>SSL 证书路径</label>
+                <div class="desc">HTTPS 模式时使用</div>
+                <input type="text" id="gSSL" value="/etc/nginx/ssl/example.com.pem" oninput="generateConfig()">
+                <div class="desc" style="margin-top:4px;">证书密钥</div>
+                <input type="text" id="gSSLKey" value="/etc/nginx/ssl/example.com.key" oninput="generateConfig()">
+            </div>
+        </div>
+
+        <h4 style="font-size:14px; margin-top:20px; margin-bottom:10px; color:var(--error);">🛡️ 访问控制</h4>
+        <div class="form-row" style="margin-bottom:12px;">
+            <div class="form-check">
+                <input type="radio" name="gAccessMode" id="gAccessDeny" checked onchange="generateConfig()">
+                <label style="font-weight:600;">🔒 黑名单模式（禁止敏感文件）</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" name="gAccessMode" id="gAccessAllow" onchange="generateConfig()">
+                <label style="font-weight:600;">🔐 白名单模式（仅允许安全文件）</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>文件类型（后缀）</label>
+            <div class="desc">黑名单：禁止的后缀 | 白名单：允许的后缀。多个用逗号分隔</div>
+            <input type="text" id="gBlockExt" value="bak,sql,git,env,log,yml,yaml,md" oninput="generateConfig()" placeholder="bak,sql,git,env,log">
+        </div>
+        <div class="form-group">
+            <label>目录路径</label>
+            <div class="desc">黑名单：禁止的目录 | 白名单：允许的目录。每行一个</div>
+            <textarea id="gBlockDir" rows="3" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace;background:var(--bg);outline:none;resize:vertical;" placeholder="/.git&#10;/.svn&#10;/node_modules&#10;/vendor&#10;/backup" oninput="generateConfig()"></textarea>
+        </div>
+        <div class="form-group">
+            <label>目录+文件类型组合</label>
+            <div class="desc">黑名单：目录|禁止后缀 | 白名单：目录|允许后缀。格式：目录|后缀, 多组用换行分隔</div>
+            <textarea id="gBlockDirExt" rows="3" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace;background:var(--bg);outline:none;resize:vertical;" placeholder="uploads|php,phar,phtml&#10;static|sql,env,yml&#10;data|php,env,ini" oninput="generateConfig()"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>IP 白名单（管理后台）</label>
+                <div class="desc">允许访问的 IP/CIDR，逗号分隔。如 192.168.1.0/24,10.0.0.0/8</div>
+                <input type="text" id="gAllowIP" value="" oninput="generateConfig()" placeholder="192.168.1.0/24,10.0.0.0/8">
+            </div>
+            <div class="form-group">
+                <label>白名单保护路径</label>
+                <div class="desc">受 IP 白名单保护的路径</div>
+                <input type="text" id="gAllowPath" value="" oninput="generateConfig()" placeholder="/admin/">
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：输出 -->
+    <div class="gen-right">
+        <div class="gen-output-title">
+            📄 nginx.conf
+            <button class="gen-copy" onclick="copyOutput()">📋 复制</button>
+        </div>
+        <pre id="genOutput"># 请填写左侧选项后自动生成...</pre>
+    </div>
+</div>
+</div>
+
+<!-- ====== 反向代理规范 ====== -->
+<div class="card" id="sec-proxy">
+<h2><span class="section-icon">🔄</span>一、反向代理规范</h2>
+
+<h3>基础反向代理配置</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">nginx.conf — 反向代理模板</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 上游服务器定义 =====</span>
+<span class="kw">upstream</span> backend {
+    <span class="cmt"># 负载均衡策略（默认轮询）</span>
+    <span class="kw">server</span> 192.168.1.10:8080 weight=<span class="num">3</span> max_fails=<span class="num">3</span> fail_timeout=<span class="num">30s</span>;
+    <span class="kw">server</span> 192.168.1.11:8080 weight=<span class="num">1</span>;
+    <span class="kw">server</span> 192.168.1.12:8080 backup;  <span class="cmt"># 热备</span>
+    keepalive <span class="num">32</span>;  <span class="cmt"># 保持长连接数</span>
+}
+
+<span class="kw">server</span> {
+    listen <span class="num">80</span>;
+    server_name example.com www.example.com;
+
+    <span class="cmt"># 访问日志（按域名分离）</span>
+    access_log /var/log/nginx/example.access.log main;
+    error_log  /var/log/nginx/example.error.log warn;
+
+    <span class="cmt"># 客户端请求体限制</span>
+    client_max_body_size <span class="num">10m</span>;
+    client_body_buffer_size <span class="num">128k</span>;
+
+    <span class="cmt"># 超时设置</span>
+    proxy_connect_timeout <span class="num">60s</span>;
+    proxy_send_timeout    <span class="num">60s</span>;
+    proxy_read_timeout    <span class="num">60s</span>;
+
+    <span class="cmt"># 代理头信息（传递真实 IP）</span>
+    proxy_set_header Host              <span class="str">$host</span>;
+    proxy_set_header X-Real-IP         <span class="str">$remote_addr</span>;
+    proxy_set_header X-Forwarded-For   <span class="str">$proxy_add_x_forwarded_for</span>;
+    proxy_set_header X-Forwarded-Proto <span class="str">$scheme</span>;
+
+    <span class="cmt"># 反向代理到后端</span>
+    location / {
+        proxy_pass http://backend;
+        proxy_http_version <span class="num">1.1</span>;
+        proxy_set_header Connection <span class="str">""</span>;
+    }
+
+    <span class="cmt"># 静态资源（Nginx 直接响应）</span>
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {
+        root /var/www/static;
+        expires <span class="num">30d</span>;
+        add_header Cache-Control <span class="str">"public, immutable"</span>;
+    }
+}
+</pre>
+</div>
+
+<h3 id="sec-lb">负载均衡策略</h3>
+<table class="spec-table">
+    <thead><tr><th>策略</th><th>指令</th><th>场景</th></tr></thead>
+    <tbody>
+    <tr><td>轮询（默认）</td><td><code>默认</code></td><td>通用，节点性能一致</td></tr>
+    <tr><td>加权轮询</td><td><code>weight=N</code></td><td>节点性能差异较大</td></tr>
+    <tr><td>IP 哈希</td><td><code>ip_hash;</code></td><td>需要会话保持 (Session)</td></tr>
+    <tr><td>最少连接</td><td><code>least_conn;</code></td><td>长连接场景（WebSocket）</td></tr>
+    <tr><td>一致性哈希</td><td><code>hash $request_uri consistent;</code></td><td>缓存服务器集群</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ====== HTTPS/SSL ====== -->
+<div class="card" id="sec-ssl">
+<h2><span class="section-icon">🔒</span>二、HTTPS / SSL 配置 + 免费证书方案</h2>
+<div class="tip-block tip-success">
+    <strong>✅ 推荐开启：</strong>HTTPS 已是 Web 安全的基础要求。使用 Let's Encrypt / acme.sh 可免费获取受信任的 SSL 证书，自动续期零维护。
+</div>
+
+<h3>2.1 免费 SSL 证书方案对比</h3>
+<table class="spec-table">
+    <thead><tr><th>方案</th><th>颁发机构</th><th>有效期</th><th>自动续期</th><th>适用场景</th><th>推荐度</th></tr></thead>
+    <tbody>
+    <tr><td><strong>acme.sh</strong></td><td>Let's Encrypt / ZeroSSL</td><td>90 天</td><td>✅ 内置定时任务</td><td>通用（最推荐）</td><td>⭐⭐⭐⭐⭐</td></tr>
+    <tr><td><strong>Certbot</strong></td><td>Let's Encrypt</td><td>90 天</td><td>✅ systemd timer / cron</td><td>官方推荐，入门友好</td><td>⭐⭐⭐⭐</td></tr>
+    <tr><td><strong>lego</strong></td><td>Let's Encrypt</td><td>90 天</td><td>✅ 需自行配置 cron</td><td>Go 语言环境，轻量</td><td>⭐⭐⭐</td></tr>
+    <tr><td><strong>腾讯云 SSL</strong></td><td>TrustAsia</td><td>1 年</td><td>❌ 手动续期</td><td>腾讯云生态用户</td><td>⭐⭐⭐</td></tr>
+    <tr><td><strong>阿里云 SSL</strong></td><td>DigiCert</td><td>1 年</td><td>❌ 手动续期</td><td>阿里云生态用户</td><td>⭐⭐⭐</td></tr>
+    <tr><td><strong>Cloudflare</strong></td><td>Cloudflare Origin CA</td><td>最长 15 年</td><td>❌ 但边缘自动</td><td>使用 CF CDN 的场景</td><td>⭐⭐⭐⭐</td></tr>
+    </tbody>
+</table>
+
+<!-- 2.2 acme.sh 方案 -->
+<h3>2.2 acme.sh 方案（⭐ 推荐）</h3>
+<p>acme.sh 是一个纯 Shell 脚本实现的 ACME 客户端，零依赖，支持多种 DNS API 自动验证，是目前最灵活的免费证书方案。</p>
+
+<h4>安装与初始化</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">安装 acme.sh</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># 一键安装（推荐使用 curl）</span>
+curl https://get.acme.sh | sh -s email=<span class="str">admin@example.com</span>
+
+<span class="cmt"># 或使用 wget</span>
+wget -O - https://get.acme.sh | sh -s email=<span class="str">admin@example.com</span>
+
+<span class="cmt"># 安装后重载 shell 配置</span>
+source ~/.bashrc
+
+<span class="cmt"># 设置默认 CA 为 Let's Encrypt（默认）或 ZeroSSL</span>
+acme.sh --set-default-ca --server letsencrypt
+<span class="cmt"># acme.sh --set-default-ca --server zerossl  # 备选</span>
+</pre>
+</div>
+
+<h4>方式一：Webroot 模式（HTTP 验证，适合已有 Nginx 站点）</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">Webroot 模式 — 通过 HTTP 挑战验证域名</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># 1. 先在 Nginx 中配置 ACME 验证路径（80 端口）</span>
+<span class="cmt"># 在 server { listen 80; } 块中添加：</span>
+<span class="cmt"># location ^~ /.well-known/acme-challenge/ {</span>
+<span class="cmt">#     root /var/www/acme;</span>
+<span class="cmt">#     default_type text/plain;</span>
+<span class="cmt"># }</span>
+
+<span class="cmt"># 2. 创建验证目录</span>
+mkdir -p /var/www/acme/.well-known/acme-challenge
+
+<span class="cmt"># 3. 签发证书（支持多域名和泛域名）</span>
+acme.sh --issue \
+  -d example.com \
+  -d www.example.com \
+  -w /var/www/acme
+
+<span class="cmt"># 泛域名证书（需 DNS 验证，见方式二）</span>
+</pre>
+</div>
+
+<h4>方式二：DNS API 模式（⭐ 推荐，支持泛域名，无需开放 80 端口）</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">DNS API 模式 — 自动 DNS 验证（支持泛域名）</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 腾讯云 DNSPod =====</span>
+<span class="cmt"># 先设置 API 密钥（在 DNSPod 控制台获取）</span>
+export DP_Id=<span class="str">"你的DNSPod_ID"</span>
+export DP_Key=<span class="str">"你的DNSPod_Token"</span>
+
+acme.sh --issue \
+  --dns dns_dp \
+  -d example.com \
+  -d *.example.com \
+  -d www.example.com
+
+<span class="cmt"># ===== 阿里云 DNS =====</span>
+<span class="cmt"># export Ali_Key="你的AccessKey_ID"</span>
+<span class="cmt"># export Ali_Secret="你的AccessKey_Secret"</span>
+<span class="cmt"># acme.sh --issue --dns dns_ali -d example.com -d *.example.com</span>
+
+<span class="cmt"># ===== Cloudflare =====</span>
+<span class="cmt"># export CF_Token="你的API_Token"</span>
+<span class="cmt"># acme.sh --issue --dns dns_cf -d example.com -d *.example.com</span>
+
+<span class="cmt"># ===== 通用手动 DNS 模式（适用于任意 DNS 服务商）=====</span>
+<span class="cmt"># acme.sh --issue --dns -d example.com -d *.example.com --yes-I-know-dns-manual-mode-enough-go-ahead-please</span>
+<span class="cmt"># 然后根据提示手动添加 TXT 记录</span>
+</pre>
+</div>
+
+<h4>安装证书到 Nginx</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">安装证书并配置 Nginx</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># 创建证书存放目录</span>
+mkdir -p /etc/nginx/ssl/example.com
+
+<span class="cmt"># 安装证书到指定目录（同时生成 fullchain）</span>
+acme.sh --install-cert -d example.com \
+  --key-file       /etc/nginx/ssl/example.com/key.pem \
+  --fullchain-file /etc/nginx/ssl/example.com/fullchain.pem \
+  --reloadcmd      <span class="str">"nginx -s reload"</span>
+
+<span class="cmt"># 证书安装后，acme.sh 会自动记录续期命令和 reloadcmd
+# 后续续期时会自动调用 nginx -s reload</span>
+</pre>
+</div>
+
+<h4>自动续期机制</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">自动续期 — acme.sh 内置</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># acme.sh 安装时会自动添加 crontab 定时任务，无需手动配置</span>
+<span class="cmt"># 默认每天凌晨检查一次，证书到期前 30 天自动续期</span>
+
+<span class="cmt"># 查看定时任务</span>
+crontab -l | grep acme
+
+<span class="cmt"># 手动测试续期（dry-run 模式）</span>
+acme.sh --renew -d example.com --force
+
+<span class="cmt"># 查看已安装的证书列表</span>
+acme.sh --list
+
+<span class="cmt"># 手动触发所有证书续期</span>
+acme.sh --cron
+
+<span class="cmt"># 续期后自动执行的命令（安装证书时通过 --reloadcmd 指定）</span>
+<span class="cmt"># 默认: nginx -s reload</span>
+</pre>
+</div>
+
+<!-- 2.3 Certbot 方案 -->
+<h3>2.3 Certbot 方案（官方推荐，入门友好）</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">Certbot 安装与使用</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 安装 Certbot（以 Ubuntu/Debian 为例）=====</span>
+apt update
+apt install certbot python3-certbot-nginx
+
+<span class="cmt"># ===== 一键获取并配置 Nginx（自动修改配置）=====</span>
+certbot --nginx -d example.com -d www.example.com
+
+<span class="cmt"># ===== 仅获取证书，手动配置 Nginx =====</span>
+certbot certonly --webroot \
+  -w /var/www/html \
+  -d example.com \
+  -d www.example.com
+
+<span class="cmt"># 证书默认存放路径：</span>
+<span class="cmt"># /etc/letsencrypt/live/example.com/fullchain.pem</span>
+<span class="cmt"># /etc/letsencrypt/live/example.com/privkey.pem</span>
+
+<span class="cmt"># ===== 自动续期 =====</span>
+<span class="cmt"># Certbot 安装后自动配置 systemd timer 或 crontab</span>
+<span class="cmt"># 查看定时器状态：</span>
+systemctl status certbot.timer
+
+<span class="cmt"># 手动测试续期</span>
+certbot renew --dry-run
+
+<span class="cmt"># 续期后自动重载 Nginx（需配置 hook）</span>
+certbot renew --deploy-hook <span class="str">"nginx -s reload"</span>
+</pre>
+</div>
+
+<h4>Certbot Nginx 续期 Hook 持久化配置</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">/etc/letsencrypt/cli.ini — Certbot 全局配置</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># Certbot 全局配置文件，续期时自动生效</span>
+rsa-key-size = <span class="num">4096</span>
+email = admin@example.com
+agree-tos = true
+no-eff-email = true
+
+<span class="cmt"># 续期后自动重载 Nginx</span>
+deploy-hook = <span class="str">"systemctl reload nginx"</span>
+<span class="cmt"># 或使用 nginx 信号</span>
+<span class="cmt"># deploy-hook = "nginx -s reload"</span>
+</pre>
+</div>
+
+<!-- 2.4 Nginx 整合配置 -->
+<h3>2.4 Nginx 完整 SSL 配置（与免费证书整合）</h3>
+<p>以下为推荐的生产级 HTTPS 配置，与 acme.sh/Certbot 免费证书方案无缝整合。</p>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">ssl.conf — 生产级 HTTPS 配置（含 ACME 验证 + HTTP 跳转）</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== HTTP → HTTPS 跳转（同时保留 ACME 验证路径）=====</span>
+<span class="kw">server</span> {
+    listen <span class="num">80</span>;
+    server_name example.com www.example.com;
+
+    <span class="cmt"># ACME 证书验证路径（Let's Encrypt / acme.sh 通用）</span>
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/acme;
+        default_type text/plain;
+        allow all;
+    }
+
+    <span class="cmt"># 其他请求 301 跳转到 HTTPS</span>
+    location / {
+        return <span class="num">301</span> https://<span class="str">$host$request_uri</span>;
+    }
+}
+
+<span class="kw">server</span> {
+    listen <span class="num">443</span> ssl http2;
+    server_name example.com www.example.com;
+
+    <span class="cmt"># ===== SSL 证书（acme.sh 安装路径）=====</span>
+    ssl_certificate     /etc/nginx/ssl/example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/example.com/key.pem;
+
+    <span class="cmt"># 或使用 Certbot 默认路径：</span>
+    <span class="cmt"># ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;</span>
+    <span class="cmt"># ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;</span>
+
+    <span class="cmt"># ===== SSL 协议与加密套件（Mozilla Intermediate 推荐）=====</span>
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers <span class="kw">off</span>;  <span class="cmt"># TLS 1.3 时 off 更安全</span>
+
+    <span class="cmt"># ===== SSL 会话缓存 =====</span>
+    ssl_session_cache   shared:SSL:<span class="num">50m</span>;
+    ssl_session_timeout <span class="num">1d</span>;
+    ssl_session_tickets <span class="kw">off</span>;
+
+    <span class="cmt"># ===== OCSP Stapling（加速证书验证）=====</span>
+    ssl_stapling <span class="kw">on</span>;
+    ssl_stapling_verify <span class="kw">on</span>;
+    resolver <span class="num">8.8.8.8</span> <span class="num">8.8.4.4</span> valid=<span class="num">300s</span>;
+    resolver_timeout <span class="num">5s</span>;
+
+    <span class="cmt"># ===== HSTS（强制 HTTPS，有效期 2 年）=====</span>
+    add_header Strict-Transport-Security <span class="str">"max-age=63072000; includeSubDomains; preload"</span> always;
+
+    <span class="cmt"># ===== 安全响应头 =====</span>
+    add_header X-Frame-Options <span class="str">"SAMEORIGIN"</span> always;
+    add_header X-Content-Type-Options <span class="str">"nosniff"</span> always;
+    add_header X-XSS-Protection <span class="str">"1; mode=block"</span> always;
+    add_header Referrer-Policy <span class="str">"strict-origin-when-cross-origin"</span> always;
+
+    <span class="cmt"># 反向代理</span>
+    location / {
+        proxy_pass http://backend;
+        proxy_set_header Host              <span class="str">$host</span>;
+        proxy_set_header X-Real-IP         <span class="str">$remote_addr</span>;
+        proxy_set_header X-Forwarded-For   <span class="str">$proxy_add_x_forwarded_for</span>;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+</pre>
+</div>
+
+<!-- 2.5 完整操作流程 -->
+<h3>2.5 一键部署完整流程（从零到 HTTPS）</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">完整部署脚本 — acme.sh + Nginx 一条龙</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt">#!/bin/bash</span>
+<span class="cmt"># ===== 从零部署 HTTPS 完整流程 =====</span>
+<span class="cmt"># 使用方法: chmod +x deploy-ssl.sh && ./deploy-ssl.sh example.com www.example.com</span>
+
+DOMAIN=<span class="str">"$1"</span>
+ALIASES=<span class="str">"${@:2}"</span>
+ACME_ROOT=<span class="str">"/var/www/acme"</span>
+SSL_DIR=<span class="str">"/etc/nginx/ssl/$DOMAIN"</span>
+NGINX_CONF=<span class="str">"/etc/nginx/conf.d/$DOMAIN.conf"</span>
+
+<span class="cmt"># 1. 安装 acme.sh</span>
+<span class="kw">if</span> [ ! -f <span class="str">"$HOME/.acme.sh/acme.sh"</span> ]; <span class="kw">then</span>
+    echo <span class="str">"[1/5] 安装 acme.sh..."</span>
+    curl https://get.acme.sh | sh -s email=<span class="str">"admin@$DOMAIN"</span>
+    source ~/.bashrc
+<span class="kw">else</span>
+    echo <span class="str">"[1/5] acme.sh 已安装"</span>
+<span class="kw">fi</span>
+
+<span class="cmt"># 2. 创建验证目录</span>
+echo <span class="str">"[2/5] 创建 ACME 验证目录..."</span>
+mkdir -p <span class="str">"$ACME_ROOT/.well-known/acme-challenge"</span>
+mkdir -p <span class="str">"$SSL_DIR"</span>
+
+<span class="cmt"># 3. 签发证书（Webroot 模式）</span>
+echo <span class="str">"[3/5] 签发 SSL 证书..."</span>
+~/.acme.sh/acme.sh --issue \
+    -d <span class="str">"$DOMAIN"</span> \
+    -d <span class="str">"www.$DOMAIN"</span> \
+    -w <span class="str">"$ACME_ROOT"</span> \
+    --keylength ec-256  <span class="cmt"># ECC 证书，性能更优</span>
+
+<span class="cmt"># 4. 安装证书</span>
+echo <span class="str">"[4/5] 安装证书到 Nginx..."</span>
+~/.acme.sh/acme.sh --install-cert -d <span class="str">"$DOMAIN"</span> \
+    --key-file       <span class="str">"$SSL_DIR/key.pem"</span> \
+    --fullchain-file <span class="str">"$SSL_DIR/fullchain.pem"</span> \
+    --reloadcmd      <span class="str">"nginx -s reload"</span>
+
+<span class="cmt"># 5. 验证 Nginx 并重载</span>
+echo <span class="str">"[5/5] 验证 Nginx 配置并重载..."</span>
+nginx -t && nginx -s reload
+
+echo <span class="str">""</span>
+echo <span class="str">"✅ HTTPS 部署完成！"</span>
+echo <span class="str">"   证书路径: $SSL_DIR/fullchain.pem"</span>
+echo <span class="str">"   密钥路径: $SSL_DIR/key.pem"</span>
+echo <span class="str">"   续期命令: 已自动配置 crontab，每日检查"</span>
+echo <span class="str">"   手动续期: acme.sh --cron"</span>
+echo <span class="str">"   测试评级: https://www.ssllabs.com/ssltest/analyze.html?d=$DOMAIN"</span>
+</pre>
+</div>
+
+<!-- 2.6 多站点批量管理 -->
+<h3>2.6 多站点证书批量管理</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">批量管理脚本 — 多域名证书统一管理</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt">#!/bin/bash</span>
+<span class="cmt"># ===== 批量签发/续期证书 =====</span>
+
+<span class="cmt"># 域名列表（每行一个域名）</span>
+DOMAINS=<span class="str">(
+    "example.com"
+    "api.example.com"
+    "admin.example.com"
+    "static.example.com"
+)</span>
+
+<span class="kw">for</span> domain <span class="kw">in</span> <span class="str">"${DOMAINS[@]}"</span>; <span class="kw">do</span>
+    echo <span class="str">"处理: $domain"</span>
+    
+    <span class="cmt"># 签发证书（DNS API 模式，适合无 80 端口场景）</span>
+    ~/.acme.sh/acme.sh --issue \
+        --dns dns_dp \
+        -d <span class="str">"$domain"</span> \
+        -d <span class="str">"*.$domain"</span> \
+        --keylength ec-256
+    
+    <span class="cmt"># 安装证书</span>
+    ~/.acme.sh/acme.sh --install-cert -d <span class="str">"$domain"</span> \
+        --key-file       <span class="str">"/etc/nginx/ssl/$domain/key.pem"</span> \
+        --fullchain-file <span class="str">"/etc/nginx/ssl/$domain/fullchain.pem"</span> \
+        --reloadcmd      <span class="str">"nginx -s reload"</span>
+<span class="kw">done</span>
+
+echo <span class="str">"✅ 全部证书处理完成"</span>
+acme.sh --list
+</pre>
+</div>
+
+<!-- 2.7 ECC vs RSA 证书选择 -->
+<h3>2.7 ECC 证书（推荐）vs RSA 证书</h3>
+<table class="spec-table">
+    <thead><tr><th>特性</th><th>ECC (EC-256)</th><th>RSA (2048)</th><th>RSA (4096)</th></tr></thead>
+    <tbody>
+    <tr><td>安全性</td><td>≈ RSA 3072</td><td>标准</td><td>高</td></tr>
+    <tr><td>密钥大小</td><td>256 bit</td><td>2048 bit</td><td>4096 bit</td></tr>
+    <tr><td>TLS 握手速度</td><td>⚡ 最快</td><td>中等</td><td>较慢</td></tr>
+    <tr><td>兼容性</td><td>现代浏览器全支持</td><td>所有客户端</td><td>所有客户端</td></tr>
+    <tr><td>acme.sh 参数</td><td><code>--keylength ec-256</code></td><td>默认</td><td><code>--keylength 4096</code></td></tr>
+    <tr><td>推荐场景</td><td>✅ 生产首选</td><td>兼容老设备</td><td>高安全要求</td></tr>
+    </tbody>
+</table>
+
+<h3>SSL 检测与监控</h3>
+<div class="tip-block tip-info">
+    <strong>🔍 证书部署后验证清单：</strong>
+    <ul style="margin:6px 0 0 16px;font-size:13px;line-height:1.8;">
+        <li><code>nginx -t</code> — Nginx 语法检测</li>
+        <li><code>acme.sh --list</code> — 查看证书状态和到期时间</li>
+        <li><a href="https://www.ssllabs.com/ssltest/" style="color:var(--primary);">SSL Labs</a> — 综合评级检查（目标 A+）</li>
+        <li><a href="https://ssl-config.mozilla.org/" style="color:var(--primary);">Mozilla SSL Config Generator</a> — 生成标准配置</li>
+        <li><code>echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -dates</code> — 命令行查看证书到期时间</li>
+        <li>建议添加监控告警：证书到期前 15 天发送通知（可用 acme.sh 的 <code>--renew-hook</code> 实现）</li>
+    </ul>
+</div>
+</div>
+
+<!-- ====== 安全配置 ====== -->
+<div class="card" id="sec-headers">
+<h2><span class="section-icon">🛡️</span>三、安全头与防护配置</h2>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">security.conf — 安全头集合</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 安全响应头（建议所有站点统一配置）=====</span>
+
+<span class="cmt"># 1. 防止点击劫持</span>
+add_header X-Frame-Options <span class="str">"SAMEORIGIN"</span> always;
+
+<span class="cmt"># 2. 防止 MIME 类型嗅探</span>
+add_header X-Content-Type-Options <span class="str">"nosniff"</span> always;
+
+<span class="cmt"># 3. XSS 过滤器</span>
+add_header X-XSS-Protection <span class="str">"1; mode=block"</span> always;
+
+<span class="cmt"># 4. 内容安全策略 CSP（按需调整）</span>
+add_header Content-Security-Policy <span class="str">"default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.example.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self';"</span> always;
+
+<span class="cmt"># 5. 引用策略</span>
+add_header Referrer-Policy <span class="str">"strict-origin-when-cross-origin"</span> always;
+
+<span class="cmt"># 6. 权限策略</span>
+add_header Permissions-Policy <span class="str">"camera=(), microphone=(), geolocation=()"</span> always;
+
+<span class="cmt"># ===== 限流（防止 CC 攻击）=====</span>
+limit_req_zone <span class="str">$binary_remote_addr</span> zone=api_limit:<span class="num">10m</span> rate=<span class="num">10r/s</span>;
+limit_conn_zone <span class="str">$binary_remote_addr</span> zone=conn_limit:<span class="num">10m</span>;
+
+location /api/ {
+    limit_req zone=api_limit burst=<span class="num">20</span> nodelay;
+    limit_conn conn_limit <span class="num">10</span>;
+    proxy_pass http://backend;
+}
+
+<span class="cmt"># ===== 限制请求方法 =====</span>
+if (<span class="str">$request_method</span> !~ ^(GET|HEAD|POST|PUT|DELETE|PATCH|OPTIONS)$) {
+    return <span class="num">405</span>;
+}
+</pre>
+</div>
+</div>
+
+<!-- ====== 文件类型访问控制 ====== -->
+<div class="card" id="sec-fileaccess">
+<h2><span class="section-icon">🚫</span>四、访问控制：禁止与允许文件/目录访问</h2>
+<div class="tip-block tip-warn">
+    <strong>⚠️ 安全必备：</strong>合理配置访问控制可以有效防止源码泄露、敏感信息暴露、目录遍历等安全风险。
+    以下提供<strong>禁止模式（Deny）</strong>和<strong>允许模式（Allow）</strong>两种配置方案，以及一键复制功能。
+</div>
+
+<p>访问控制分为两种策略：<strong>黑名单模式</strong>（禁止特定文件/目录，其余放行）和<strong>白名单模式</strong>（仅允许特定文件/目录，其余禁止）。根据安全需求选择合适策略。</p>
+
+<!-- 4.1 禁止特定文件类型 -->
+<h3>4.1 禁止特定类型文件访问</h3>
+<p>通过正则匹配文件后缀，禁止常见敏感文件被外部访问。适用于全局或 server 块。</p>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">block-file-types.conf — 按文件类型禁止访问</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 禁止特定后缀文件访问 =====</span>
+<span class="cmt"># 以下配置阻止所有敏感/系统文件被直接下载</span>
+
+location ~* \.(bak|backup|old|orig|save|swp|tmp|temp)$ {
+    deny all;
+    return <span class="num">404</span>;  <span class="cmt"># 返回 404 而非 403，隐藏文件存在信息</span>
+}
+
+location ~* \.(sql|sqlite|sqlite3|db|mdb|sql.gz)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(git|svn|hg|bzr|cvs)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(env|env\.\w+|\.env)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(yml|yaml|toml|ini|cfg|conf|config)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(log|log\.\d+|access_log|error_log)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(md|rst|txt|wiki)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(pem|key|crt|csr|p12|pfx|jks|keystore)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ~* \.(DS_Store|htaccess|htpasswd|composer\.lock|package-lock\.json|yarn\.lock)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问隐藏文件（以 . 开头）</span>
+location ~ /\. {
+    deny all;
+    return <span class="num">404</span>;
+    access_log off;
+    log_not_found off;
+}
+</pre>
+</div>
+
+<!-- 4.2 禁止特定目录 -->
+<h3>4.2 禁止特定目录访问</h3>
+<p>对整个目录设置拒绝访问，适用于需要保护的后台目录、数据目录、源码目录等。</p>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">block-directories.conf — 按目录禁止访问</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 方案一：精确匹配目录（推荐）=====</span>
+<span class="cmt"># 禁止访问 .git 目录及所有子内容</span>
+location ~ /\.git {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问 .svn 目录</span>
+location ~ /\.svn {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问 .idea / .vscode 等 IDE 配置目录</span>
+location ~ /\.(idea|vscode|project|settings) {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问 node_modules</span>
+location ~ /node_modules {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问 vendor（PHP 依赖目录）</span>
+location ~ /vendor {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问 upload 目录中的脚本执行</span>
+location ~* ^/uploads/.*\.(php|php5|php7|phtml|pl|py|jsp|asp|aspx|sh|cgi)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问备份目录</span>
+location ~* ^/(backup|backups|bak|sql|database|db)/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问日志目录</span>
+location ~* ^/(logs|log|storage/logs)/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止访问配置文件目录</span>
+location ~* ^/(config|conf|configuration|settings)/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># ===== 方案二：使用前缀匹配（更高效）=====</span>
+location ^~ /api/internal/ {
+    deny all;
+    return <span class="num">404</span>;  <span class="cmt"># 内部 API 禁止外部访问</span>
+}
+
+location ^~ /admin/backup/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location ^~ /tmp/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># ===== 方案三：组合多个目录一次性禁止 =====</span>
+location ~* ^/(\.git|\.svn|\.hg|node_modules|vendor|storage|backup|backups|tmp|cache)/ {
+    deny all;
+    return <span class="num">404</span>;
+}
+</pre>
+</div>
+
+<!-- 4.3 目录下特定文件 -->
+<h3>4.3 禁止目录下特定类型文件</h3>
+<p>只禁止某个目录下的特定文件类型，该目录下其他文件仍可正常访问。</p>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">block-dir-specific-files.conf — 目录+文件组合控制</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 禁止 uploads 目录下的可执行脚本 =====</span>
+location ~* ^/uploads/.*\.(php|php5|php7|phtml|pht|phar|shtml|cgi|pl|py|sh|exe|bat|cmd|dll|so)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止 static 目录下的源码/配置文件</span>
+location ~* ^/static/.*\.(sql|env|yml|yaml|json\.lock|map)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止 assets 目录下的备份文件</span>
+location ~* ^/assets/.*\.(bak|backup|old|orig|tmp)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止 data 目录下的 .php/.env 等（防止上传漏洞利用）</span>
+location ~* ^/data/.*\.(php|php5|phtml|env|ini|conf)$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止某个特定文件的访问</span>
+location = /wp-config.php {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location = /config/database.yml {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+location = /composer.json {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 禁止 include/inc 目录下的所有 .php 文件（仅允许 index.php 入口）</span>
+location ~* ^/include/.*\.php$ {
+    deny all;
+    return <span class="num">404</span>;
+}
+</pre>
+</div>
+
+<!-- 4.4 访问控制策略速查 -->
+<h3>4.4 访问控制策略速查表</h3>
+<table class="spec-table">
+    <thead><tr><th>控制方式</th><th>指令</th><th>适用场景</th><th>性能</th></tr></thead>
+    <tbody>
+    <tr><td><code>= URI</code></td><td>精确匹配</td><td>禁止单个文件（如 /wp-config.php）</td><td>⭐ 最高</td></tr>
+    <tr><td><code>^~ URI</code></td><td>前缀匹配（优先）</td><td>禁止整个目录及子目录</td><td>⭐ 高</td></tr>
+    <tr><td><code>~ 正则</code></td><td>区分大小写正则</td><td>匹配 .php/.env 等敏感文件</td><td>中等</td></tr>
+    <tr><td><code>~* 正则</code></td><td>不区分大小写正则</td><td>匹配文件后缀（推荐）</td><td>中等</td></tr>
+    <tr><td><code>deny all;</code></td><td>拒绝所有</td><td>配合 location 使用</td><td>-</td></tr>
+    <tr><td><code>allow IP;</code></td><td>允许指定 IP</td><td>IP 白名单（内网管理后台）</td><td>-</td></tr>
+    <tr><td><code>return 404;</code></td><td>返回 404</td><td>隐藏文件存在信息（推荐）</td><td>-</td></tr>
+    <tr><td><code>return 403;</code></td><td>返回 403</td><td>明确告知无权限（不推荐暴露路径）</td><td>-</td></tr>
+    </tbody>
+</table>
+
+<h3>4.5 IP 白名单访问控制</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">ip-access-control.conf — IP 访问控制</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 管理后台仅允许内网访问 =====</span>
+location ^~ /admin/ {
+    allow <span class="num">192.168.1.0</span>/24;
+    allow <span class="num">10.0.0.0</span>/8;
+    allow <span class="num">172.16.0.0</span>/12;
+    deny all;
+    <span class="cmt"># 被拒绝时返回 404（隐藏后台路径）</span>
+    error_page <span class="num">403</span> =404 /404.html;
+}
+
+<span class="cmt"># ===== API 文档仅开发环境可见 =====</span>
+location ^~ /swagger/ {
+    allow <span class="num">127.0.0.1</span>;
+    allow <span class="num">192.168.0.0</span>/16;
+    deny all;
+}
+
+<span class="cmt"># ===== 指定文件仅允许特定 IP =====</span>
+location = /phpinfo.php {
+    allow <span class="num">127.0.0.1</span>;
+    deny all;
+}
+
+<span class="cmt"># ===== 基于 IP 的地理限制（需 GeoIP 模块）=====</span>
+<span class="cmt"># geoip_country /usr/share/GeoIP/GeoIP.dat;</span>
+<span class="cmt"># map $geoip_country_code $allowed_country {</span>
+<span class="cmt">#     default no;</span>
+<span class="cmt">#     CN yes;</span>
+<span class="cmt"># }</span>
+</pre>
+</div>
+
+<div class="tip-block tip-info">
+    <strong>💡 最佳实践：</strong>
+    <ul style="margin:6px 0 0 16px;font-size:13px;line-height:1.8;">
+        <li>敏感文件统一返回 <code>404</code> 而非 <code>403</code>，防止暴露文件路径</li>
+        <li>使用 <code>access_log off;</code> 对已知恶意请求关闭日志，减少磁盘 IO</li>
+        <li>upload 目录必须禁止脚本执行（<code>php_admin_flag engine off</code> 或 location 拒绝）</li>
+        <li>优先级顺序：<code>=</code> > <code>^~</code> > <code>~</code>/<code>~*</code> > 前缀匹配</li>
+        <li>定期审查访问控制规则，确保新增敏感目录/文件被覆盖</li>
+    </ul>
+</div>
+
+<!-- 4.6 白名单模式（允许模式）-->
+<h3>4.6 白名单模式（Allow）— 仅允许特定路径访问</h3>
+<p>在某些高安全场景下，推荐采用<strong>默认拒绝 + 显式允许</strong>的白名单策略。以下提供完整的白名单配置方案。</p>
+
+<div class="compare-grid">
+    <div class="bad-box">
+        <div class="label">❌ 黑名单模式（默认放行）</div>
+        <div style="text-align:left;font-size:12px;line-height:1.8;padding:4px 0;">
+            默认：所有请求放行<br>
+            策略：逐个列出禁止项<br>
+            风险：遗漏新的敏感路径
+        </div>
+        <div style="font-size:11px;color:var(--error);margin-top:8px;">依赖持续维护黑名单，易遗漏</div>
+    </div>
+    <div class="good-box">
+        <div class="label">✅ 白名单模式（默认拒绝）</div>
+        <div style="text-align:left;font-size:12px;line-height:1.8;padding:4px 0;">
+            默认：所有请求拒绝<br>
+            策略：逐个列出允许项<br>
+            安全：新路径自动受保护
+        </div>
+        <div style="font-size:11px;color:var(--success);margin-top:8px;">默认安全，适合高安全场景</div>
+    </div>
+</div>
+
+<h4>白名单 — 仅允许访问特定文件类型</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">allow-file-types.conf — 仅允许安全文件类型</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 白名单模式：默认拒绝，仅允许安全文件类型 =====</span>
+<span class="cmt"># 适用场景：静态资源服务器、CDN 源站、下载站</span>
+
+<span class="cmt"># 先拒绝所有请求</span>
+<span class="kw">location</span> / {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 仅允许以下安全文件类型</span>
+<span class="kw">location</span> ~* \.(html|htm)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(css)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(js|mjs)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(png|jpg|jpeg|gif|svg|ico|webp)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(woff2?|ttf|eot|otf)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(json|xml|txt)$ {
+    allow all;
+}
+<span class="kw">location</span> ~* \.(pdf|docx?|xlsx?|pptx?)$ {
+    allow all;
+}
+</pre>
+</div>
+
+<h4>白名单 — 仅允许特定目录 + 文件类型</h4>
+<div class="code-block">
+<div class="code-header"><span class="code-title">allow-dirs.conf — 目录白名单 + 文件类型白名单组合</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 白名单模式：仅允许特定目录下的特定文件类型 =====</span>
+<span class="cmt"># 适用场景：多租户 SaaS、严格的 API 网关</span>
+
+<span class="cmt"># 全局默认拒绝</span>
+<span class="kw">location</span> / {
+    deny all;
+    return <span class="num">404</span>;
+}
+
+<span class="cmt"># 允许静态资源目录</span>
+<span class="kw">location</span> ^~ /static/ {
+    allow all;
+    <span class="cmt"># 但禁止该目录下的脚本执行</span>
+    <span class="kw">location</span> ~* ^/static/.*\.(php|php5|phtml|sh|py|pl)$ {
+        deny all;
+        return <span class="num">404</span>;
+    }
+}
+
+<span class="cmt"># 允许公共上传目录（只读）</span>
+<span class="kw">location</span> ^~ /uploads/ {
+    allow all;
+    <span class="cmt"># 限制请求方法为 GET/HEAD</span>
+    <span class="kw">limit_except</span> GET HEAD {
+        deny all;
+    }
+    <span class="cmt"># 禁止脚本执行</span>
+    <span class="kw">location</span> ~* ^/uploads/.*\.(php|php5|phtml|phar|sh|pl|py|exe)$ {
+        deny all;
+        return <span class="num">404</span>;
+    }
+}
+
+<span class="cmt"># 允许 API 路径（反向代理）</span>
+<span class="kw">location</span> ^~ /api/ {
+    allow all;
+    proxy_pass http://backend;
+}
+
+<span class="cmt"># 管理后台仅内网 IP 访问</span>
+<span class="kw">location</span> ^~ /admin/ {
+    allow <span class="num">192.168.1.0</span>/24;
+    allow <span class="num">10.0.0.0</span>/8;
+    deny all;
+    error_page <span class="num">403</span> =404 /404.html;
+    proxy_pass http://backend;
+}
+</pre>
+</div>
+
+<h4>白名单 vs 黑名单 策略对比</h4>
+<table class="spec-table">
+    <thead><tr><th>维度</th><th>黑名单（Deny List）</th><th>白名单（Allow List）</th></tr></thead>
+    <tbody>
+        <tr><td><strong>默认行为</strong></td><td>放行所有</td><td>拒绝所有</td></tr>
+        <tr><td><strong>配置复杂度</strong></td><td>低（只列出敏感项）</td><td>高（需列出所有允许项）</td></tr>
+        <tr><td><strong>安全性</strong></td><td>中等（依赖维护）</td><td>高（默认安全）</td></tr>
+        <tr><td><strong>维护成本</strong></td><td>低（新增敏感文件需加规则）</td><td>中（新增功能需加允许规则）</td></tr>
+        <tr><td><strong>误拦截风险</strong></td><td>低</td><td>高（忘记添加允许导致功能异常）</td></tr>
+        <tr><td><strong>适用场景</strong></td><td>通用 Web 站点、CMS</td><td>高安全 API、静态资源 CDN、管理后台</td></tr>
+        <tr><td><strong>推荐指数</strong></td><td>⭐⭐⭐⭐（通用场景）</td><td>⭐⭐⭐（高安全场景）</td></tr>
+    </tbody>
+</table>
+
+<div class="tip-block tip-success">
+    <strong>📋 推荐策略：</strong>通用 Web 站点使用<strong>黑名单模式</strong>（禁止敏感文件 + 隐藏目录），
+    高安全场景（API 网关、金融系统）使用<strong>白名单模式</strong>（默认拒绝 + 显式允许）。
+    两种模式可以组合使用，例如全局用黑名单，管理后台用白名单限制 IP。
+</div>
+</div>
+
+<!-- ====== 性能优化 ====== -->
+<div class="card" id="sec-perf">
+<h2><span class="section-icon">⚡</span>五、常见优化大全</h2>
+<div class="tip-block tip-success">
+    <strong>✅ 性能必备：</strong>涵盖连接与进程、Gzip/Brotli 压缩、缓存策略、文件传输、缓冲区调优、超时控制、HTTP/2 等全方位优化。
+</div>
+
+<h3>5.0 优化分类速查</h3>
+<table class="spec-table">
+    <thead><tr><th>优化类别</th><th>关键配置</th><th>效果</th></tr></thead>
+    <tbody>
+        <tr><td><strong>🟢 连接与进程</strong></td><td><code>worker_processes auto; worker_connections 4096; worker_rlimit_nofile 65535; multi_accept on; use epoll;</code></td><td>自动匹配 CPU 核数，高并发连接</td></tr>
+        <tr><td><strong>🔵 压缩</strong></td><td><code>gzip on; gzip_comp_level 5; gzip_types (text/json/js/css/svg); brotli on;</code></td><td>文本体积减少 60%-80%</td></tr>
+        <tr><td><strong>🟡 缓存策略</strong></td><td><code>expires 30d; Cache-Control "public, immutable"; proxy_cache_path; fastcgi_cache_path; open_file_cache</code></td><td>减少请求数，降低后端压力</td></tr>
+        <tr><td><strong>🔴 文件传输</strong></td><td><code>sendfile on; tcp_nopush on; tcp_nodelay on; aio threads; directio 4m;</code></td><td>零拷贝，大文件异步 IO</td></tr>
+    </tbody>
+</table>
+
+<h3>5.1 完整全局性能优化模板</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">nginx.conf — 全局性能配置段（完整版）</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== 全局段 =====</span>
+user nginx;
+worker_processes auto;
+worker_rlimit_nofile <span class="num">65535</span>;
+error_log /var/log/nginx/error.log warn;
+pid /run/nginx.pid;
+
+<span class="cmt"># 动态模块加载（按需）</span>
+<span class="cmt"># load_module modules/ngx_http_brotli_filter_module.so;</span>
+<span class="cmt"># load_module modules/ngx_http_brotli_static_module.so;</span>
+
+<span class="kw">events</span> {
+    use epoll;
+    worker_connections <span class="num">4096</span>;
+    multi_accept <span class="kw">on</span>;
+    accept_mutex <span class="kw">off</span>;  <span class="cmt"># 高并发时关闭惊群锁</span>
+}
+
+<span class="kw">http</span> {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    <span class="cmt"># 日志格式（含上游耗时）</span>
+    log_format main <span class="str">'$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for" '
+                    'rt=$request_time uct=$upstream_connect_time '
+                    'uht=$upstream_header_time urt=$upstream_response_time'</span>;
+
+    <span class="cmt"># ===== 文件传输优化 =====</span>
+    sendfile            <span class="kw">on</span>;
+    tcp_nopush          <span class="kw">on</span>;
+    tcp_nodelay         <span class="kw">on</span>;
+    aio                 threads;
+    aio_write           <span class="kw">on</span>;
+    directio            <span class="num">4m</span>;          <span class="cmt"># 大于 4MB 文件使用直接 IO</span>
+    output_buffers      <span class="num">2 32k</span>;
+
+    <span class="cmt"># ===== 连接优化 =====</span>
+    keepalive_timeout    <span class="num">65s</span>;
+    keepalive_requests   <span class="num">1000</span>;
+    reset_timedout_connection <span class="kw">on</span>;  <span class="cmt"># 超时立即释放资源</span>
+    client_header_timeout  <span class="num">15s</span>;      <span class="cmt"># 客户端头发送超时</span>
+    client_body_timeout    <span class="num">30s</span>;      <span class="cmt"># 客户端 Body 发送超时</span>
+    send_timeout           <span class="num">15s</span>;      <span class="cmt"># 响应发送超时</span>
+
+    <span class="cmt"># ===== 缓冲区优化 =====</span>
+    client_body_buffer_size     <span class="num">128k</span>;
+    client_max_body_size        <span class="num">50m</span>;
+    client_header_buffer_size   <span class="num">4k</span>;
+    large_client_header_buffers <span class="num">4 8k</span>;
+    types_hash_max_size         <span class="num">2048</span>;
+    server_names_hash_bucket_size <span class="num">128</span>;
+
+    <span class="cmt"># ===== 文件描述符缓存（减少磁盘 IO）=====</span>
+    open_file_cache          max=<span class="num">10000</span> inactive=<span class="num">60s</span>;
+    open_file_cache_valid    <span class="num">30s</span>;
+    open_file_cache_min_uses <span class="num">2</span>;
+    open_file_cache_errors   <span class="kw">on</span>;
+
+    <span class="cmt"># ===== Gzip 压缩 =====</span>
+    gzip              <span class="kw">on</span>;
+    gzip_vary         <span class="kw">on</span>;
+    gzip_proxied      any;
+    gzip_comp_level   <span class="num">5</span>;
+    gzip_min_length   <span class="num">1024</span>;
+    gzip_buffers      <span class="num">16 8k</span>;
+    gzip_http_version <span class="num">1.1</span>;
+    gzip_types        text/plain text/css application/json
+                      application/javascript text/xml
+                      application/xml application/xml+rss
+                      text/javascript image/svg+xml
+                      application/atom+xml application/rss+xml
+                      application/x-font-ttf font/opentype;
+
+    <span class="cmt"># ===== Brotli 压缩（比 Gzip 小约 20%，需编译模块）=====</span>
+    <span class="cmt"># brotli              on;</span>
+    <span class="cmt"># brotli_comp_level   6;</span>
+    <span class="cmt"># brotli_static       on;</span>
+    <span class="cmt"># brotli_types        text/plain text/css application/json application/javascript text/xml image/svg+xml;</span>
+
+    <span class="cmt"># ===== 代理缓存 =====</span>
+    proxy_cache_path /var/cache/nginx/proxy levels=<span class="num">1</span>:<span class="num">2</span>
+                     keys_zone=proxy_cache:<span class="num">100m</span>
+                     max_size=<span class="num">1g</span> inactive=<span class="num">60m</span>
+                     use_temp_path=<span class="kw">off</span>;
+
+    <span class="cmt"># ===== FastCGI 缓存 =====</span>
+    fastcgi_cache_path /var/cache/nginx/fastcgi levels=<span class="num">1</span>:<span class="num">2</span>
+                       keys_zone=fastcgi_cache:<span class="num">100m</span>
+                       max_size=<span class="num">1g</span> inactive=<span class="num">60m</span>;
+
+    <span class="cmt"># ===== 安全：隐藏版本号 =====</span>
+    server_tokens <span class="kw">off</span>;
+    <span class="cmt"># more_clear_headers 'Server';  # 需 headers-more 模块</span>
+
+    <span class="cmt"># ===== 请求限速 =====</span>
+    limit_req_zone <span class="str">$binary_remote_addr</span> zone=global:<span class="num">10m</span> rate=<span class="num">30r/s</span>;
+    limit_conn_zone <span class="str">$binary_remote_addr</span> zone=addr:<span class="num">10m</span>;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+</pre>
+</div>
+
+<h3>5.2 Server 级别优化配置</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">server-optimization.conf — Server 块优化</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="kw">server</span> {
+    listen <span class="num">443</span> ssl http2;
+    server_name example.com;
+
+    <span class="cmt"># ===== HTTP/2 推送（预加载关键资源）=====</span>
+    <span class="cmt"># http2_push /css/critical.css;</span>
+    <span class="cmt"># http2_push /js/app.js;</span>
+
+    <span class="cmt"># ===== 静态资源缓存 =====</span>
+    <span class="cmt"># 带哈希的静态资源（永久缓存）</span>
+    location ~* \.[a-f0-9]{8,}\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$ {
+        expires <span class="num">1y</span>;
+        add_header Cache-Control <span class="str">"public, immutable"</span>;
+        access_log off;
+    }
+
+    <span class="cmt"># 普通静态资源（30 天缓存）</span>
+    location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$ {
+        expires <span class="num">30d</span>;
+        add_header Cache-Control <span class="str">"public, must-revalidate"</span>;
+        add_header Vary Accept-Encoding;
+        access_log off;
+    }
+
+    <span class="cmt"># HTML 不缓存</span>
+    location ~* \.html$ {
+        expires -<span class="num">1</span>;
+        add_header Cache-Control <span class="str">"no-cache, no-store, must-revalidate"</span>;
+    }
+
+    <span class="cmt"># ===== 代理缓存示例 =====</span>
+    location /api/cached/ {
+        proxy_pass http://backend;
+        proxy_cache proxy_cache;
+        proxy_cache_valid <span class="num">200 302 10m</span>;
+        proxy_cache_valid <span class="num">404 1m</span>;
+        proxy_cache_key <span class="str">"$scheme$request_method$host$request_uri"</span>;
+        proxy_cache_bypass <span class="str">$http_cache_control</span>;
+        add_header X-Cache-Status <span class="str">$upstream_cache_status</span>;
+    }
+
+    <span class="cmt"># ===== 代理缓冲区优化 =====</span>
+    location / {
+        proxy_pass http://backend;
+        proxy_buffering <span class="kw">on</span>;
+        proxy_buffer_size           <span class="num">16k</span>;
+        proxy_buffers               <span class="num">8 16k</span>;
+        proxy_busy_buffers_size     <span class="num">32k</span>;
+        proxy_temp_file_write_size  <span class="num">32k</span>;
+        proxy_read_timeout          <span class="num">60s</span>;
+        proxy_connect_timeout       <span class="num">30s</span>;
+        proxy_send_timeout          <span class="num">60s</span>;
+    }
+}
+</pre>
+</div>
+
+<h3>5.3 HTTP/2 与 HTTP/3 (QUIC) 配置</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">http2-http3.conf — HTTP/2 & HTTP/3 优化</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== HTTP/2 配置（Nginx 1.9.5+）=====</span>
+<span class="kw">server</span> {
+    listen <span class="num">443</span> ssl http2;  <span class="cmt"># 一行开启 HTTP/2</span>
+    server_name example.com;
+
+    <span class="cmt"># HTTP/2 优化参数</span>
+    http2_max_concurrent_streams <span class="num">128</span>;
+    http2_max_field_size         <span class="num">16k</span>;
+    http2_max_header_size        <span class="num">32k</span>;
+    http2_body_preread_size      <span class="num">64k</span>;
+    http2_idle_timeout           <span class="num">180s</span>;
+
+    <span class="cmt"># HTTP/2 Server Push（手动推送关键资源）</span>
+    location = /index.html {
+        http2_push /css/critical.css;
+        http2_push /js/vendor.js;
+        http2_push /img/logo.svg;
+    }
+
+    <span class="cmt"># 自动推送（通过 Link 头）</span>
+    location / {
+        proxy_pass http://backend;
+        http2_push_preload <span class="kw">on</span>;  <span class="cmt"># 自动推送后端 Link 头指定的资源</span>
+    }
+}
+
+<span class="cmt"># ===== HTTP/3 (QUIC) 配置（Nginx 1.25.0+，需编译 --with-http_v3_module）=====</span>
+<span class="cmt"># server {</span>
+<span class="cmt">#     listen 443 quic reuseport;       # QUIC 监听</span>
+<span class="cmt">#     listen 443 ssl http2;            # TCP 回退</span>
+<span class="cmt">#     </span>
+<span class="cmt">#     # 告知浏览器支持 HTTP/3</span>
+<span class="cmt">#     add_header Alt-Svc 'h3=":443"; ma=86400';</span>
+<span class="cmt">#     </span>
+<span class="cmt">#     # QUIC 优化</span>
+<span class="cmt">#     quic_retry on;</span>
+<span class="cmt">#     quic_gso on;</span>
+<span class="cmt"># }</span>
+</pre>
+</div>
+
+<h3>5.4 SSL/TLS 性能优化</h3>
+<div class="code-block">
+<div class="code-header"><span class="code-title">ssl-performance.conf — SSL 性能调优</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="cmt"># ===== SSL 会话复用（减少握手开销）=====</span>
+ssl_session_cache   shared:SSL:<span class="num">50m</span>;    <span class="cmt"># 1MB ≈ 4000 sessions</span>
+ssl_session_timeout <span class="num">1d</span>;
+ssl_session_tickets <span class="kw">off</span>;           <span class="cmt"># 关闭 session ticket（安全性更好）</span>
+
+<span class="cmt"># ===== OCSP Stapling（跳过客户端 OCSP 查询）=====</span>
+ssl_stapling           <span class="kw">on</span>;
+ssl_stapling_verify    <span class="kw">on</span>;
+resolver               <span class="num">8.8.8.8</span> <span class="num">8.8.4.4</span> valid=<span class="num">300s</span>;
+resolver_timeout       <span class="num">5s</span>;
+
+<span class="cmt"># ===== 仅使用高效加密套件 =====</span>
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+ssl_prefer_server_ciphers <span class="kw">off</span>;  <span class="cmt"># TLS 1.3 下客户端优先更安全</span>
+
+<span class="cmt"># ===== 早期数据（TLS 1.3 0-RTT，谨慎开启）=====</span>
+<span class="cmt"># ssl_early_data on;  # 减少 1 次 RTT，但存在重放攻击风险</span>
+
+<span class="cmt"># ===== ECDH 曲线优化 =====</span>
+ssl_ecdh_curve X25519:secp384r1;
+</pre>
+</div>
+
+<h3>5.5 优化速查表</h3>
+<table class="spec-table">
+    <thead><tr><th>优化类别</th><th>关键指令</th><th>效果</th><th>成本/风险</th></tr></thead>
+    <tbody>
+<tr><td>文件传输</td><td><code>sendfile on; tcp_nopush on;</code></td><td>减少 CPU 拷贝，提升静态文件吞吐</td><td>🟢 无风险</td></tr>
+<tr><td>连接复用</td><td><code>keepalive_timeout 65s; keepalive_requests 1000;</code></td><td>减少 TCP 握手，降低延迟</td><td>🟢 无风险</td></tr>
+<tr><td>Gzip 压缩</td><td><code>gzip on; gzip_comp_level 5;</code></td><td>文本体积减少 60%~80%</td><td>🟡 轻微 CPU</td></tr>
+<tr><td>Brotli 压缩</td><td><code>brotli on; brotli_comp_level 6;</code></td><td>比 Gzip 再小 15%~20%</td><td>🟡 CPU + 需编译模块</td></tr>
+<tr><td>静态资源缓存</td><td><code>expires 30d; Cache-Control "public, immutable";</code></td><td>减少请求数，加快回访</td><td>🟡 更新需改文件名</td></tr>
+<tr><td>代理缓存</td><td><code>proxy_cache_path + proxy_cache</code></td><td>后端压力降低 50%~90%</td><td>🟡 需注意缓存失效</td></tr>
+<tr><td>文件描述符缓存</td><td><code>open_file_cache max=10000;</code></td><td>减少磁盘 IO 操作</td><td>🟡 占用内存</td></tr>
+<tr><td>HTTP/2</td><td><code>listen 443 ssl http2;</code></td><td>多路复用，头部压缩</td><td>🟢 需 HTTPS</td></tr>
+<tr><td>HTTP/3 (QUIC)</td><td><code>listen 443 quic;</code></td><td>0-RTT，连接迁移</td><td>🟡 需新版 Nginx + UDP</td></tr>
+<tr><td>SSL 会话缓存</td><td><code>ssl_session_cache shared:SSL:50m;</code></td><td>TLS 握手快 50%+</td><td>🟢 占用少量内存</td></tr>
+<tr><td>OCSP Stapling</td><td><code>ssl_stapling on;</code></td><td>跳过客户端证书验证请求</td><td>🟢 无风险</td></tr>
+<tr><td>异步 IO</td><td><code>aio threads; directio 4m;</code></td><td>大文件下载不阻塞 worker</td><td>🟡 需线程池</td></tr>
+<tr><td>限速/限流</td><td><code>limit_req_zone + limit_req</code></td><td>防 CC 攻击，保护后端</td><td>🟡 误伤需调 burst</td></tr>
+<tr><td>微缓存</td><td><code>proxy_cache_valid 200 1s;</code></td><td>缓存 1 秒即可大幅减少并发冲击</td><td>🟢 低风险</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ====== WebSocket ====== -->
+<div class="card" id="sec-ws">
+<h2><span class="section-icon">🔌</span>六、WebSocket 代理</h2>
+
+<div class="code-block">
+<div class="code-header"><span class="code-title">websocket.conf</span><button class="copy-btn" onclick="copyCode(this)">📋 复制</button></div>
+<pre><span class="kw">location</span> /ws/ {
+    proxy_pass http://backend_ws;
+    proxy_http_version <span class="num">1.1</span>;
+    proxy_set_header Upgrade    <span class="str">$http_upgrade</span>;
+    proxy_set_header Connection <span class="str">"upgrade"</span>;
+    proxy_set_header Host       <span class="str">$host</span>;
+    proxy_set_header X-Real-IP  <span class="str">$remote_addr</span>;
+    proxy_read_timeout <span class="num">3600s</span>;  <span class="cmt"># 长连接超时</span>
+    proxy_send_timeout <span class="num">3600s</span>;
+}
+</pre>
+</div>
+</div>
+
+<!-- ====== 常用指令速查 ====== -->
+<div class="card" id="sec-ref">
+<h2><span class="section-icon">📖</span>七、常用指令速查表</h2>
+
+<table class="spec-table">
+    <thead><tr><th>场景</th><th>指令</th><th>示例</th></tr></thead>
+    <tbody>
+<tr><td>重定向</td><td><code>return 301 $url;</code></td><td><code>return 301 https://new-domain.com$request_uri;</code></td></tr>
+<tr><td>URL 重写</td><td><code>rewrite</code></td><td><code>rewrite ^/old/(.*)$ /new/$1 permanent;</code></td></tr>
+<tr><td>IP 白名单</td><td><code>allow / deny</code></td><td><code>allow 10.0.0.0/8; deny all;</code></td></tr>
+<tr><td>Basic 认证</td><td><code>auth_basic</code></td><td><code>auth_basic "Restricted"; auth_basic_user_file /etc/nginx/.htpasswd;</code></td></tr>
+<tr><td>自定义错误页</td><td><code>error_page</code></td><td><code>error_page 404 /404.html; error_page 500 502 503 504 /50x.html;</code></td></tr>
+<tr><td>跨域 (CORS)</td><td><code>add_header</code></td><td><code>add_header Access-Control-Allow-Origin *;</code></td></tr>
+<tr><td>限速</td><td><code>limit_rate</code></td><td><code>limit_rate 500k;</code>（下载限速）</td></tr>
+<tr><td>维护模式</td><td><code>return 503</code></td><td><code>return 503; add_header Retry-After 3600;</code></td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ====== 设计令牌 ====== -->
+<div class="card" id="sec-tokens">
+<h2><span class="section-icon">🎨</span>八、设计令牌速查</h2>
+<div class="token-grid">
+    <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#F97316（部署橙）</span></div>
+    <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#FFF7ED</span></div>
+    <div class="token-item"><span class="token-name">--success</span><span class="token-value">#059669</span></div>
+    <div class="token-item"><span class="token-name">--warning</span><span class="token-value">#D97706</span></div>
+    <div class="token-item"><span class="token-name">--error</span><span class="token-value">#DC2626</span></div>
+    <div class="token-item"><span class="token-name">--gray-50~900</span><span class="token-value">灰度色板</span></div>
+    <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+    <div class="token-item"><span class="token-name">--shadow-sm</span><span class="token-value">0 1px 2px rgba(0,0,0,.05)</span></div>
+</div>
+</div>
+
+<!-- ====== 检查清单 ====== -->
+<div class="card" id="sec-checklist">
+<h2><span class="section-icon">✅</span>九、Nginx配置检查清单</h2>
+<ul class="checklist">
+    <li>所有 server 块配置了正确的 server_name</li>
+    <li>HTTPS 已启用并配置有效的 SSL 证书</li>
+    <li>HTTP 已配置 301 重定向到 HTTPS</li>
+    <li>安全响应头已添加（HSTS、X-Frame-Options 等）</li>
+    <li>反向代理配置了正确的超时参数</li>
+    <li>静态资源启用 gzip 压缩和缓存控制</li>
+    <li>负载均衡配置了健康检查和备用节点</li>
+    <li>日志格式统一，日志路径正确</li>
+</ul>
+</div>
+
+<div class="page-footer">
+    <a href="index.html">← 返回总览</a>
+    <span>|</span>
+    <span>设计系统规范库 · Nginx配置规范 v2.0</span>
+    <span>|</span>
+    <a href="14-数据库操作规范-DBHelper与ORM设计.html">← 上一章</a>
+    <span>|</span>
+    <a href="16-前端性能优化规范-CSS引入JS位置DOM优化重排重绘.html">下一章 →</a>
+</div>
+
+</div><!-- container -->
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+hljs.highlightAll();
+});
+// ====== 配置生成器 ======
+function generateConfig() {
+    const domain = document.getElementById('gDomain').value || 'example.com';
+    const port = document.getElementById('gPort').value;
+    const proxy = document.getElementById('gProxy').value || '127.0.0.1:8080';
+    const proxyProto = document.getElementById('gProxyProto').value;
+    const bodySize = document.getElementById('gBodySize').value;
+    const root = document.getElementById('gRoot').value;
+    const gzip = document.getElementById('gGzip').checked;
+    const cors = document.getElementById('gCors').checked;
+    const cache = document.getElementById('gCache').checked;
+    const security = document.getElementById('gSecurity').checked;
+    const upstream = document.getElementById('gUpstream').value.trim();
+    const sslCert = document.getElementById('gSSL').value || '/etc/nginx/ssl/example.com.pem';
+    const sslKey = document.getElementById('gSSLKey').value || '/etc/nginx/ssl/example.com.key';
+
+    const hasHttps = port.includes('443');
+
+    let conf = '';
+
+    // Upstream
+    if (upstream) {
+        conf += 'upstream backend {\n';
+        upstream.split('\n').forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed) conf += '    ' + trimmed + '\n';
+        });
+        conf += '    keepalive 32;\n';
+        conf += '}\n\n';
+    }
+
+    // HTTP → HTTPS redirect
+    if (port === '80;443') {
+        conf += `# ===== HTTP → HTTPS 跳转 =====\n`;
+        conf += `server {\n`;
+        conf += `    listen 80;\n`;
+        conf += `    server_name ${domain};\n`;
+        conf += `    return 301 https://$host$request_uri;\n`;
+        conf += `}\n\n`;
+    }
+
+    // Main server block
+    const listenStr = port === '80;443' ? '443 ssl http2' : port;
+    conf += `# ===== 主服务配置 =====\n`;
+    conf += `server {\n`;
+    conf += `    listen ${listenStr};\n`;
+    conf += `    server_name ${domain};\n\n`;
+
+    // SSL
+    if (hasHttps) {
+        conf += `    # SSL 证书\n`;
+        conf += `    ssl_certificate     ${sslCert};\n`;
+        conf += `    ssl_certificate_key ${sslKey};\n`;
+        conf += `    ssl_protocols TLSv1.2 TLSv1.3;\n`;
+        conf += `    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;\n`;
+        conf += `    ssl_prefer_server_ciphers on;\n`;
+        conf += `    ssl_session_cache shared:SSL:10m;\n`;
+        conf += `    ssl_session_timeout 1d;\n\n`;
+    }
+
+    // Logs
+    conf += `    # 日志\n`;
+    conf += `    access_log /var/log/nginx/${domain.split(' ')[0]}.access.log main;\n`;
+    conf += `    error_log  /var/log/nginx/${domain.split(' ')[0]}.error.log warn;\n\n`;
+
+    // Body size
+    conf += `    client_max_body_size ${bodySize};\n\n`;
+
+    // Gzip
+    if (gzip) {
+        conf += `    # Gzip 压缩\n`;
+        conf += `    gzip on;\n`;
+        conf += `    gzip_vary on;\n`;
+        conf += `    gzip_comp_level 5;\n`;
+        conf += `    gzip_min_length 1024;\n`;
+        conf += `    gzip_types text/plain text/css application/json application/javascript text/xml image/svg+xml;\n\n`;
+    }
+
+    // CORS
+    if (cors) {
+        conf += `    # CORS 跨域\n`;
+        conf += `    add_header Access-Control-Allow-Origin * always;\n`;
+        conf += `    add_header Access-Control-Allow-Methods "GET,POST,PUT,DELETE,PATCH,OPTIONS" always;\n`;
+        conf += `    add_header Access-Control-Allow-Headers "Content-Type,Authorization,X-Requested-With" always;\n\n`;
+    }
+
+    // Security headers
+    if (security) {
+        conf += `    # 安全响应头\n`;
+        conf += `    add_header X-Frame-Options "SAMEORIGIN" always;\n`;
+        conf += `    add_header X-Content-Type-Options "nosniff" always;\n`;
+        conf += `    add_header X-XSS-Protection "1; mode=block" always;\n`;
+        conf += `    add_header Referrer-Policy "strict-origin-when-cross-origin" always;\n`;
+        conf += `    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;\n`;
+        if (hasHttps) {
+            conf += `    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;\n`;
+        }
+        conf += `\n`;
+    }
+
+    // Root or proxy
+    if (root) {
+        conf += `    root ${root};\n`;
+        conf += `    index index.html index.htm;\n\n`;
+
+        // Static cache
+        if (cache) {
+            conf += `    # 静态资源缓存\n`;
+            conf += `    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {\n`;
+            conf += `        expires 30d;\n`;
+            conf += `        add_header Cache-Control "public, immutable";\n`;
+            conf += `    }\n\n`;
+        }
+    }
+
+    // Proxy pass
+    if (proxy) {
+        conf += `    location / {\n`;
+        if (proxyProto === 'fastcgi') {
+            conf += `        fastcgi_pass ${proxy};\n`;
+            conf += `        fastcgi_index index.php;\n`;
+            conf += `        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n`;
+            conf += `        include fastcgi_params;\n`;
+        } else {
+            conf += `        proxy_pass ${proxyProto}://${upstream ? 'backend' : proxy};\n`;
+            conf += `        proxy_http_version 1.1;\n`;
+            conf += `        proxy_set_header Host $host;\n`;
+            conf += `        proxy_set_header X-Real-IP $remote_addr;\n`;
+            conf += `        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n`;
+            conf += `        proxy_set_header X-Forwarded-Proto $scheme;\n`;
+            if (hasHttps) {
+                conf += `        proxy_set_header X-Forwarded-Proto https;\n`;
+            }
+        }
+        conf += `    }\n`;
+    }
+
+    // ===== 访问控制配置 =====
+    const accessMode = document.getElementById('gAccessAllow').checked ? 'allow' : 'deny';
+    const blockExt = document.getElementById('gBlockExt').value.trim();
+    const blockDir = document.getElementById('gBlockDir').value.trim();
+    const blockDirExt = document.getElementById('gBlockDirExt').value.trim();
+    const allowIP = document.getElementById('gAllowIP').value.trim();
+    const allowPath = document.getElementById('gAllowPath').value.trim();
+
+    let hasAccessControl = false;
+    const modeLabel = accessMode === 'allow' ? '允许' : '禁止';
+    const actionKeyword = accessMode === 'allow' ? 'allow all' : 'deny all';
+
+    // 文件类型（后缀）
+    if (blockExt) {
+        if (!hasAccessControl) { conf += `\n    # ===== 访问控制（${accessMode === 'allow' ? '白名单' : '黑名单'}模式）=====\n`; hasAccessControl = true; }
+        const exts = blockExt.split(',').map(s => s.trim()).filter(s => s);
+        if (exts.length > 0) {
+            conf += `    # ${modeLabel}特定后缀文件访问\n`;
+            conf += `    location ~* \\.(${exts.join('|')})$ {\n`;
+            conf += `        ${actionKeyword};\n`;
+            conf += `        return ${accessMode === 'allow' ? '403' : '404'};\n`;
+            conf += `    }\n`;
+        }
+    }
+
+    // 允许模式：默认拒绝所有（生成 deny all at root）
+    if (accessMode === 'allow' && (blockExt || blockDir || blockDirExt)) {
+        if (!hasAccessControl) { conf += `\n    # ===== 访问控制（白名单模式）=====\n`; hasAccessControl = true; }
+        conf += `\n    # 白名单模式：默认拒绝所有未明确允许的请求\n`;
+        conf += `    location / {\n`;
+        conf += `        deny all;\n`;
+        conf += `        return 404;\n`;
+        conf += `    }\n`;
+    }
+
+    // 禁止/允许隐藏文件
+    if (blockExt && accessMode === 'deny') {
+        conf += `    # 禁止隐藏文件（以 . 开头）\n`;
+        conf += `    location ~ /\\. {\n`;
+        conf += `        deny all;\n`;
+        conf += `        return 404;\n`;
+        conf += `        access_log off;\n`;
+        conf += `        log_not_found off;\n`;
+        conf += `    }\n`;
+    }
+
+    // 目录
+    if (blockDir) {
+        const dirs = blockDir.split('\n').map(s => s.trim()).filter(s => s);
+        if (dirs.length > 0) {
+            if (!hasAccessControl) { conf += `\n    # ===== 访问控制（${accessMode === 'allow' ? '白名单' : '黑名单'}模式）=====\n`; hasAccessControl = true; }
+            conf += `\n    # ${modeLabel}特定目录访问\n`;
+            dirs.forEach(dir => {
+                const cleanDir = dir.replace(/^\//, '').replace(/\/$/, '');
+                conf += `    location ~ /${escapeRegExp(cleanDir)} {\n`;
+                conf += `        ${actionKeyword};\n`;
+                conf += `        return ${accessMode === 'allow' ? '403' : '404'};\n`;
+                conf += `    }\n`;
+            });
+        }
+    }
+
+    // 目录下特定文件类型
+    if (blockDirExt) {
+        const rules = blockDirExt.split('\n').map(s => s.trim()).filter(s => s);
+        if (rules.length > 0) {
+            if (!hasAccessControl) { conf += `\n    # ===== 访问控制（${accessMode === 'allow' ? '白名单' : '黑名单'}模式）=====\n`; hasAccessControl = true; }
+            conf += `\n    # ${modeLabel}特定目录下的文件类型\n`;
+            rules.forEach(rule => {
+                const parts = rule.split('|');
+                if (parts.length === 2) {
+                    const dir = parts[0].trim().replace(/^\//, '').replace(/\/$/, '');
+                    const exts = parts[1].split(',').map(s => s.trim()).filter(s => s);
+                    if (dir && exts.length > 0) {
+                        conf += `    location ~* ^/${escapeRegExp(dir)}/.*\\.(${exts.join('|')})$ {\n`;
+                        conf += `        ${actionKeyword};\n`;
+                        conf += `        return ${accessMode === 'allow' ? '403' : '404'};\n`;
+                        conf += `    }\n`;
+                    }
+                }
+            });
+        }
+    }
+
+    // IP 白名单
+    if (allowIP && allowPath) {
+        conf += `\n    # IP 白名单访问控制\n`;
+        conf += `    location ^~ ${allowPath} {\n`;
+        allowIP.split(',').map(s => s.trim()).filter(s => s).forEach(ip => {
+            conf += `        allow ${ip};\n`;
+        });
+        conf += `        deny all;\n`;
+        conf += `        error_page 403 =404 /404.html;\n`;
+        if (proxy) {
+            conf += `        proxy_pass ${proxyProto}://${upstream ? 'backend' : proxy};\n`;
+            conf += `        proxy_set_header Host $host;\n`;
+            conf += `        proxy_set_header X-Real-IP $remote_addr;\n`;
+            conf += `        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n`;
+        }
+        conf += `    }\n`;
+    } else if (allowIP && !allowPath) {
+        conf += `\n    # IP 白名单（未指定保护路径，需手动填写 location 块）\n`;
+    }
+
+    conf += `}\n`;
+
+    const output = document.getElementById('genOutput');
+    output.innerHTML = '<code class="language-nginx">' + escapeHtml(conf) + '</code>';
+    hljs.highlightElement(output.querySelector('code'));
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+}
+
+function copyOutput() {
+    const out = document.getElementById('genOutput');
+    const text = out.querySelector('code') ? out.querySelector('code').textContent : out.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.gen-copy');
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        const btn = document.querySelector('.gen-copy');
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+// 初始生成
+document.addEventListener('DOMContentLoaded', () => {
+    generateConfig();
+});
+</script>
+
+</body>
+</html>

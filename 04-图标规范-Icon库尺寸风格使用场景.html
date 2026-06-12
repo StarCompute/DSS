@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标规范 | Icon 库 · 尺寸 · 风格 · 使用场景</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#F59E0B; --primary-hover:#D97706; --primary-light:#FFFBEB; --primary-border:#FDE68A;
+        }
+        /* 04专用：图标展示 */
+        .icon-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:12px; }
+        .icon-cell { display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px 8px; border-radius:10px; cursor:pointer; transition:background 0.15s; border:1px solid transparent; }
+        .icon-cell:hover { background:var(--gray-50); border-color:var(--gray-200); }
+        .icon-svg { width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--gray-700); }
+        .icon-name { font-size:11px; color:var(--gray-500); text-align:center; }
+
+        .size-demo { display:flex; gap:32px; align-items:flex-end; flex-wrap:wrap; }
+        .size-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+        .size-item .icon-svg { font-size:32px; }
+        .size-xs .icon-svg { font-size:14px; }
+        .size-sm .icon-svg { font-size:18px; }
+        .size-md .icon-svg { font-size:24px; }
+        .size-lg .icon-svg { font-size:32px; }
+        .size-xl .icon-svg { font-size:40px; }
+        .size-label { font-size:12px; color:var(--gray-500); }
+        .size-value { font-size:11px; color:var(--primary); font-weight:500; }
+
+        .color-variants { display:flex; gap:16px; flex-wrap:wrap; }
+        .color-var { display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:8px; background:var(--gray-50); }
+
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a><span class="sep">›</span><a href="index.html">图标与可视化</a><span class="sep">›</span><span class="current">04-图标规范</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">🔣</span> 图标规范</h1>
+        <div class="subtitle"><span>Icon库</span><span>尺寸体系</span><span>风格定义</span><span>使用场景</span></div>
+        <div class="doc-meta"><span>📅 版本: v2.0</span><span>🔖 规范编号: 04</span><span>📂 分组: 图标与可视化</span></div>
+        <div class="doc-summary"><strong>📖 概要：</strong>本规范定义了系统图标库的完整标准——40个核心图标、5级尺寸梯度、颜色语义映射、风格属性定义及使用场景规则。所有图标基于24px网格绘制，统一SVG格式。</div>
+    </div>
+
+    <!-- 一、图标库 -->
+    <div class="card" id="sec-iconlib">
+        <h2><span class="section-icon">📦</span> 一、图标库概览</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">系统图标集，按功能分类。统一使用 24px 网格绘制，支持线性和面性两种风格。以下为 40 个核心图标：</p>
+        <div class="icon-grid">
+            <div class="icon-cell"><div class="icon-svg">🏠</div><div class="icon-name">home / 首页</div></div>
+            <div class="icon-cell"><div class="icon-svg">📊</div><div class="icon-name">chart / 图表</div></div>
+            <div class="icon-cell"><div class="icon-svg">👤</div><div class="icon-name">user / 用户</div></div>
+            <div class="icon-cell"><div class="icon-svg">⚙️</div><div class="icon-name">settings / 设置</div></div>
+            <div class="icon-cell"><div class="icon-svg">🔍</div><div class="icon-name">search / 搜索</div></div>
+            <div class="icon-cell"><div class="icon-svg">📁</div><div class="icon-name">folder / 文件夹</div></div>
+            <div class="icon-cell"><div class="icon-svg">📄</div><div class="icon-name">file / 文件</div></div>
+            <div class="icon-cell"><div class="icon-svg">➕</div><div class="icon-name">plus / 添加</div></div>
+            <div class="icon-cell"><div class="icon-svg">✏️</div><div class="icon-name">edit / 编辑</div></div>
+            <div class="icon-cell"><div class="icon-svg">🗑️</div><div class="icon-name">delete / 删除</div></div>
+            <div class="icon-cell"><div class="icon-svg">💾</div><div class="icon-name">save / 保存</div></div>
+            <div class="icon-cell"><div class="icon-svg">↩️</div><div class="icon-name">undo / 撤销</div></div>
+            <div class="icon-cell"><div class="icon-svg">📋</div><div class="icon-name">clipboard / 复制</div></div>
+            <div class="icon-cell"><div class="icon-svg">⭐</div><div class="icon-name">star / 收藏</div></div>
+            <div class="icon-cell"><div class="icon-svg">🔗</div><div class="icon-name">link / 链接</div></div>
+            <div class="icon-cell"><div class="icon-svg">📧</div><div class="icon-name">mail / 邮件</div></div>
+            <div class="icon-cell"><div class="icon-svg">🔔</div><div class="icon-name">bell / 通知</div></div>
+            <div class="icon-cell"><div class="icon-svg">📅</div><div class="icon-name">calendar / 日历</div></div>
+            <div class="icon-cell"><div class="icon-svg">🕐</div><div class="icon-name">clock / 时间</div></div>
+            <div class="icon-cell"><div class="icon-svg">📍</div><div class="icon-name">pin / 定位</div></div>
+            <div class="icon-cell"><div class="icon-svg">🔒</div><div class="icon-name">lock / 锁定</div></div>
+            <div class="icon-cell"><div class="icon-svg">🌐</div><div class="icon-name">globe / 全局</div></div>
+            <div class="icon-cell"><div class="icon-svg">📷</div><div class="icon-name">camera / 拍照</div></div>
+            <div class="icon-cell"><div class="icon-svg">🖼️</div><div class="icon-name">image / 图片</div></div>
+            <div class="icon-cell"><div class="icon-svg">🎵</div><div class="icon-name">audio / 音频</div></div>
+            <div class="icon-cell"><div class="icon-svg">🎬</div><div class="icon-name">video / 视频</div></div>
+            <div class="icon-cell"><div class="icon-svg">⬆️</div><div class="icon-name">upload / 上传</div></div>
+            <div class="icon-cell"><div class="icon-svg">⬇️</div><div class="icon-name">download / 下载</div></div>
+            <div class="icon-cell"><div class="icon-svg">📤</div><div class="icon-name">export / 导出</div></div>
+            <div class="icon-cell"><div class="icon-svg">📥</div><div class="icon-name">import / 导入</div></div>
+            <div class="icon-cell"><div class="icon-svg">↗️</div><div class="icon-name">share / 分享</div></div>
+            <div class="icon-cell"><div class="icon-svg">❤️</div><div class="icon-name">like / 点赞</div></div>
+            <div class="icon-cell"><div class="icon-svg">💬</div><div class="icon-name">comment / 评论</div></div>
+            <div class="icon-cell"><div class="icon-svg">🏷️</div><div class="icon-name">tag / 标签</div></div>
+            <div class="icon-cell"><div class="icon-svg">📌</div><div class="icon-name">bookmark / 书签</div></div>
+            <div class="icon-cell"><div class="icon-svg">🔄</div><div class="icon-name">refresh / 刷新</div></div>
+            <div class="icon-cell"><div class="icon-svg">❌</div><div class="icon-name">close / 关闭</div></div>
+            <div class="icon-cell"><div class="icon-svg">✓</div><div class="icon-name">check / 勾选</div></div>
+            <div class="icon-cell"><div class="icon-svg">⚠️</div><div class="icon-name">warning / 警告</div></div>
+            <div class="icon-cell"><div class="icon-svg">ℹ️</div><div class="icon-name">info / 信息</div></div>
+        </div>
+    </div>
+
+    <!-- 二、尺寸规范 -->
+    <div class="card" id="sec-iconsize">
+        <h2><span class="section-icon">📏</span> 二、图标尺寸规范</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">统一图标尺寸梯度，根据使用场景选择对应尺寸。所有尺寸基于 4px 网格对齐。</p>
+        <div class="size-demo">
+            <div class="size-item size-xs"><div class="icon-svg">⬤</div><div class="size-label">xs</div><div class="size-value">14×14px</div></div>
+            <div class="size-item size-sm"><div class="icon-svg">⬤</div><div class="size-label">sm</div><div class="size-value">18×18px</div></div>
+            <div class="size-item size-md"><div class="icon-svg">⬤</div><div class="size-label">md</div><div class="size-value">24×24px</div></div>
+            <div class="size-item size-lg"><div class="icon-svg">⬤</div><div class="size-label">lg</div><div class="size-value">32×32px</div></div>
+            <div class="size-item size-xl"><div class="icon-svg">⬤</div><div class="size-label">xl</div><div class="size-value">40×40px</div></div>
+        </div>
+        <table class="spec-table" style="margin-top:20px;">
+            <thead><tr><th>尺寸</th><th>数值</th><th>使用场景</th></tr></thead>
+            <tbody>
+                <tr><td><span class="tag tag-gray">xs</span></td><td>14px</td><td>标签内图标、角标辅助、紧凑列表</td></tr>
+                <tr><td><span class="tag tag-gray">sm</span></td><td>18px</td><td>按钮内嵌图标、链接图标、状态指示</td></tr>
+                <tr><td><span class="tag tag-purple">md</span></td><td>24px</td><td>导航菜单、工具栏、卡片操作区（默认尺寸）</td></tr>
+                <tr><td><span class="tag tag-gray">lg</span></td><td>32px</td><td>空状态插图、功能入口大图标</td></tr>
+                <tr><td><span class="tag tag-gray">xl</span></td><td>40px</td><td>品牌标识、页面级大图标、Hero区域</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 三、颜色与语义 -->
+    <div class="card" id="sec-iconcolor">
+        <h2><span class="section-icon">🎨</span> 三、图标颜色 & 语义</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">图标颜色遵循设计令牌，与全局语义色保持一致。默认继承父元素文字颜色，特殊语义场景使用指定颜色。</p>
+        <div class="color-variants">
+            <div class="color-var"><div class="icon-svg" style="color:var(--gray-900);">⬤</div><span>默认 / Default<br><small style="color:var(--gray-500)">继承父色 #111827</small></span></div>
+            <div class="color-var"><div class="icon-svg" style="color:var(--primary);">⬤</div><span>主要 / Primary<br><small style="color:var(--gray-500)">#F59E0B</small></span></div>
+            <div class="color-var"><div class="icon-svg" style="color:var(--success);">⬤</div><span>成功 / Success<br><small style="color:var(--gray-500)">#059669</small></span></div>
+            <div class="color-var"><div class="icon-svg" style="color:var(--warning);">⬤</div><span>警告 / Warning<br><small style="color:var(--gray-500)">#D97706</small></span></div>
+            <div class="color-var"><div class="icon-svg" style="color:var(--error);">⬤</div><span>错误 / Error<br><small style="color:var(--gray-500)">#DC2626</small></span></div>
+            <div class="color-var"><div class="icon-svg" style="color:var(--gray-500);">⬤</div><span>禁用 / Disabled<br><small style="color:var(--gray-500)">#6B7280</small></span></div>
+        </div>
+        <div class="tip-info tip-block" style="margin-top:20px;">💡 <strong>原则：</strong>一个页面内图标颜色不超过 3 种；语义色仅用于反馈/状态场景，导航类统一使用默认色或主色。</div>
+    </div>
+
+    <!-- 四、风格定义 -->
+    <div class="card" id="sec-iconscene">
+        <h2><span class="section-icon">✏️</span> 四、风格定义</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">图标统一采用线性风格（Outline），关键属性如下：</p>
+        <table class="spec-table">
+            <thead><tr><th>属性</th><th>规范值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>描边宽度</td><td><code>2px</code></td><td>所有线性图标统一 2px 描边</td></tr>
+                <tr><td>圆角</td><td>2px（直角）/ 全圆角</td><td>转角处使用 2px 圆角或全圆角风格</td></tr>
+                <tr><td>绘制网格</td><td><code>24 × 24px</code></td><td>设计源文件基于 24px 画板</td></tr>
+                <tr><td>内边距</td><td><code>2px</code></td><td>图标内容距画板边缘保留 2px 安全间距</td></tr>
+                <tr><td>格式</td><td>SVG</td><td>优先使用 SVG，支持缩放不失真</td></tr>
+                <tr><td>风格</td><td>线性 / 面性</td><td>默认线性；激活/选中状态可使用面性</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 五、使用规范 -->
+    <div class="card">
+        <h2><span class="section-icon">📋</span> 五、图标使用规范</h2>
+        <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">图标与文字组合时的间距、对齐规则。</p>
+        <div class="flex-row" style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--gray-50);border-radius:8px;">
+                <span style="font-size:18px;">🏠</span><span style="font-size:14px;">首页（间距 6px）</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:8px 16px;background:var(--gray-50);border-radius:8px;">
+                <span style="font-size:14px;">🔍</span><span style="font-size:12px;">紧凑间距 4px</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--gray-50);border-radius:8px;">
+                <span style="font-size:24px;">📊</span><span style="font-size:16px;">宽松间距 10px</span>
+            </div>
+        </div>
+        <table class="spec-table">
+            <thead><tr><th>场景</th><th>图标尺寸</th><th>与文字间距</th><th>示例</th></tr></thead>
+            <tbody>
+                <tr><td>按钮内嵌</td><td>sm (18px)</td><td>6px</td><td>[图标] 确认</td></tr>
+                <tr><td>导航菜单</td><td>md (24px)</td><td>10px</td><td>[图标] 菜单项</td></tr>
+                <tr><td>标签/角标</td><td>xs (14px)</td><td>4px</td><td>[图标] 标签</td></tr>
+                <tr><td>空状态</td><td>lg (32px)</td><td>16px（上下排列）</td><td>图标在上，文字在下</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 六、设计令牌速查 -->
+    <div class="card">
+        <h2><span class="section-icon">📌</span> 六、设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--icon-xs</span><span class="token-value">14px</span></div>
+            <div class="token-item"><span class="token-name">--icon-sm</span><span class="token-value">18px</span></div>
+            <div class="token-item"><span class="token-name">--icon-md</span><span class="token-value">24px</span></div>
+            <div class="token-item"><span class="token-name">--icon-lg</span><span class="token-value">32px</span></div>
+            <div class="token-item"><span class="token-name">--icon-xl</span><span class="token-value">40px</span></div>
+            <div class="token-item"><span class="token-name">--icon-gap-sm</span><span class="token-value">4px</span></div>
+            <div class="token-item"><span class="token-name">--icon-gap-md</span><span class="token-value">6px</span></div>
+            <div class="token-item"><span class="token-name">--icon-gap-lg</span><span class="token-value">10px</span></div>
+            <div class="token-item"><span class="token-name">--icon-stroke</span><span class="token-value">2px</span></div>
+            <div class="token-item"><span class="token-name">--icon-grid</span><span class="token-value">24px</span></div>
+            <div class="token-item"><span class="token-name">--primary (主题色)</span><span class="token-value">#F59E0B</span></div>
+            <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+        </div>
+    </div>
+
+    <!-- 七、检查清单 -->
+    <div class="card">
+        <h2><span class="section-icon">✅</span> 七、图标规范检查清单</h2>
+        <ul class="checklist">
+            <li>图标统一使用 SVG 格式，支持无损缩放</li>
+            <li>所有图标基于 24×24px 网格绘制</li>
+            <li>描边宽度统一为 2px（线性风格）</li>
+            <li>图标尺寸遵循 xs/sm/md/lg/xl 五级梯度</li>
+            <li>语义色仅用于反馈/状态场景，导航使用默认色</li>
+            <li>页面内图标颜色不超过 3 种</li>
+            <li>图标与文字间距遵循规范（4/6/10px）</li>
+            <li>图标hover态有视觉反馈</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">← 返回总览</a><span>|</span>
+        <a href="05-数据可视化规范-图表配色卡片数据统计面板.html">下一页：数据可视化规范 →</a><span>|</span>
+        <span>设计系统规范库 · 图标规范 v2.0</span>
+    </div>
+
+</div>
+</body>
+</html>

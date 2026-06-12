@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索 & 筛选规范 | 搜索框 · 筛选面板 · 标签过滤 · 排序</title>
+    <link rel="stylesheet" href="standard.css">
+    <style>
+        :root {
+            --primary:#EC4899; --primary-hover:#DB2777; --primary-light:#FDF2F8; --primary-border:#FBCFE8;
+        }
+        .card-desc { color:var(--text-secondary); font-size:14px; margin-bottom:20px; }
+
+        /* ===== 搜索框 ===== */
+        .search-bar { position:relative; width:320px; }
+        .search-input { width:100%; height:40px; padding:0 40px 0 40px; border:1px solid var(--gray-300); border-radius:10px; font-size:14px; font-family:inherit; outline:none; transition:all 0.2s; background:white; }
+        .search-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(236,72,153,0.15); }
+        .search-input::placeholder { color:var(--gray-400); }
+        .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--gray-400); pointer-events:none; }
+        .search-clear { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:20px; height:20px; border-radius:50%; background:var(--gray-300); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:white; border:none; }
+        .search-variants { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; }
+        .search-small .search-input { height:32px; font-size:13px; border-radius:8px; width:240px; }
+        .search-large .search-input { height:48px; font-size:16px; border-radius:12px; width:400px; }
+
+        /* ===== 筛选面板 ===== */
+        .filter-select { height:36px; padding:0 32px 0 12px; border:1px solid var(--gray-200); border-radius:8px; font-size:13px; color:var(--gray-700); background:white; cursor:pointer; font-family:inherit; appearance:none; background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; }
+        .filter-select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(236,72,153,0.1); }
+        .filter-divider { width:1px; height:24px; background:var(--gray-200); }
+        .filter-count { font-size:13px; color:var(--gray-500); margin-left:auto; }
+        .filter-reset { font-size:13px; color:var(--primary); cursor:pointer; border:none; background:none; font-family:inherit; }
+        .filter-reset:hover { text-decoration:underline; }
+
+        /* ===== 标签过滤 ===== */
+        .tag-filter { display:flex; gap:8px; flex-wrap:wrap; }
+        .filter-tag { padding:6px 16px; border-radius:20px; font-size:13px; cursor:pointer; border:1px solid var(--gray-200); background:white; color:var(--gray-700); transition:all 0.15s; font-family:inherit; }
+        .filter-tag:hover { border-color:var(--primary); color:var(--primary); }
+        .filter-tag.active { background:var(--primary); color:white; border-color:var(--primary); }
+        .removable-tags { display:flex; gap:8px; flex-wrap:wrap; }
+        .removable-tag { display:flex; align-items:center; gap:6px; padding:5px 10px 5px 14px; border-radius:6px; font-size:13px; background:var(--primary-light); color:var(--primary); border:1px solid var(--primary-border); }
+        .removable-tag .remove { width:16px; height:16px; border-radius:50%; background:rgba(236,72,153,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; border:none; color:var(--primary); }
+
+        /* ===== 排序 ===== */
+        .sort-bar { display:flex; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--gray-200); }
+        .sort-item { font-size:13px; color:var(--gray-500); cursor:pointer; display:flex; align-items:center; gap:4px; padding:4px 0; border-bottom:2px solid transparent; transition:all 0.15s; }
+        .sort-item:hover { color:var(--gray-900); }
+        .sort-item.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:500; }
+        .sort-arrow { font-size:10px; }
+
+        /* ===== 完整筛选面板 ===== */
+        .full-filter-panel { border:1px solid var(--gray-200); border-radius:12px; overflow:hidden; }
+        .filter-row { display:flex; gap:16px; flex-wrap:wrap; align-items:center; padding:16px 20px; border-bottom:1px solid var(--gray-100); }
+        .filter-row:last-child { border-bottom:none; }
+        .filter-label { font-size:13px; font-weight:500; color:var(--gray-700); min-width:60px; }
+
+        .btn { display:inline-flex; align-items:center; gap:6px; padding:0 20px; height:36px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:none; font-family:inherit; transition:all 0.15s; line-height:1; }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-primary:hover { background:var(--primary-hover); }
+        .btn-secondary { background:white; color:var(--primary); border:1px solid var(--gray-300); }
+        .btn-secondary:hover { border-color:var(--primary); background:var(--gray-50); }
+
+        .flex-row { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+        .demo-section { margin-bottom:24px; }
+
+        @media (max-width:768px) { }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="nav-breadcrumb">
+        <a href="index.html">📚 设计系统规范库</a>
+        <span class="sep">›</span>
+        <a href="index.html">导航与搜索</a>
+        <span class="sep">›</span>
+        <span class="current">08-搜索筛选规范</span>
+    </div>
+
+    <div class="page-header">
+        <h1><span class="icon">🔍</span> 搜索 & 筛选规范</h1>
+        <div class="subtitle">
+            <span>搜索框</span><span>筛选面板</span><span>标签过滤</span><span>排序控件</span><span>高级搜索</span>
+        </div>
+        <div class="doc-meta">
+            <span>📅 版本: v2.0</span><span>🔖 规范编号: 08</span><span>🎨 主题色: #EC4899</span><span>📂 分类: 导航与搜索</span>
+        </div>
+        <div class="doc-summary">
+            <strong>📖 概要：</strong>定义搜索和筛选组件的统一规范，包括三种尺寸搜索框、标签过滤、多条件筛选面板、排序控件和高级搜索。确保用户能快速定位目标数据，获得流畅的查找体验。
+        </div>
+    </div>
+
+    <!-- 一、搜索框 -->
+    <div class="card" id="sec-searchbox">
+        <h2><span class="section-icon">🔍</span> 一、搜索框 Search</h2>
+        <p class="card-desc">三种尺寸的搜索框，支持清除按钮和搜索图标。聚焦时粉色边框 + 阴影光环。</p>
+        <div class="search-variants">
+            <div>
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;">sm · 32px</div>
+                <div class="search-bar search-small">
+                    <span class="search-icon">🔍</span>
+                    <input class="search-input" placeholder="小尺寸搜索…">
+                </div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;">md · 40px（默认）</div>
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input class="search-input" placeholder="搜索关键词…" value="设计系统">
+                    <button class="search-clear">✕</button>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;">lg · 48px</div>
+                <div class="search-bar search-large">
+                    <span class="search-icon" style="font-size:18px;">🔍</span>
+                    <input class="search-input" placeholder="大尺寸搜索，适合首页…">
+                </div>
+            </div>
+        </div>
+        <table class="spec-table">
+            <thead><tr><th>属性</th><th>sm</th><th>md（默认）</th><th>lg</th></tr></thead>
+            <tbody>
+                <tr><td>高度</td><td>32px</td><td>40px</td><td>48px</td></tr>
+                <tr><td>圆角</td><td>8px</td><td>10px</td><td>12px</td></tr>
+                <tr><td>字号</td><td>13px</td><td>14px</td><td>16px</td></tr>
+                <tr><td>场景</td><td>表格内/工具栏</td><td>列表页顶部</td><td>首页/落地页</td></tr>
+            </tbody>
+        </table>
+        <div class="tip-info tip-block">💡 <strong>交互规范：</strong>输入即搜索（防抖 300ms）| 支持 Enter 触发 | 清除按钮在有内容时显示 | 聚焦光环 3px</div>
+    </div>
+
+    <!-- 二、标签过滤 -->
+    <div class="card" id="sec-tagfilter">
+        <h2><span class="section-icon">🏷️</span> 二、标签过滤 Tag Filter</h2>
+        <p class="card-desc">快速筛选的标签组，选中态粉色填充。常用于状态、分类等少选项场景。</p>
+        <div class="demo-section">
+            <div class="tag-filter">
+                <button class="filter-tag active">全部</button>
+                <button class="filter-tag">设计中</button>
+                <button class="filter-tag">开发中</button>
+                <button class="filter-tag">测试中</button>
+                <button class="filter-tag">已上线</button>
+                <button class="filter-tag">已归档</button>
+            </div>
+        </div>
+        <div class="demo-section">
+            <h3>已选筛选条件（可移除标签）</h3>
+            <div class="removable-tags">
+                <div class="removable-tag">状态：进行中 <button class="remove">✕</button></div>
+                <div class="removable-tag">优先级：高 <button class="remove">✕</button></div>
+                <div class="removable-tag">类型：Bug <button class="remove">✕</button></div>
+            </div>
+        </div>
+        <div class="tip-success tip-block">✅ <strong>推荐：</strong>标签过滤适合 5~8 个选项的场景，已选条件使用可移除标签展示，一目了然。</div>
+    </div>
+
+    <!-- 三、筛选面板 -->
+    <div class="card" id="sec-filterpanel">
+        <h2><span class="section-icon">📋</span> 三、筛选面板 Filter Panel</h2>
+        <p class="card-desc">多条件筛选的标准面板，包含下拉选择器、清除重置按钮、筛选条件计数。</p>
+        <div class="full-filter-panel">
+            <div class="filter-row">
+                <span class="filter-label">状态</span>
+                <select class="filter-select"><option>全部</option><option>启用</option><option>禁用</option></select>
+                <span class="filter-label">角色</span>
+                <select class="filter-select"><option>全部</option><option>管理员</option><option>普通用户</option></select>
+                <span class="filter-label">日期</span>
+                <select class="filter-select"><option>全部时间</option><option>今天</option><option>本周</option><option>本月</option></select>
+                <div class="filter-divider"></div>
+                <button class="btn btn-primary" style="height:36px;font-size:13px;">🔍 查询</button>
+                <button class="filter-reset">重置</button>
+                <span class="filter-count">筛选结果：42 条</span>
+            </div>
+        </div>
+        <div class="tip-info tip-block">📐 <strong>筛选面板规范：</strong>下拉高度 36px | 标签宽度 60px | 条件横向排列 | 超出换行 | 分隔线 1px #E5E7EB | 筛选条件不超过 5 个，超过则折叠</div>
+    </div>
+
+    <!-- 四、排序控件 -->
+    <div class="card" id="sec-sort">
+        <h2><span class="section-icon">↕️</span> 四、排序控件 Sort</h2>
+        <p class="card-desc">列表排序切换，激活态粉色下划线。支持升序/降序切换。</p>
+        <div class="sort-bar">
+            <span style="font-size:13px;color:var(--gray-500);margin-right:8px;">排序：</span>
+            <div class="sort-item active">默认</div>
+            <div class="sort-item">最新创建 <span class="sort-arrow">↓</span></div>
+            <div class="sort-item">最近更新 <span class="sort-arrow">↓</span></div>
+            <div class="sort-item">优先级 <span class="sort-arrow">↑</span></div>
+            <div class="sort-item">名称 A-Z</div>
+        </div>
+        <h3>表格列排序</h3>
+        <table class="spec-table">
+            <thead>
+                <tr>
+                    <th>名称 <span style="font-size:10px;">▲▽</span></th>
+                    <th>创建时间 <span style="font-size:10px;color:var(--primary);">▼</span></th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>项目 Alpha</td><td>2026-06-10</td><td>进行中</td></tr>
+                <tr><td>项目 Beta</td><td>2026-06-08</td><td>已完成</td></tr>
+            </tbody>
+        </table>
+        <div class="tip-info tip-block">💡 <strong>交互规范：</strong>排序状态用箭头方向明确标识升序/降序，再次点击同一列切换方向。</div>
+    </div>
+
+    <!-- 五、高级搜索 -->
+    <div class="card" id="sec-advsearch">
+        <h2><span class="section-icon">🔬</span> 五、高级搜索 / 组合筛选</h2>
+        <p class="card-desc">复杂查询场景，支持多条件 AND/OR 组合、自定义字段。</p>
+        <div class="full-filter-panel">
+            <div class="filter-row">
+                <span class="filter-label">关键词</span>
+                <div class="search-bar" style="width:280px;">
+                    <span class="search-icon">🔍</span>
+                    <input class="search-input" placeholder="搜索名称/描述…">
+                </div>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">条件组</span>
+                <select class="filter-select"><option>名称</option><option>ID</option><option>标签</option></select>
+                <select class="filter-select"><option>包含</option><option>等于</option><option>开头是</option></select>
+                <input style="height:36px;padding:0 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;width:180px;font-family:inherit;" placeholder="输入值…">
+                <span style="color:var(--gray-400);font-size:20px;cursor:pointer;">＋</span>
+            </div>
+            <div class="filter-row" style="justify-content:flex-end;">
+                <button class="btn btn-secondary" style="height:36px;font-size:13px;">展开更多条件</button>
+                <button class="btn btn-primary" style="height:36px;font-size:13px;">🔍 搜索</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 六、设计令牌 -->
+    <div class="card">
+        <h2><span class="section-icon">🎨</span> 六、设计令牌速查</h2>
+        <div class="token-grid">
+            <div class="token-item"><span class="token-name">--primary</span><span class="token-value">#EC4899（导航粉）</span></div>
+            <div class="token-item"><span class="token-name">--primary-light</span><span class="token-value">#FDF2F8</span></div>
+            <div class="token-item"><span class="token-name">--gray-300</span><span class="token-value">#D1D5DB（默认边框）</span></div>
+            <div class="token-item"><span class="token-name">--radius</span><span class="token-value">10px</span></div>
+            <div class="token-item"><span class="token-name">--shadow-sm</span><span class="token-value">0 1px 2px rgba(0,0,0,.05)</span></div>
+            <div class="token-item"><span class="token-name">--border</span><span class="token-value">#E2E8F0</span></div>
+            <div class="token-item"><span class="token-name">--bg</span><span class="token-value">#F8FAFC</span></div>
+            <div class="token-item"><span class="token-name">防抖延迟</span><span class="token-value">300ms</span></div>
+        </div>
+    </div>
+
+    <!-- 七、搜索筛选设计原则 -->
+    <div class="card">
+        <h2><span class="section-icon">📌</span> 七、搜索 & 筛选设计原则</h2>
+        <ul class="checklist">
+            <li>搜索框默认宽度 320px，自适应内容区宽度</li>
+            <li>筛选条件不超过 5 个，超过则折叠为"高级筛选"</li>
+            <li>标签过滤适合 5~8 个选项的场景</li>
+            <li>搜索结果实时更新，防抖 300ms</li>
+            <li>已选筛选条件使用可移除标签展示，一目了然</li>
+            <li>排序状态用箭头方向明确标识升序/降序</li>
+            <li>筛选后有结果数展示，空结果引导调整条件</li>
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <a href="index.html">← 返回总览</a>
+        <span>|</span>
+        <span>设计系统规范库 · 搜索与筛选规范 v2.0</span>
+        <span>|</span>
+        <a href="07-导航菜单规范-面包屑侧边菜单分页步骤条.html">← 上一章</a>
+        <span>|</span>
+        <a href="09-数据库设计规范-字段设计命名索引表结构.html">下一章 →</a>
+    </div>
+
+</div>
+</body>
+</html>
