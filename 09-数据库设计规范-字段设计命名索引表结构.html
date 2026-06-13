@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据库设计规范 | 字段 · 命名 · 索引 · 表结构</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#06B6D4; --primary-hover:#0891B2; --primary-light:#ECFEFF; --primary-border:#A5F3FC;
@@ -79,11 +80,6 @@
             overflow-x: auto;
             margin-top: 12px;
         }
-        .code-block .keyword { color: #93C5FD; }
-        .code-block .type   { color: #6EE7B7; }
-        .code-block .string { color: #FCA5A5; }
-        .code-block .comment{ color: #64748B; font-style: italic; }
-        .code-block .func   { color: #C4B5FD; }
 
         /* ===== 两栏布局 ===== */
         .grid-2 {
@@ -292,21 +288,21 @@
         <div class="rule-card">
             <h3><span class="dot"></span> 1.4 标准建表语句示例</h3>
             <div class="code-block">
-<span class="keyword">CREATE TABLE</span> <span class="func">biz_order</span> (<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">id</span>          <span class="type">BIGINT</span>       <span class="keyword">NOT NULL</span> <span class="keyword">AUTO_INCREMENT</span>  <span class="comment">-- 主键ID</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">order_no</span>    <span class="type">VARCHAR(32)</span>  <span class="keyword">NOT NULL</span>                    <span class="comment">-- 订单编号</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">user_id</span>     <span class="type">BIGINT</span>       <span class="keyword">NOT NULL</span>                    <span class="comment">-- 用户ID</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">total_amount</span> <span class="type">DECIMAL(12,2)</span> <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="string">0.00</span>  <span class="comment">-- 总金额</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">status</span>      <span class="type">TINYINT</span>      <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="string">0</span>     <span class="comment">-- 状态: 0待支付 1已支付 2已取消</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">create_time</span> <span class="type">DATETIME</span>     <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT CURRENT_TIMESTAMP</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">update_time</span> <span class="type">DATETIME</span>     <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">create_by</span>   <span class="type">BIGINT</span>       <span class="keyword">DEFAULT NULL</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">is_deleted</span>  <span class="type">TINYINT(1)</span>   <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="string">0</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">PRIMARY KEY</span> (<span class="type">id</span>),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">UNIQUE KEY</span> <span class="func">uk_order_no</span> (<span class="type">order_no</span>),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">KEY</span> <span class="func">idx_user_id</span> (<span class="type">user_id</span>),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">KEY</span> <span class="func">idx_create_time</span> (<span class="type">create_time</span>)<br>
-) <span class="keyword">ENGINE</span>=InnoDB <span class="keyword">DEFAULT CHARSET</span>=utf8mb4 <span class="keyword">COMMENT</span>=<span class="string">'订单表'</span>;
+<pre><code class="language-sql">CREATE TABLE biz_order (
+    id          BIGINT       NOT NULL AUTO_INCREMENT  -- 主键ID
+    order_no    VARCHAR(32)  NOT NULL                 -- 订单编号
+    user_id     BIGINT       NOT NULL                 -- 用户ID
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00  -- 总金额
+    status      TINYINT      NOT NULL DEFAULT 0       -- 状态: 0待支付 1已支付 2已取消
+    create_time DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    update_time DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    create_by   BIGINT       DEFAULT NULL
+    is_deleted  TINYINT(1)   NOT NULL DEFAULT 0
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_order_no (order_no),
+    KEY idx_user_id (user_id),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';</code></pre>
             </div>
         </div>
 
@@ -910,5 +906,12 @@
     </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

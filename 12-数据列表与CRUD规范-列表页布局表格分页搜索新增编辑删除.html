@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>数据列表 &amp; CRUD 规范 | 列表页布局 · 表格分页 · 搜索联动 · 增删改查</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
 /* File-specific overrides */
 :root {
@@ -143,6 +144,9 @@
 .demo-list-page .demo-inner { padding:20px; }
 
 @media (max-width:768px) { .demo-list-page { border-radius:0; } }
+.code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+.code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+.code-block code { background:none; padding:0; color:#E2E8F0; }
 </style>
 </head>
 <body>
@@ -256,6 +260,63 @@
             </div>
         </div>
         <div class="muted">👆 上方为可交互演示：搜索条件关联数据字段类型；表格支持拖拽列宽和点击排序；支持全选/批量操作；分页支持切换条数和跳页。</div>
+        <div class="code-block">
+<pre><code class="language-html">&lt;!-- 列表页标准结构（5区布局） --&gt;
+&lt;div class="list-page"&gt;
+  &lt;!-- ① 页面标题 + 操作按钮 --&gt;
+  &lt;div class="page-header"&gt;
+    &lt;h2&gt;用户管理&lt;/h2&gt;
+    &lt;div class="actions"&gt;
+      &lt;button class="btn btn-outline"&gt;导出&lt;/button&gt;
+      &lt;button class="btn btn-primary"&gt;＋ 新增&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ② 搜索条件区 --&gt;
+  &lt;div class="search-area"&gt;
+    &lt;input type="text" placeholder="用户名..." data-search="username"&gt;
+    &lt;select data-search="status"&gt;
+      &lt;option value=""&gt;全部状态&lt;/option&gt;
+      &lt;option value="active"&gt;启用&lt;/option&gt;
+      &lt;option value="inactive"&gt;禁用&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;button class="btn btn-primary"&gt;搜索&lt;/button&gt;
+    &lt;button class="btn btn-ghost"&gt;重置&lt;/button&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ③ 工具栏（批量操作） --&gt;
+  &lt;div class="toolbar"&gt;
+    &lt;div class="batch-actions"&gt;
+      &lt;span&gt;已选 0 项&lt;/span&gt;
+      &lt;button&gt;批量删除&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ④ 数据表格 --&gt;
+  &lt;table class="data-table"&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;input type="checkbox"&gt;&lt;/th&gt;
+        &lt;th data-sort="id"&gt;ID&lt;/th&gt;
+        &lt;th data-sort="name"&gt;名称&lt;/th&gt;
+        &lt;th data-sort="status"&gt;状态&lt;/th&gt;
+        &lt;th&gt;操作&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;&lt;!-- 动态渲染 --&gt;&lt;/tbody&gt;
+  &lt;/table&gt;
+
+  &lt;!-- ⑤ 分页器 --&gt;
+  &lt;div class="pagination"&gt;
+    &lt;button&gt;‹&lt;/button&gt;
+    &lt;button class="active"&gt;1&lt;/button&gt;
+    &lt;button&gt;2&lt;/button&gt;
+    &lt;button&gt;›&lt;/button&gt;
+    &lt;span&gt;跳至 &lt;input type="number"&gt; 页&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+</div>
     </div>
 
     <!-- 二、搜索条件映射 -->
@@ -303,6 +364,42 @@
             </tbody>
         </table>
         <div class="tip-info tip-block">💡 <strong>排序交互：</strong>点击列头 → 升序 → 再点 → 降序 → 再点 → 取消排序（三态循环）| 同时只允许单列排序</div>
+        <div class="code-block">
+<pre><code class="language-javascript">// === 表头排序交互（三态循环：升序→降序→取消） ===
+let sortState = { field: null, dir: null };
+
+function handleSort(field) {
+  if (sortState.field === field) {
+    // 三态循环: asc → desc → null（取消）
+    sortState.dir = sortState.dir === 'asc' ? 'desc' : (sortState.dir === 'desc' ? null : 'asc');
+  } else {
+    sortState.field = field;
+    sortState.dir = 'asc';
+  }
+
+  // 更新表头样式
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+  });
+  if (sortState.dir) {
+    const th = document.querySelector(`th[data-sort="${field}"]`);
+    if (th) th.classList.add(sortState.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+  }
+
+  // 执行排序
+  if (sortState.dir) {
+    data.sort((a, b) => {
+      const va = a[field], vb = b[field];
+      if (typeof va === 'number') return sortState.dir === 'asc' ? va - vb : vb - va;
+      return sortState.dir === 'asc'
+        ? String(va).localeCompare(String(vb), 'zh')
+        : String(vb).localeCompare(String(va), 'zh');
+    });
+  }
+  renderTable();
+}
+</code></pre>
+</div>
     </div>
 
     <!-- 四、可拖拽列宽 -->
@@ -318,6 +415,43 @@
                 <tr><td>table-layout</td><td>fixed</td><td>列宽由 colgroup 控制</td></tr>
             </tbody>
         </table>
+        <div class="code-block">
+<pre><code class="language-javascript">// === 可拖拽表格列宽 ===
+let resizeCol = null, resizeStartX = 0, resizeStartW = 0;
+
+// 绑定拖拽手柄
+document.querySelectorAll('.resize-handle').forEach(handle => {
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const th = handle.parentElement;
+    resizeCol = th.cellIndex;
+    resizeStartX = e.clientX;
+    resizeStartW = th.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+});
+
+// 拖拽中
+document.addEventListener('mousemove', (e) => {
+  if (resizeCol === null) return;
+  const delta = e.clientX - resizeStartX;
+  const newWidth = Math.max(60, resizeStartW + delta); // 最小60px
+  const col = document.querySelector(`colgroup col:nth-child(${resizeCol + 1})`);
+  if (col) col.style.width = newWidth + 'px';
+  // 同步更新 th 和 td
+  document.querySelectorAll(`th:nth-child(${resizeCol + 1}), td:nth-child(${resizeCol + 1})`)
+    .forEach(cell => cell.style.width = newWidth + 'px');
+});
+
+// 松手
+document.addEventListener('mouseup', () => {
+  resizeCol = null;
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+});
+</code></pre>
+</div>
     </div>
 
     <!-- 五、操作按钮规范 -->
@@ -399,6 +533,57 @@
             </div>
         </div>
         <div class="tip-success tip-block">💡 <strong>关键原则：</strong>① 新增成功后跳到第1页；② 编辑/删除成功后停留当前页；③ 删除导致当前页为空时自动回退；④ 操作完成后 Toast 反馈持续 3 秒。</div>
+        <div class="code-block">
+<pre><code class="language-javascript">// === CRUD 完整操作流程 ===
+const crud = {
+  async create(data) {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw await res.json();
+    this.showToast('新增成功');
+    this.goToPage(1);       // 新增后跳到第一页
+    this.refreshList();
+  },
+
+  async update(id, data) {
+    const res = await fetch(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw await res.json();
+    this.showToast('编辑成功');
+    this.refreshList();     // 编辑后停留当前页
+  },
+
+  async remove(id) {
+    if (!confirm('确定删除吗？此操作不可撤销。')) return;
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw await res.json();
+    this.showToast('删除成功');
+
+    // 当前页为空时自动回退
+    const totalPages = Math.ceil(this.total / this.pageSize);
+    if (this.currentPage > totalPages && totalPages > 0) {
+      this.currentPage = totalPages;
+    }
+    this.refreshList();
+  },
+
+  // 搜索（带防抖300ms）
+  search: debounce(async function(params) {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(`/api/users?${query}`);
+    this.data = await res.json();
+    this.currentPage = 1;
+    this.renderTable();
+  }, 300),
+};
+</code></pre>
+</div>
     </div>
 
     <!-- 七、设计令牌 -->
@@ -712,6 +897,9 @@ document.addEventListener('mouseup', function() { if (!resizeCol) return; resize
 applyFilters();
 renderTable();
 </script>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){hljs.highlightAll();});</script>
 
 </body>
 </html>

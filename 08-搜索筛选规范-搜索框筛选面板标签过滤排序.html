@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>搜索 & 筛选规范 | 搜索框 · 筛选面板 · 标签过滤 · 排序</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#EC4899; --primary-hover:#DB2777; --primary-light:#FDF2F8; --primary-border:#FBCFE8;
@@ -62,6 +63,10 @@
         .demo-section { margin-bottom:24px; }
 
         @media (max-width:768px) { }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -126,6 +131,88 @@
             </tbody>
         </table>
         <div class="tip-info tip-block">💡 <strong>交互规范：</strong>输入即搜索（防抖 300ms）| 支持 Enter 触发 | 清除按钮在有内容时显示 | 聚焦光环 3px</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- sm · 32px --&gt;
+&lt;div class="search-bar search-small"&gt;
+    &lt;span class="search-icon"&gt;🔍&lt;/span&gt;
+    &lt;input class="search-input" placeholder="小尺寸搜索…"&gt;
+&lt;/div&gt;
+
+&lt;!-- md · 40px（默认） --&gt;
+&lt;div class="search-bar"&gt;
+    &lt;span class="search-icon"&gt;🔍&lt;/span&gt;
+    &lt;input class="search-input" placeholder="搜索关键词…" value="设计系统"&gt;
+    &lt;button class="search-clear"&gt;✕&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- lg · 48px --&gt;
+&lt;div class="search-bar search-large"&gt;
+    &lt;span class="search-icon"&gt;🔍&lt;/span&gt;
+    &lt;input class="search-input" placeholder="大尺寸搜索，适合首页…"&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.search-bar { position: relative; width: 320px; }
+.search-input {
+    width: 100%; height: 40px;
+    padding: 0 40px;
+    border: 1px solid #D1D5DB; border-radius: 10px;
+    font-size: 14px; outline: none;
+    transition: all 0.2s; background: white;
+}
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(236,72,153,0.15);
+}
+.search-input::placeholder { color: #9CA3AF; }
+.search-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); font-size: 16px;
+    color: #9CA3AF; pointer-events: none;
+}
+.search-clear {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #D1D5DB; cursor: pointer;
+    font-size: 10px; color: white; border: none;
+}
+/* 尺寸变体 */
+.search-small .search-input  { height: 32px; font-size: 13px; border-radius: 8px; width: 240px; }
+.search-large .search-input  { height: 48px; font-size: 16px; border-radius: 12px; width: 400px; }
+&lt;/style&gt;
+
+&lt;script&gt;
+// 搜索防抖 300ms
+function debounce(fn, delay = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}
+const searchInput = document.querySelector('.search-input');
+searchInput.addEventListener('input', debounce((e) => {
+    const keyword = e.target.value.trim();
+    console.log('搜索:', keyword);
+    // fetchResults(keyword);
+}));
+
+// 清除按钮显隐
+const clearBtn = document.querySelector('.search-clear');
+searchInput.addEventListener('input', () => {
+    clearBtn.style.display = searchInput.value ? 'flex' : 'none';
+});
+clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchInput.focus();
+});
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 二、标签过滤 -->
@@ -151,6 +238,56 @@
             </div>
         </div>
         <div class="tip-success tip-block">✅ <strong>推荐：</strong>标签过滤适合 5~8 个选项的场景，已选条件使用可移除标签展示，一目了然。</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 标签过滤器 --&gt;
+&lt;div class="tag-filter"&gt;
+    &lt;button class="filter-tag active"&gt;全部&lt;/button&gt;
+    &lt;button class="filter-tag"&gt;设计中&lt;/button&gt;
+    &lt;button class="filter-tag"&gt;开发中&lt;/button&gt;
+    &lt;button class="filter-tag"&gt;测试中&lt;/button&gt;
+    &lt;button class="filter-tag"&gt;已上线&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- 已选筛选条件（可移除标签） --&gt;
+&lt;div class="removable-tags"&gt;
+    &lt;div class="removable-tag"&gt;
+        状态：进行中 &lt;button class="remove"&gt;✕&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class="removable-tag"&gt;
+        优先级：高 &lt;button class="remove"&gt;✕&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.tag-filter { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-tag {
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 13px; cursor: pointer;
+    border: 1px solid #E5E7EB;
+    background: white; color: #374151;
+    transition: all 0.15s;
+}
+.filter-tag:hover { border-color: var(--primary); color: var(--primary); }
+.filter-tag.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.removable-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.removable-tag {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px 5px 14px; border-radius: 6px;
+    font-size: 13px;
+    background: #FDF2F8; color: var(--primary);
+    border: 1px solid #FBCFE8;
+}
+.removable-tag .remove {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(236,72,153,0.15); cursor: pointer;
+    font-size: 10px; border: none; color: var(--primary);
+}
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 三、筛选面板 -->
@@ -172,6 +309,62 @@
             </div>
         </div>
         <div class="tip-info tip-block">📐 <strong>筛选面板规范：</strong>下拉高度 36px | 标签宽度 60px | 条件横向排列 | 超出换行 | 分隔线 1px #E5E7EB | 筛选条件不超过 5 个，超过则折叠</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="full-filter-panel"&gt;
+    &lt;div class="filter-row"&gt;
+        &lt;span class="filter-label"&gt;状态&lt;/span&gt;
+        &lt;select class="filter-select"&gt;
+            &lt;option&gt;全部&lt;/option&gt;
+            &lt;option&gt;启用&lt;/option&gt;
+            &lt;option&gt;禁用&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;span class="filter-label"&gt;角色&lt;/span&gt;
+        &lt;select class="filter-select"&gt;
+            &lt;option&gt;全部&lt;/option&gt;
+            &lt;option&gt;管理员&lt;/option&gt;
+            &lt;option&gt;普通用户&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;span class="filter-label"&gt;日期&lt;/span&gt;
+        &lt;select class="filter-select"&gt;
+            &lt;option&gt;全部时间&lt;/option&gt;
+            &lt;option&gt;今天&lt;/option&gt;
+            &lt;option&gt;本周&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;div class="filter-divider"&gt;&lt;/div&gt;
+        &lt;button class="btn btn-primary"&gt;🔍 查询&lt;/button&gt;
+        &lt;button class="filter-reset"&gt;重置&lt;/button&gt;
+        &lt;span class="filter-count"&gt;筛选结果：42 条&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.full-filter-panel { border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
+.filter-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    align-items: center; padding: 16px 20px;
+    border-bottom: 1px solid #F3F4F6;
+}
+.filter-row:last-child { border-bottom: none; }
+.filter-label { font-size: 13px; font-weight: 500; color: #374151; min-width: 60px; }
+.filter-select {
+    height: 36px; padding: 0 32px 0 12px;
+    border: 1px solid #E5E7EB; border-radius: 8px;
+    font-size: 13px; color: #374151; background: white;
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6'...%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+.filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(236,72,153,0.1); }
+.filter-divider { width: 1px; height: 24px; background: #E5E7EB; }
+.filter-count { font-size: 13px; color: #6B7280; margin-left: auto; }
+.filter-reset { font-size: 13px; color: var(--primary); cursor: pointer; border: none; background: none; }
+.filter-reset:hover { text-decoration: underline; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 四、排序控件 -->
@@ -201,6 +394,59 @@
             </tbody>
         </table>
         <div class="tip-info tip-block">💡 <strong>交互规范：</strong>排序状态用箭头方向明确标识升序/降序，再次点击同一列切换方向。</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 排序栏 --&gt;
+&lt;div class="sort-bar"&gt;
+    &lt;span class="sort-label"&gt;排序：&lt;/span&gt;
+    &lt;div class="sort-item active"&gt;默认&lt;/div&gt;
+    &lt;div class="sort-item"&gt;最新创建 &lt;span class="sort-arrow"&gt;↓&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="sort-item"&gt;最近更新 &lt;span class="sort-arrow"&gt;↓&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="sort-item"&gt;优先级 &lt;span class="sort-arrow"&gt;↑&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 表格列排序 --&gt;
+&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;名称 &lt;span class="sort-icon"&gt;▲▽&lt;/span&gt;&lt;/th&gt;
+            &lt;th&gt;创建时间 &lt;span class="sort-icon active"&gt;▼&lt;/span&gt;&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+&lt;/table&gt;
+
+&lt;style&gt;
+.sort-bar { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E7EB; }
+.sort-item {
+    font-size: 13px; color: #6B7280; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 0; border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+}
+.sort-item:hover { color: #111827; }
+.sort-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
+.sort-arrow { font-size: 10px; }
+.sort-icon { font-size: 10px; color: #9CA3AF; }
+.sort-icon.active { color: var(--primary); }
+&lt;/style&gt;
+
+&lt;script&gt;
+// 排序切换逻辑
+document.querySelectorAll('.sort-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const bar = this.closest('.sort-bar');
+        bar.querySelectorAll('.sort-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        const sortKey = this.textContent.replace(/[↑↓]/g, '').trim();
+        const isDesc = this.querySelector('.sort-arrow')?.textContent === '↓';
+        console.log('排序:', sortKey, isDesc ? 'DESC' : 'ASC');
+        // fetchData({ sortKey, order: isDesc ? 'desc' : 'asc' });
+    });
+});
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 五、高级搜索 -->
@@ -226,6 +472,73 @@
                 <button class="btn btn-secondary" style="height:36px;font-size:13px;">展开更多条件</button>
                 <button class="btn btn-primary" style="height:36px;font-size:13px;">🔍 搜索</button>
             </div>
+        </div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 高级搜索面板 --&gt;
+&lt;div class="full-filter-panel"&gt;
+    &lt;div class="filter-row"&gt;
+        &lt;span class="filter-label"&gt;关键词&lt;/span&gt;
+        &lt;div class="search-bar" style="width:280px;"&gt;
+            &lt;span class="search-icon"&gt;🔍&lt;/span&gt;
+            &lt;input class="search-input" placeholder="搜索名称/描述…"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="filter-row"&gt;
+        &lt;span class="filter-label"&gt;条件组&lt;/span&gt;
+        &lt;select class="filter-select"&gt;
+            &lt;option&gt;名称&lt;/option&gt;
+            &lt;option&gt;ID&lt;/option&gt;
+            &lt;option&gt;标签&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;select class="filter-select"&gt;
+            &lt;option&gt;包含&lt;/option&gt;
+            &lt;option&gt;等于&lt;/option&gt;
+            &lt;option&gt;开头是&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;input class="filter-value-input" placeholder="输入值…"&gt;
+        &lt;button class="add-condition"&gt;＋&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class="filter-row" style="justify-content:flex-end;"&gt;
+        &lt;button class="btn btn-secondary"&gt;展开更多条件&lt;/button&gt;
+        &lt;button class="btn btn-primary"&gt;🔍 搜索&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// 高级搜索条件构建
+class AdvancedSearch {
+    constructor() {
+        this.conditions = []; // [{ field, operator, value }]
+    }
+    addCondition(field, operator, value) {
+        this.conditions.push({ field, operator, value });
+    }
+    removeCondition(index) {
+        this.conditions.splice(index, 1);
+    }
+    buildQuery() {
+        return {
+            keyword: document.querySelector('.search-input')?.value || '',
+            filters: this.conditions
+        };
+    }
+    search() {
+        const query = this.buildQuery();
+        console.log('高级搜索:', JSON.stringify(query, null, 2));
+        // fetchResults(query);
+    }
+    reset() {
+        this.conditions = [];
+        document.querySelector('.search-input').value = '';
+    }
+}
+const advSearch = new AdvancedSearch();
+advSearch.addCondition('名称', '包含', '设计');
+advSearch.search();
+&lt;/script&gt;</code></pre>
         </div>
     </div>
 
@@ -269,5 +582,12 @@
     </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

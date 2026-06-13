@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据可视化规范 | 图表配色 · 卡片数据 · 统计面板</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#F59E0B; --primary-hover:#D97706; --primary-light:#FFFBEB; --primary-border:#FDE68A;
@@ -48,6 +49,10 @@
         .tag-up { background:var(--success-bg); color:var(--success); }
         .tag-down { background:var(--error-bg); color:var(--error); }
         .tag-flat { background:var(--gray-100); color:var(--gray-500); }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -121,6 +126,29 @@
                 <tr><td>趋势色</td><td>绿涨红跌</td><td>国际化通用惯例</td></tr>
             </tbody>
         </table>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="stat-card"&gt;
+    &lt;div class="stat-header"&gt;
+        &lt;span class="stat-title"&gt;总用户数&lt;/span&gt;
+        &lt;span class="stat-icon"&gt;👥&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class="stat-value"&gt;128,420&lt;/div&gt;
+    &lt;div class="stat-change up"&gt;↑ 12.5%&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #E5E7EB; }
+.stat-header { display: flex; justify-content: space-between; }
+.stat-title { font-size: 13px; color: #6B7280; }
+.stat-value { font-size: 30px; font-weight: 700; margin: 12px 0 4px; }
+.stat-change.up   { color: #059669; }   /* 绿色：上涨 */
+.stat-change.down { color: #DC2626; }   /* 红色：下跌 */
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 三、柱状图 -->
@@ -136,6 +164,30 @@
             <div class="bar-col"><div class="bar" style="height:90px;background:#06B6D4;"></div><div class="bar-label">6月</div></div>
         </div>
         <div class="tip-info tip-block">📐 <strong>参数：</strong>柱宽 48px | 柱间距 12px | 圆角 6px 0 0 6px | Y轴刻度 4 条 | 悬停不透明度 0.8</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="bar-chart"&gt;
+    &lt;div class="bar-col"&gt;
+        &lt;div class="bar" style="height:140px; background:#0066CC;"&gt;&lt;/div&gt;
+        &lt;div class="bar-label"&gt;1月&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="bar-col"&gt;
+        &lt;div class="bar" style="height:100px; background:#10B981;"&gt;&lt;/div&gt;
+        &lt;div class="bar-label"&gt;2月&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;!-- 更多柱子... --&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding-top: 20px; }
+.bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.bar { width: 100%; max-width: 48px; border-radius: 6px 6px 0 0; transition: opacity 0.2s; cursor: pointer; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 11px; color: #6B7280; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 四、饼图 -->
@@ -153,6 +205,44 @@
             </div>
         </div>
         <div class="tip-info tip-block">📐 <strong>参数：</strong>外径 160px | 内径 0（饼图）/ 60px（环形图）| 分类上限 6 | 图例间距 8px</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="pie-demo"&gt;
+    &lt;div class="pie-visual"&gt;&lt;/div&gt;
+    &lt;div class="pie-legend"&gt;
+        &lt;div class="legend-item"&gt;
+            &lt;div class="legend-dot" style="background:#0066CC;"&gt;&lt;/div&gt;
+            产品 A · 35%
+        &lt;/div&gt;
+        &lt;div class="legend-item"&gt;
+            &lt;div class="legend-dot" style="background:#10B981;"&gt;&lt;/div&gt;
+            产品 B · 25%
+        &lt;/div&gt;
+        &lt;!-- 更多图例... --&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+/* 饼图（conic-gradient） */
+.pie-visual {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: conic-gradient(
+        #0066CC 0% 35%,   #10B981 35% 60%,
+        #F59E0B 60% 78%,  #3B82F6 78% 90%,
+        #8B5CF6 90% 100%
+    );
+}
+/* 环形图（加内圈遮罩） */
+.donut { mask: radial-gradient(circle, transparent 37%, #000 38%); }
+
+/* 图例 */
+.pie-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 五、折线图 -->
@@ -177,6 +267,31 @@
             </svg>
         </div>
         <div class="tip-info tip-block">📐 <strong>参数：</strong>线宽 2.5px | 数据点 8px (r=4) | 最多 3 条线 | 悬停 tooltip 显示精确值</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<pre><code class="language-xml">&lt;svg viewBox="0 0 800 160" class="line-svg"&gt;
+    &lt;!-- 网格线 --&gt;
+    &lt;line x1="0" y1="40" x2="800" y2="40" stroke="#E5E7EB" stroke-width="1"/&gt;
+    &lt;line x1="0" y1="80" x2="800" y2="80" stroke="#E5E7EB" stroke-width="1"/&gt;
+    &lt;line x1="0" y1="120" x2="800" y2="120" stroke="#E5E7EB" stroke-width="1"/&gt;
+
+    &lt;!-- 折线 --&gt;
+    &lt;polyline points="0,120 133,95 267,80 400,50 533,30 667,55 800,35"
+              fill="none" stroke="#0066CC" stroke-width="2.5"/&gt;
+
+    &lt;!-- 数据点 --&gt;
+    &lt;circle cx="0"   cy="120" r="4" fill="#0066CC"/&gt;
+    &lt;circle cx="133" cy="95"  r="4" fill="#0066CC"/&gt;
+    &lt;circle cx="267" cy="80"  r="4" fill="#0066CC"/&gt;
+    &lt;!-- 更多数据点... --&gt;
+&lt;/svg&gt;
+
+&lt;style&gt;
+.line-chart-area { position: relative; height: 160px; background: #F9FAFB; border-radius: 12px; border-bottom: 2px solid #E5E7EB; border-left: 2px solid #E5E7EB; overflow: hidden; }
+.line-svg { width: 100%; height: 100%; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 六、数据表格增强 -->
@@ -192,6 +307,47 @@
             </tbody>
         </table>
         <div class="tip-info tip-block">💡 <strong>数值格式化：</strong>千分位逗号分隔 | 百分比保留 1 位小数 | 进度条高度 6px | 状态色语义化</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;table class="data-table"&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;产品名称 &lt;span&gt;▲&lt;/span&gt;&lt;/th&gt;
+            &lt;th&gt;销量&lt;/th&gt;
+            &lt;th&gt;环比&lt;/th&gt;
+            &lt;th&gt;状态&lt;/th&gt;
+            &lt;th&gt;进度&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;产品 Alpha&lt;/td&gt;
+            &lt;td&gt;12,840&lt;/td&gt;
+            &lt;td&gt;&lt;span class="tag tag-up"&gt;+15.3%&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;span class="tag tag-up"&gt;正常&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;
+                &lt;div class="mini-progress-bar"&gt;
+                    &lt;div style="width:85%; background:var(--success);"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;style&gt;
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th { background: #F9FAFB; text-align: left; padding: 12px 16px; font-weight: 600; border-bottom: 1px solid #E5E7EB; }
+.data-table td { padding: 12px 16px; border-bottom: 1px solid #F3F4F6; }
+.data-table tr:hover td { background: #F9FAFB; }
+.tag-up   { background: #D1FAE5; color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.tag-down { background: #FEE2E2; color: #DC2626; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.tag-flat { background: #F3F4F6; color: #6B7280; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.mini-progress-bar { width: 120px; height: 6px; background: #E5E7EB; border-radius: 10px; overflow: hidden; }
+.mini-progress-bar div { height: 100%; border-radius: 10px; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 七、设计令牌 -->
@@ -234,5 +390,12 @@
         <span>设计系统规范库 · 数据可视化规范 v2.0</span>
     </div>
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

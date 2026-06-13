@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文本内容展示规范 | 文章详情 · 标题 · 作者 · 日期 · 段落 · 配图</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#7C3AED; --primary-hover:#6D28D9; --primary-light:#F5F3FF; --primary-border:#DDD6FE;
@@ -62,6 +63,10 @@
             width:20px; height:20px; border-radius:4px; border:1px solid var(--gray-200);
             flex-shrink:0;
         }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -197,6 +202,53 @@
         <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:8px;">
             ↑ 完整五区结构演示：标题 → 元数据 → 正文（含引用、列表、链接） → 标签 → 版权声明
         </div>
+
+        <h3>代码示例：五区结构 HTML</h3>
+        <div class="code-block">
+<pre><code class="language-html">&lt;div class="article-page"&gt;
+    &lt;!-- ① 标题区 --&gt;
+    &lt;header class="article-header"&gt;
+        &lt;h1&gt;文章主标题（唯一 H1）&lt;/h1&gt;
+        &lt;p class="article-subtitle"&gt;副标题（可选）&lt;/p&gt;
+    &lt;/header&gt;
+
+    &lt;!-- ② 元数据区 --&gt;
+    &lt;div class="article-meta"&gt;
+        &lt;div class="meta-author"&gt;
+            &lt;img class="author-avatar" src="avatar.jpg" alt="张三"&gt;
+            &lt;div&gt;
+                &lt;span class="author-name"&gt;张三&lt;/span&gt;
+                &lt;span class="author-role"&gt;高级产品设计师&lt;/span&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;span class="meta-divider"&gt;|&lt;/span&gt;
+        &lt;span class="meta-date"&gt;📅 2026-06-12&lt;/span&gt;
+        &lt;span class="meta-views"&gt;👁 1,234 阅读&lt;/span&gt;
+        &lt;span class="meta-tag"&gt;设计规范&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;!-- ③ 正文区 --&gt;
+    &lt;div class="article-body"&gt;
+        &lt;p&gt;正文段落内容…&lt;/p&gt;
+        &lt;h2&gt;一级章节标题&lt;/h2&gt;
+        &lt;p&gt;章节正文…&lt;/p&gt;
+        &lt;blockquote&gt;引用块&lt;/blockquote&gt;
+        &lt;ul&gt;&lt;li&gt;列表项&lt;/li&gt;&lt;/ul&gt;
+        &lt;pre&gt;&lt;code&gt;代码块&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+
+    &lt;!-- ④ 标签/分类区 --&gt;
+    &lt;div class="article-tags"&gt;
+        &lt;span class="tag"&gt;表单设计&lt;/span&gt;
+        &lt;span class="tag"&gt;用户体验&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;!-- ⑤ 附加区（可选） --&gt;
+    &lt;footer class="article-footer"&gt;
+        &lt;p class="copyright"&gt;© 2026 设计系统规范库&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/div&gt;</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 二、标题层级规范 ==================== -->
@@ -298,6 +350,36 @@
                 </div>
                 <div style="font-size:11px;color:var(--success);margin-top:8px;">层级清晰，结构完整</div>
             </div>
+        </div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 六级标题定义 */
+.article-body h1 {
+    font-size: 26px; font-weight: 700; line-height: 1.3;
+    color: #111827; margin-bottom: 16px;
+}
+.article-body h2 {
+    font-size: 22px; font-weight: 600; line-height: 1.35;
+    color: #111827; margin: 40px 0 28px;
+}
+.article-body h3 {
+    font-size: 18px; font-weight: 600; line-height: 1.4;
+    color: #1F2937; margin: 32px 0 20px;
+}
+.article-body h4 {
+    font-size: 16px; font-weight: 600; line-height: 1.45;
+    color: #374151; margin: 24px 0 14px;
+}
+.article-body h5 {
+    font-size: 15px; font-weight: 500; line-height: 1.5;
+    color: #4B5563; margin: 20px 0 10px;
+}
+.article-body h6 {
+    font-size: 14px; font-weight: 500; line-height: 1.5;
+    color: #6B7280; margin: 16px 0 8px;
+}</code></pre>
         </div>
     </div>
 
@@ -401,34 +483,35 @@
         </table>
 
         <h3>首行缩进 CSS 实现</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#F59E0B;">/* 标准正文段落：首行缩进 2 个汉字宽度 */</span><br>
-            <span style="color:#93C5FD;">.article-body p</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">2em</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-align</span>: <span style="color:#C084FC;">justify</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">1.5em</span>;<br>
-            }<br>
-            <span style="color:#F59E0B;">/* 首段不缩进（章节开头第一个 p） */</span><br>
-            <span style="color:#93C5FD;">.article-body h2 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body h3 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body h4 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body hr + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body blockquote + p</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
-            }<br>
-            <span style="color:#F59E0B;">/* 列表后首段不缩进 */</span><br>
-            <span style="color:#93C5FD;">.article-body ul + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body ol + p</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
-            }<br>
-            <span style="color:#F59E0B;">/* 首字下沉（杂志风格，按需启用） */</span><br>
-            <span style="color:#93C5FD;">.article-body .drop-cap::first-letter</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">3em</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">float</span>: <span style="color:#C084FC;">left</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-right</span>: <span style="color:#C084FC;">6px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">color</span>: <span style="color:#C084FC;">var(--primary)</span>;<br>
-            }
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 标准正文段落：首行缩进 2 个汉字宽度 */
+.article-body p {
+    text-indent: 2em;
+    text-align: justify;
+    margin-bottom: 1.5em;
+}
+/* 首段不缩进（章节开头第一个 p） */
+.article-body h2 + p,
+.article-body h3 + p,
+.article-body h4 + p,
+.article-body hr + p,
+.article-body blockquote + p {
+    text-indent: 0;
+}
+/* 列表后首段不缩进 */
+.article-body ul + p,
+.article-body ol + p {
+    text-indent: 0;
+}
+/* 首字下沉（杂志风格，按需启用） */
+.article-body .drop-cap::first-letter {
+    font-size: 3em;
+    float: left;
+    line-height: 1;
+    margin-right: 6px;
+    color: var(--primary);
+}</code></pre>
         </div>
 
         <div class="compare-grid">
@@ -478,33 +561,34 @@
         </div>
 
         <h3>CSS 实现（含首行缩进 + 两端对齐）</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#F59E0B;">/* 正文基础样式 */</span><br>
-            <span style="color:#93C5FD;">.article-body</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">16px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.75</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">color</span>: <span style="color:#C084FC;">#1F2937</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">max-width</span>: <span style="color:#C084FC;">720px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">word-break</span>: <span style="color:#C084FC;">break-word</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.article-body</span> <span style="color:#93C5FD;">p</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">1.5em</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">2em</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-align</span>: <span style="color:#C084FC;">justify</span>;<br>
-            }<br>
-            <span style="color:#F59E0B;">/* 首段不缩进：标题/分隔线/引用块后的第一个段落 */</span><br>
-            <span style="color:#93C5FD;">.article-body h2 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body h3 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body h4 + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body hr + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body blockquote + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body ul + p</span>,<br>
-            <span style="color:#93C5FD;">.article-body ol + p</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">text-indent</span>: <span style="color:#C084FC;">0</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.article-body</span> <span style="color:#93C5FD;">p:last-child</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">0</span>;<br>
-            }
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 正文基础样式 */
+.article-body {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #1F2937;
+    max-width: 720px;
+    word-break: break-word;
+}
+.article-body p {
+    margin-bottom: 1.5em;
+    text-indent: 2em;
+    text-align: justify;
+}
+/* 首段不缩进：标题/分隔线/引用块后的第一个段落 */
+.article-body h2 + p,
+.article-body h3 + p,
+.article-body h4 + p,
+.article-body hr + p,
+.article-body blockquote + p,
+.article-body ul + p,
+.article-body ol + p {
+    text-indent: 0;
+}
+.article-body p:last-child {
+    margin-bottom: 0;
+}</code></pre>
         </div>
     </div>
 
@@ -586,6 +670,33 @@
                 </div>
             </div>
         </div>
+
+        <h3>代码示例：元数据 CSS</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">.article-meta {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; padding: 16px 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+.author-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    object-fit: cover;
+}
+.author-name { font-size: 14px; font-weight: 500; color: #1E293B; }
+.author-role { font-size: 12px; color: #6B7280; }
+.meta-date, .meta-views {
+    font-size: 13px; color: #6B7280;
+}
+.meta-divider {
+    width: 1px; height: 24px; background: #E5E7EB;
+}
+.meta-tag {
+    margin-left: auto; font-size: 12px;
+    padding: 2px 10px; border-radius: 12px;
+    background: #F5F3FF; color: #7C3AED;
+}</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 五、列表样式规范 ==================== -->
@@ -621,22 +732,23 @@
         </table>
 
         <h3>列表 CSS 规范</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#93C5FD;">.article-body ul</span>,
-            <span style="color:#93C5FD;">.article-body ol</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin</span>: <span style="color:#C084FC;">16px 0</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">padding-left</span>: <span style="color:#C084FC;">24px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.8</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.article-body li</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">8px</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.article-body li:last-child</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-bottom</span>: <span style="color:#C084FC;">0</span>;<br>
-            }<br>
-            <span style="color:#F59E0B;">/* 嵌套列表：内层标记不同 */</span><br>
-            <span style="color:#93C5FD;">.article-body ul ul</span> { <span style="color:#6EE7B7;">list-style-type</span>: <span style="color:#C084FC;">circle</span>; }<br>
-            <span style="color:#93C5FD;">.article-body ul ul ul</span> { <span style="color:#6EE7B7;">list-style-type</span>: <span style="color:#C084FC;">square</span>; }
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">.article-body ul,
+.article-body ol {
+    margin: 16px 0;
+    padding-left: 24px;
+    line-height: 1.8;
+}
+.article-body li {
+    margin-bottom: 8px;
+}
+.article-body li:last-child {
+    margin-bottom: 0;
+}
+/* 嵌套列表：内层标记不同 */
+.article-body ul ul       { list-style-type: circle; }
+.article-body ul ul ul    { list-style-type: square; }</code></pre>
         </div>
     </div>
 
@@ -684,6 +796,33 @@
                 </blockquote>
             </div>
         </div>
+
+        <h3>代码示例：引用块 CSS</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">.article-body blockquote {
+    margin: 20px 0;
+    padding: 14px 18px;
+    background: #F5F3FF;
+    border-left: 4px solid #7C3AED;
+    border-radius: 0 6px 6px 0;
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.7;
+}
+/* 变体：信息提示 */
+blockquote.info {
+    background: #EFF6FF; border-left-color: #3B82F6; color: #1E40AF;
+}
+/* 变体：警告 */
+blockquote.warning {
+    background: #FFFBEB; border-left-color: #F59E0B; color: #92400E;
+}
+/* 变体：危险 */
+blockquote.danger {
+    background: #FEF2F2; border-left-color: #DC2626; color: #991B1B;
+}</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 七、代码展示规范 ==================== -->
@@ -722,6 +861,36 @@
             }
         </div>
         <div style="font-size:12px;color:var(--text-tertiary);text-align:center;">↑ 行内代码与代码块的视觉差异</div>
+
+        <h3>代码示例：行内代码与代码块 CSS</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 行内代码 */
+.article-body code {
+    background: #F1F5F9;
+    color: #DC2626;
+    font-size: 0.9em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Fira Code', Consolas, monospace;
+}
+/* 代码块 */
+.article-body pre {
+    background: #1E293B;
+    color: #E2E8F0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 20px 0;
+}
+.article-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.7;
+}</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 八、配图规范 ==================== -->
@@ -755,17 +924,38 @@
         </table>
 
         <h3>HTML 模板</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#6EE7B7;">&lt;figure</span> <span style="color:#93C5FD;">class</span>=<span style="color:#C084FC;">"article-image"</span><span style="color:#6EE7B7;">&gt;</span><br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">&lt;img</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">src</span>=<span style="color:#C084FC;">"chart.webp"</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">alt</span>=<span style="color:#C084FC;">"表单填写完成率统计图"</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">loading</span>=<span style="color:#C084FC;">"lazy"</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">width</span>=<span style="color:#C084FC;">"720"</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#93C5FD;">height</span>=<span style="color:#C084FC;">"400"</span><br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">&gt;</span><br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">&lt;figcaption&gt;</span>图 1：不同表单布局的填写完成率对比<span style="color:#6EE7B7;">&lt;/figcaption&gt;</span><br>
-            <span style="color:#6EE7B7;">&lt;/figure&gt;</span>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;figure class="article-image"&gt;
+    &lt;img
+        src="chart.webp"
+        alt="表单填写完成率统计图"
+        loading="lazy"
+        width="720"
+        height="400"
+    &gt;
+    &lt;figcaption&gt;图 1：不同表单布局的填写完成率对比&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;style&gt;
+.article-image {
+    display: block;
+    margin: 24px auto;
+    max-width: 100%;
+}
+.article-image img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+.article-image figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #6B7280;
+    text-align: center;
+}
+&lt;/style&gt;</code></pre>
         </div>
         <div class="tip-block tip-warn">
             <strong>⚠️ 必须设置 width/height：</strong>img 标签必须指定 <code>width</code> 和 <code>height</code> 属性，
@@ -786,6 +976,25 @@
                 <tr><td><strong>外部链接</strong></td><td>同默认</td><td>后跟 ↗ 图标</td><td>提示用户将离开当前页面</td></tr>
             </tbody>
         </table>
+
+        <h3>代码示例：链接 CSS</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">.article-body a {
+    color: #7C3AED;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.15s;
+}
+.article-body a:hover {
+    color: #5B21B6;
+}
+/* 外部链接标记 */
+.article-body a[href^="http"]::after {
+    content: " ↗";
+    font-size: 0.8em;
+}</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 十、分隔线规范 ==================== -->
@@ -812,6 +1021,29 @@
                 </tr>
             </tbody>
         </table>
+
+        <h3>代码示例：分隔线 CSS</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 章节分隔线（大段落切换） */
+.article-body hr {
+    border: none;
+    border-top: 1px solid #E5E7EB;
+    margin: 32px 0;
+}
+/* 轻量分隔（小节呼吸） */
+.article-body .divider-light {
+    border-top: 1px solid #F3F4F6;
+    margin: 16px 0;
+}
+/* 装饰分隔（场景切换） */
+.article-body .divider-dots {
+    text-align: center;
+    color: #D1D5DB;
+    letter-spacing: 8px;
+    margin: 24px 0;
+}</code></pre>
+        </div>
     </div>
 
     <!-- ==================== 十一、强调与语义化文本标签 ==================== -->
@@ -943,18 +1175,19 @@
         </div>
 
         <h3>&lt;kbd&gt; 推荐样式</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#93C5FD;">kbd</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">inline-block</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">2px 6px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-family</span>: <span style="color:#C084FC;">ui-monospace, Consolas, monospace</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">font-size</span>: <span style="color:#C084FC;">0.85em</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">background</span>: <span style="color:#C084FC;">#F1F5F9</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">border</span>: <span style="color:#C084FC;">1px solid #D1D5DB</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">border-radius</span>: <span style="color:#C084FC;">4px</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">box-shadow</span>: <span style="color:#C084FC;">0 1px 0 #9CA3AF</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">line-height</span>: <span style="color:#C084FC;">1.4</span>;<br>
-            }
+        <div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.85em;
+    background: #F1F5F9;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 #9CA3AF;
+    line-height: 1.4;
+}</code></pre>
         </div>
         <div style="margin:12px 0;font-size:14px;">
             <strong>效果：</strong>按下 <kbd style="display:inline-block;padding:2px 6px;font-family:ui-monospace,Consolas,monospace;font-size:0.85em;background:#F1F5F9;border:1px solid #D1D5DB;border-radius:4px;box-shadow:0 1px 0 #9CA3AF;line-height:1.4;">Ctrl</kbd> + <kbd style="display:inline-block;padding:2px 6px;font-family:ui-monospace,Consolas,monospace;font-size:0.85em;background:#F1F5F9;border:1px solid #D1D5DB;border-radius:4px;box-shadow:0 1px 0 #9CA3AF;line-height:1.4;">S</kbd> 保存文件
@@ -1001,17 +1234,26 @@
         </table>
 
         <h3>打印样式（@media print）</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#C084FC;">@media print</span> {<br>
-            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 隐藏非内容元素 */</span><br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">.sidebar</span>, <span style="color:#93C5FD;">.comments</span>, <span style="color:#93C5FD;">.related-posts</span> { <span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">none</span>; }<br>
-            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 正文全宽 */</span><br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">.article-body</span> { <span style="color:#6EE7B7;">max-width</span>: <span style="color:#C084FC;">100%</span>; }<br>
-            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 确保链接 URL 可见 */</span><br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">a[href]::after</span> { <span style="color:#6EE7B7;">content</span>: <span style="color:#C084FC;">" (" attr(href) ")"</span>; }<br>
-            &nbsp;&nbsp;<span style="color:#F59E0B;">/* 避免图片跨页断裂 */</span><br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">figure</span> { <span style="color:#6EE7B7;">page-break-inside</span>: <span style="color:#C084FC;">avoid</span>; }<br>
-            }
+        <div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">@media print {
+    /* 隐藏非内容元素 */
+    .sidebar, .comments, .related-posts {
+        display: none;
+    }
+    /* 正文全宽 */
+    .article-body {
+        max-width: 100%;
+    }
+    /* 确保链接 URL 可见 */
+    a[href]::after {
+        content: " (" attr(href) ")";
+    }
+    /* 避免图片跨页断裂 */
+    figure {
+        page-break-inside: avoid;
+    }
+}</code></pre>
         </div>
     </div>
 
@@ -1127,5 +1369,12 @@
 </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

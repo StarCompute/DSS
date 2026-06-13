@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>导航 & 菜单规范 | 面包屑 · 侧边菜单 · 分页 · 步骤条</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#EC4899; --primary-hover:#DB2777; --primary-light:#FDF2F8; --primary-border:#FBCFE8;
@@ -71,6 +72,10 @@
         .demo-section { margin-bottom:24px; }
 
         @media (max-width:768px) { .flex-row { flex-direction:column; } }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -121,6 +126,29 @@
                 <tr><td>链接项</td><td>#6B7280 / 悬停变粉</td><td>可点击返回上级</td></tr>
             </tbody>
         </table>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="breadcrumb"&gt;
+    &lt;a class="breadcrumb-item" href="#"&gt;🏠 首页&lt;/a&gt;
+    &lt;span class="breadcrumb-sep"&gt;›&lt;/span&gt;
+    &lt;a class="breadcrumb-item" href="#"&gt;系统管理&lt;/a&gt;
+    &lt;span class="breadcrumb-sep"&gt;›&lt;/span&gt;
+    &lt;a class="breadcrumb-item" href="#"&gt;用户管理&lt;/a&gt;
+    &lt;span class="breadcrumb-sep"&gt;›&lt;/span&gt;
+    &lt;span class="breadcrumb-item current"&gt;用户详情&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 14px; flex-wrap: wrap; }
+.breadcrumb-item { color: #6B7280; text-decoration: none; }
+.breadcrumb-item:hover { color: var(--primary); text-decoration: underline; }
+.breadcrumb-sep { color: #9CA3AF; font-size: 12px; }
+.breadcrumb-item.current { color: #111827; font-weight: 500; }
+.breadcrumb-item.current:hover { text-decoration: none; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 二、侧边菜单 -->
@@ -152,6 +180,51 @@
                 ✅ 角标在菜单项右侧<br>
                 ✅ 支持二级展开（手风琴模式）
             </div>
+        </div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="sidebar-menu"&gt;
+    &lt;div class="menu-group"&gt;
+        &lt;div class="menu-group-title"&gt;导航菜单&lt;/div&gt;
+        &lt;a class="menu-item active"&gt;
+            &lt;span class="icon"&gt;📊&lt;/span&gt; 工作台 &lt;span class="badge"&gt;3&lt;/span&gt;
+        &lt;/a&gt;
+        &lt;a class="menu-item"&gt;
+            &lt;span class="icon"&gt;📋&lt;/span&gt; 任务管理
+        &lt;/a&gt;
+        &lt;a class="menu-item"&gt;
+            &lt;span class="icon"&gt;📁&lt;/span&gt; 项目管理
+        &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div class="menu-group"&gt;
+        &lt;div class="menu-group-title"&gt;系统设置&lt;/div&gt;
+        &lt;a class="menu-item"&gt;
+            &lt;span class="icon"&gt;👤&lt;/span&gt; 用户管理
+        &lt;/a&gt;
+        &lt;a class="menu-item"&gt;
+            &lt;span class="icon"&gt;🔒&lt;/span&gt; 权限配置
+        &lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.sidebar-menu { width: 240px; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
+.menu-group { border-bottom: 1px solid #F3F4F6; }
+.menu-group:last-child { border-bottom: none; }
+.menu-group-title { padding: 10px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #9CA3AF; }
+.menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; font-size: 14px;
+    color: #374151; cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+}
+.menu-item:hover { background: #F9FAFB; color: #111827; }
+.menu-item.active { background: #FDF2F8; color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
+.menu-item .badge { margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #E5E7EB; }
+&lt;/style&gt;</code></pre>
         </div>
     </div>
 
@@ -192,6 +265,72 @@
                 <tr><td>省略号</td><td>无边框，不可点击</td><td>页码间隙 &gt; 1 时显示</td></tr>
             </tbody>
         </table>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 标准分页 --&gt;
+&lt;div class="pagination"&gt;
+    &lt;button class="page-btn" disabled&gt;‹&lt;/button&gt;
+    &lt;button class="page-btn active"&gt;1&lt;/button&gt;
+    &lt;button class="page-btn"&gt;2&lt;/button&gt;
+    &lt;button class="page-btn"&gt;3&lt;/button&gt;
+    &lt;span class="page-btn" style="border:none;cursor:default;"&gt;…&lt;/span&gt;
+    &lt;button class="page-btn"&gt;28&lt;/button&gt;
+    &lt;button class="page-btn"&gt;›&lt;/button&gt;
+    &lt;span class="page-info"&gt;共 280 条&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- 简化版分页 --&gt;
+&lt;div class="pagination"&gt;
+    &lt;button class="page-btn" disabled&gt;‹ 上一页&lt;/button&gt;
+    &lt;span class="page-info"&gt;第 1 / 28 页&lt;/span&gt;
+    &lt;button class="page-btn"&gt;下一页 ›&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.pagination { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+    min-width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #E5E7EB; border-radius: 8px;
+    background: white; font-size: 14px; color: #374151;
+    cursor: pointer; transition: all 0.15s; padding: 0 8px;
+}
+.page-btn:hover:not(:disabled):not(.active) { border-color: var(--primary); color: var(--primary); }
+.page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 13px; color: #6B7280; margin: 0 8px; }
+&lt;/style&gt;
+
+&lt;script&gt;
+// 分页组件逻辑示例
+class Pagination {
+    constructor(total, pageSize = 10) {
+        this.total = total;
+        this.pageSize = pageSize;
+        this.current = 1;
+    }
+    get totalPages() { return Math.ceil(this.total / this.pageSize); }
+    go(page) {
+        if (page &lt; 1 || page &gt; this.totalPages) return;
+        this.current = page;
+        this.render();
+    }
+    render() {
+        // 生成页码按钮 [1, ..., 4, 5, 6, ..., 28]
+        const pages = [];
+        const tp = this.totalPages;
+        for (let i = 1; i &lt;= tp; i++) {
+            if (i === 1 || i === tp || Math.abs(i - this.current) &lt;= 1) pages.push(i);
+            else if (pages[pages.length - 1] !== '...') pages.push('...');
+        }
+        console.log('当前页:', this.current, '页码:', pages);
+    }
+}
+new Pagination(280, 10).go(5);
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 四、步骤条 -->
@@ -239,6 +378,56 @@
             </tbody>
         </table>
         <div class="tip-info tip-block">💡 <strong>注意：</strong>步骤条不超过 6 步，超过使用分步表单。</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="steps"&gt;
+    &lt;div class="step done"&gt;
+        &lt;div class="step-node"&gt;
+            &lt;div class="step-circle"&gt;✓&lt;/div&gt;
+            &lt;div class="step-label"&gt;基本信息&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="step-line"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="step active"&gt;
+        &lt;div class="step-node"&gt;
+            &lt;div class="step-circle"&gt;2&lt;/div&gt;
+            &lt;div class="step-label"&gt;详细配置&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="step-line"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="step"&gt;
+        &lt;div class="step-node"&gt;
+            &lt;div class="step-circle"&gt;3&lt;/div&gt;
+            &lt;div class="step-label"&gt;确认提交&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.steps { display: flex; align-items: flex-start; }
+.step { display: flex; align-items: center; flex: 1; }
+.step-node { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600;
+    background: #E5E7EB; color: #6B7280;
+    transition: all 0.2s;
+}
+.step.active .step-circle { background: var(--primary); color: white; }
+.step.done .step-circle  { background: #059669; color: white; }
+.step-label { font-size: 13px; color: #6B7280; white-space: nowrap; }
+.step.active .step-label { color: var(--primary); font-weight: 500; }
+.step.done .step-label   { color: #059669; }
+.step-line {
+    flex: 1; height: 2px; background: #E5E7EB;
+    margin: 0 -8px; margin-top: 16px; min-width: 24px;
+}
+.step.done .step-line { background: #059669; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 五、标签页 & 下拉菜单 -->
@@ -276,6 +465,63 @@
                 ✅ 危险操作用红色标识<br>
                 ✅ 支持子菜单（向右展开）
             </div>
+        </div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 标签页（增强版，带数量角标） --&gt;
+&lt;div class="tabs-enhanced"&gt;
+    &lt;div class="tab-item active"&gt;全部 &lt;span class="tab-count"&gt;128&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="tab-item"&gt;进行中 &lt;span class="tab-count"&gt;32&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="tab-item"&gt;已完成 &lt;span class="tab-count"&gt;86&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="tab-item"&gt;已取消 &lt;span class="tab-count"&gt;10&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 下拉菜单 --&gt;
+&lt;div class="dropdown-menu"&gt;
+    &lt;div class="dropdown-item"&gt;📝 编辑&lt;/div&gt;
+    &lt;div class="dropdown-item"&gt;📋 复制&lt;/div&gt;
+    &lt;div class="dropdown-item"&gt;📤 导出&lt;/div&gt;
+    &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+    &lt;div class="dropdown-item"&gt;🔗 复制链接&lt;/div&gt;
+    &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+    &lt;div class="dropdown-item danger"&gt;🗑️ 删除&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+/* 标签页增强 */
+.tabs-enhanced { display: flex; border-bottom: 2px solid #E5E7EB; }
+.tab-item {
+    padding: 10px 20px; font-size: 14px; font-weight: 500;
+    color: #6B7280; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+}
+.tab-item:hover { color: #111827; }
+.tab-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-count {
+    font-size: 11px; padding: 1px 8px; border-radius: 10px;
+    background: #E5E7EB;
+}
+.tab-item.active .tab-count { background: #FDF2F8; color: var(--primary); }
+
+/* 下拉菜单 */
+.dropdown-menu {
+    width: 200px; border: 1px solid #E5E7EB;
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+.dropdown-item {
+    padding: 10px 16px; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    color: #374151; transition: background 0.1s;
+}
+.dropdown-item:hover { background: #F9FAFB; }
+.dropdown-item.danger { color: #DC2626; }
+.dropdown-divider { height: 1px; background: #F3F4F6; }
+&lt;/style&gt;</code></pre>
         </div>
     </div>
 
@@ -317,5 +563,12 @@
     </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

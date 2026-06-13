@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>布局框架规范 | 栅格 · 间距 · 页面框架 · 响应式 · 层级</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             /* 布局专用设计令牌 */
@@ -60,6 +61,10 @@
         .demo-card { background:var(--surface); border-radius:12px; padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.05); border:1px solid var(--border); }
 
         .section-desc { font-size:14px; color:var(--text-secondary); margin-bottom:20px; line-height:1.7; }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block code { background:none; padding:0; color:#E2E8F0; }
     </style>
 </head>
 <body>
@@ -120,19 +125,41 @@
         </div>
 
         <h3>CSS 栅格实现</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#F59E0B;">/* 24列栅格系统核心 CSS */</span><br>
-            <span style="color:#93C5FD;">.row</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">flex</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">flex-wrap</span>: <span style="color:#C084FC;">wrap</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-left</span>: <span style="color:#C084FC;">-8px</span>;  <span style="color:#F59E0B;">/* 负 gutter/2 */</span><br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">margin-right</span>: <span style="color:#C084FC;">-8px</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.col-6</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 6)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
-            <span style="color:#93C5FD;">.col-8</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 8)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
-            <span style="color:#93C5FD;">.col-12</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 12)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }<br>
-            <span style="color:#93C5FD;">.col-16</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 16)</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">0 8px</span>; }
-        </div>
+<div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">/* 24列栅格系统核心 CSS */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -8px;  /* 负 gutter/2 */
+  margin-right: -8px;
+}
+[class*="col-"] {
+  padding-left: 8px;
+  padding-right: 8px;
+  flex-shrink: 0;
+  width: 100%;
+}
+.col-6  { width: calc(100% / 24 * 6); }
+.col-8  { width: calc(100% / 24 * 8); }
+.col-12 { width: calc(100% / 24 * 12); }
+.col-16 { width: calc(100% / 24 * 16); }
+.col-24 { width: 100%; }
+
+/* 响应式增强 */
+@media (min-width: 768px) {
+  .col-md-6  { width: calc(100% / 24 * 6); }
+  .col-md-8  { width: calc(100% / 24 * 8); }
+  .col-md-12 { width: calc(100% / 24 * 12); }
+}
+@media (min-width: 1024px) {
+  .col-lg-4  { width: calc(100% / 24 * 4); }
+  .col-lg-6  { width: calc(100% / 24 * 6); }
+  .col-lg-8  { width: calc(100% / 24 * 8); }
+  .col-lg-12 { width: calc(100% / 24 * 12); }
+}
+</code></pre>
+</div>
     </div>
 
     <!-- ==================== 二、间距尺规 ==================== -->
@@ -165,6 +192,28 @@
                 <tr><td><strong>大</strong></td><td><code>40px, 48px, 64px</code></td><td>页面大模块之间、页面上下留白</td></tr>
             </tbody>
         </table>
+
+<div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">:root {
+  /* 8px 基准间距令牌 */
+  --spacing-1: 4px;   /* 图标与文字间距 */
+  --spacing-2: 8px;   /* 标签内边距、微调 */
+  --spacing-3: 12px;  /* 表单字段间微调 */
+  --spacing-4: 16px;  /* 组件内部间距、卡片内边距 */
+  --spacing-5: 24px;  /* 区块间距、章节分隔 */
+  --spacing-6: 32px;  /* 表单分组间距 */
+  --spacing-7: 40px;  /* 页面大模块间距 */
+  --spacing-8: 48px;  /* 页面大留白 */
+  --spacing-9: 64px;  /* 页面上下大留白 */
+}
+
+/* 使用建议：优先使用 CSS 变量 */
+.card { padding: var(--spacing-5); }
+.card + .card { margin-top: var(--spacing-6); }
+.form-group + .form-group { margin-top: var(--spacing-4); }
+</code></pre>
+</div>
 
         <div class="tip-block tip-success">
             <strong>✅ 最佳实践：</strong>使用 CSS 变量定义间距令牌（如 <code>var(--spacing-4)</code>），一处修改全局生效，杜绝散落不一致的硬编码数字。
@@ -207,17 +256,39 @@
         </div>
 
         <h3>CSS 实现</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#F59E0B;">/* 三区布局核心 */</span><br>
-            <span style="color:#93C5FD;">.app-header</span> {<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">position</span>: <span style="color:#C084FC;">sticky</span>; <span style="color:#6EE7B7;">top</span>: <span style="color:#C084FC;">0</span>; <span style="color:#6EE7B7;">z-index</span>: <span style="color:#C084FC;">200</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">height</span>: <span style="color:#C084FC;">64px</span>; <span style="color:#6EE7B7;">background</span>: <span style="color:#C084FC;">rgba(255,255,255,.92)</span>;<br>
-            &nbsp;&nbsp;<span style="color:#6EE7B7;">backdrop-filter</span>: <span style="color:#C084FC;">blur(8px)</span>;<br>
-            }<br>
-            <span style="color:#93C5FD;">.app-layout</span> { <span style="color:#6EE7B7;">display</span>: <span style="color:#C084FC;">flex</span>; }<br>
-            <span style="color:#93C5FD;">.app-sidebar</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">240px</span>; <span style="color:#6EE7B7;">flex-shrink</span>: <span style="color:#C084FC;">0</span>; }<br>
-            <span style="color:#93C5FD;">.app-main</span> { <span style="color:#6EE7B7;">flex</span>: <span style="color:#C084FC;">1</span>; <span style="color:#6EE7B7;">padding</span>: <span style="color:#C084FC;">24px</span>; }
-        </div>
+<div class="code-block">
+<div class="code-block-header">📄 CSS</div>
+<pre><code class="language-css">/* 三区布局核心 */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 64px;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(8px);
+}
+.app-layout { display: flex; }
+.app-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  transition: width .3s ease;
+}
+.app-sidebar.collapsed { width: 72px; }
+.app-main {
+  flex: 1;
+  padding: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .app-sidebar { display: none; }
+  .app-header { height: 56px; }
+  .app-main { padding: 16px; }
+}
+</code></pre>
+</div>
 
         <h3>布局使用示例</h3>
         <div class="row" style="margin:16px 0;">
@@ -269,18 +340,29 @@
         </div>
 
         <h3>响应式 CSS 写法</h3>
-        <div style="background:var(--code-block-bg);color:var(--code-block-color);border-radius:var(--radius);padding:16px 20px;font-family:monospace;font-size:13px;line-height:1.7;margin:12px 0;overflow-x:auto;">
-            <span style="color:#F59E0B;">/* 移动优先：基础样式为手机 */</span><br>
-            <span style="color:#93C5FD;">.col-24</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">100%</span>; }<br><br>
-            <span style="color:#F59E0B;">/* 平板增强 */</span><br>
-            <span style="color:#C084FC;">@media (min-width: 768px)</span> {<br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">.col-md-8</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 8)</span>; }<br>
-            }<br><br>
-            <span style="color:#F59E0B;">/* 桌面增强 */</span><br>
-            <span style="color:#C084FC;">@media (min-width: 1024px)</span> {<br>
-            &nbsp;&nbsp;<span style="color:#93C5FD;">.col-lg-6</span> { <span style="color:#6EE7B7;">width</span>: <span style="color:#C084FC;">calc(100% / 24 * 6)</span>; }<br>
-            }
-        </div>
+<div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">/* 移动优先：基础样式为手机 */
+.col-24 { width: 100%; }
+
+/* 平板增强 */
+@media (min-width: 768px) {
+  .col-md-8  { width: calc(100% / 24 * 8); }
+  .col-md-12 { width: calc(100% / 24 * 12); }
+}
+
+/* 桌面增强 */
+@media (min-width: 1024px) {
+  .col-lg-6  { width: calc(100% / 24 * 6); }
+  .col-lg-8  { width: calc(100% / 24 * 8); }
+}
+
+/* 大屏增强 */
+@media (min-width: 1280px) {
+  .container { max-width: 1440px; }
+}
+</code></pre>
+</div>
     </div>
 
     <!-- ==================== 五、层级体系 ==================== -->
@@ -317,6 +399,27 @@
             <div class="layer-box" style="border-left:4px solid #8B5CF6;">🔹 <strong>Toast (1200)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">全局提示</span></div>
             <div class="layer-box" style="border-left:4px solid #3B82F6;">🔸 <strong>Tooltip (1300)</strong><br><span style="font-size:11px;color:var(--text-tertiary);">工具提示</span></div>
         </div>
+
+<div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">:root {
+  --z-base: 0;           /* 页面正常流 */
+  --z-elevated: 10;      /* 卡片悬浮 */
+  --z-dropdown: 100;     /* 下拉菜单、选择器 */
+  --z-sticky: 200;       /* 固定头部、吸顶导航 */
+  --z-modal-overlay: 1000; /* 弹窗遮罩 */
+  --z-modal: 1010;       /* 弹窗内容 */
+  --z-toast: 1200;       /* 全局消息提示 */
+  --z-tooltip: 1300;     /* 工具提示（最高） */
+}
+
+/* 使用示例 */
+.header { z-index: var(--z-sticky); }
+.dropdown-menu { z-index: var(--z-dropdown); }
+.modal-backdrop { z-index: var(--z-modal-overlay); }
+.modal-content { z-index: var(--z-modal); }
+</code></pre>
+</div>
 
         <div class="tip-block tip-warn">
             <strong>⚠️ 红线：</strong>禁止在组件中硬编码 z-index 数字（如 <code>z-index: 9999</code>），必须使用 CSS 变量引用层级令牌。避免出现 z-index 競賽。
@@ -371,6 +474,8 @@
     </div>
 
 </div>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){hljs.highlightAll();});</script>
 </body>
 </html>
 </html>

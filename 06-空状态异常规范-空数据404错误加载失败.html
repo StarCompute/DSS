@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>空状态 & 异常规范 | 空数据 · 错误页 · 加载 · 权限</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#EF4444; --primary-hover:#DC2626; --primary-light:#FEF2F2; --primary-border:#FECACA;
@@ -52,6 +53,10 @@
         .inline-tip-success { background:#ECFDF5; border:1px solid #A7F3D0; }
 
         @media (max-width:768px) { .flex-row { flex-direction:column; } }
+
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -147,6 +152,50 @@
             </tbody>
         </table>
         <div class="tip-success tip-block">✅ <strong>推荐：</strong>空状态文案应有引导性，告诉用户下一步可以做什么，而非仅仅说明"没有数据"。</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;div class="empty-state-demo"&gt;
+    &lt;div class="empty-icon"&gt;📋&lt;/div&gt;
+    &lt;div class="empty-title"&gt;暂无数据&lt;/div&gt;
+    &lt;div class="empty-desc"&gt;当前筛选条件下没有匹配的结果，请尝试调整筛选条件或创建新记录。&lt;/div&gt;
+    &lt;div class="empty-action"&gt;
+        &lt;button class="btn btn-primary"&gt;➕ 创建记录&lt;/button&gt;
+        &lt;button class="btn btn-secondary"&gt;清除筛选&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.empty-state-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    border-radius: 12px;
+    border: 2px dashed #E5E7EB;
+    background: #F9FAFB;
+}
+.empty-icon    { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
+.empty-title   { font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+.empty-desc    { font-size: 14px; color: #6B7280; max-width: 360px; margin-bottom: 20px; }
+.empty-action  { display: flex; gap: 12px; }
+
+/* 按钮基础样式 */
+.btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 20px; height: 36px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s;
+}
+.btn-primary   { background: #EF4444; color: white; }
+.btn-primary:hover { background: #DC2626; }
+.btn-secondary { background: white; color: #EF4444; border: 1px solid #D1D5DB; }
+.btn-secondary:hover { border-color: #EF4444; background: #F9FAFB; }
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 三、错误页面 -->
@@ -177,6 +226,69 @@
             </div>
         </div>
         <div class="tip-info tip-block">💡 <strong>注意：</strong>错误码数字使用灰色大号字体（72px），避免过于突出造成用户恐慌。</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 404 页面 --&gt;
+&lt;div class="error-page-demo"&gt;
+    &lt;div class="error-code"&gt;404&lt;/div&gt;
+    &lt;div class="error-title"&gt;页面未找到&lt;/div&gt;
+    &lt;div class="error-desc"&gt;您访问的页面不存在或已被移除，请检查网址是否正确。&lt;/div&gt;
+    &lt;button class="btn btn-primary"&gt;← 返回首页&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- 500 页面 --&gt;
+&lt;div class="error-page-demo"&gt;
+    &lt;div class="error-code"&gt;500&lt;/div&gt;
+    &lt;div class="error-title"&gt;服务器异常&lt;/div&gt;
+    &lt;div class="error-desc"&gt;系统暂时不可用，请稍后重试。如持续出现请联系技术支持。&lt;/div&gt;
+    &lt;div class="error-action"&gt;
+        &lt;button class="btn btn-primary"&gt;🔄 重新加载&lt;/button&gt;
+        &lt;button class="btn btn-secondary"&gt;📧 反馈问题&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.error-page-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    min-height: 300px;
+}
+.error-code {
+    font-size: 72px;
+    font-weight: 800;
+    color: #D1D5DB;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+}
+.error-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.error-desc  { color: #6B7280; margin-bottom: 24px; max-width: 400px; }
+.error-action { display: flex; gap: 12px; }
+&lt;/style&gt;
+
+&lt;script&gt;
+// 全局错误页面路由（前端 SPA 示例）
+router.onError = function(code) {
+    const pages = {
+        404: { title: '页面未找到', desc: '您访问的页面不存在或已被移除。', btn: '返回首页', icon: '🔍' },
+        403: { title: '暂无访问权限', desc: '您没有查看此内容的权限。', btn: '返回首页', icon: '🔒' },
+        500: { title: '服务器异常', desc: '系统暂时不可用，请稍后重试。', btn: '重新加载', icon: '💥' }
+    };
+    const p = pages[code] || pages[500];
+    document.getElementById('app').innerHTML = `&lt;div class="error-page-demo"&gt;
+        &lt;div class="error-code"&gt;${code}&lt;/div&gt;
+        &lt;div class="error-title"&gt;${p.icon} ${p.title}&lt;/div&gt;
+        &lt;div class="error-desc"&gt;${p.desc}&lt;/div&gt;
+        &lt;button class="btn btn-primary" onclick="location.reload()"&gt;${p.btn}&lt;/button&gt;
+    &lt;/div&gt;`;
+};
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 四、加载状态 · 骨架屏 -->
@@ -226,6 +338,103 @@
             </div>
         </div>
         <div class="tip-info tip-block">📐 <strong>骨架屏规范：</strong>动画时长 1.5s | 圆角 6px | 颜色渐变 #E5E7EB → #F3F4F6 → #E5E7EB | 避免纯色块 | 加载态使用骨架屏优于全屏 Spinner</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 列表骨架屏 --&gt;
+&lt;div class="skeleton-demo"&gt;
+    &lt;div class="skeleton-card"&gt;
+        &lt;div class="skeleton-avatar"&gt;&lt;/div&gt;
+        &lt;div class="skeleton-lines"&gt;
+            &lt;div class="skeleton-line" style="width:70%"&gt;&lt;/div&gt;
+            &lt;div class="skeleton-line" style="width:40%"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="skeleton-card"&gt;
+        &lt;div class="skeleton-avatar"&gt;&lt;/div&gt;
+        &lt;div class="skeleton-lines"&gt;
+            &lt;div class="skeleton-line" style="width:55%"&gt;&lt;/div&gt;
+            &lt;div class="skeleton-line" style="width:35%"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 详情页骨架屏 --&gt;
+&lt;div class="skeleton-detail"&gt;
+    &lt;div class="skeleton-line" style="width:40%; height:22px"&gt;&lt;/div&gt;
+    &lt;div class="skeleton-line" style="width:90%"&gt;&lt;/div&gt;
+    &lt;div class="skeleton-line" style="width:85%"&gt;&lt;/div&gt;
+    &lt;div class="skeleton-line" style="width:75%"&gt;&lt;/div&gt;
+    &lt;div class="skeleton-line" style="width:60%"&gt;&lt;/div&gt;
+    &lt;div class="skeleton-btn-group"&gt;
+        &lt;div class="skeleton-line" style="width:80px;height:32px;border-radius:8px"&gt;&lt;/div&gt;
+        &lt;div class="skeleton-line" style="width:80px;height:32px;border-radius:8px"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+/* 骨架屏基础 */
+.skeleton-line {
+    height: 14px;
+    background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+}
+.skeleton-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-card {
+    display: flex; gap: 16px; padding: 20px;
+    background: white; border-radius: 12px;
+    border: 1px solid #E5E7EB; align-items: center;
+}
+.skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+/* 详情页骨架 */
+.skeleton-detail {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 20px; background: white; border-radius: 12px;
+    border: 1px solid #E5E7EB; max-width: 500px;
+}
+.skeleton-btn-group { display: flex; gap: 12px; margin-top: 8px; }
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// 骨架屏切换示例：数据加载前显示骨架屏，完成后替换
+async function loadUserList() {
+    const container = document.getElementById('user-list');
+    container.innerHTML = renderSkeleton();   // 显示骨架屏
+    try {
+        const users = await fetchUsers();
+        container.innerHTML = renderList(users);  // 替换为真实数据
+    } catch (err) {
+        container.innerHTML = renderError(err);   // 加载失败显示错误状态
+    }
+}
+
+function renderSkeleton() {
+    return Array(5).fill(`
+        &lt;div class="skeleton-card"&gt;
+            &lt;div class="skeleton-avatar"&gt;&lt;/div&gt;
+            &lt;div class="skeleton-lines"&gt;
+                &lt;div class="skeleton-line" style="width:70%"&gt;&lt;/div&gt;
+                &lt;div class="skeleton-line" style="width:40%"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    `).join('');
+}
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 五、权限不足 & 网络异常 -->
@@ -256,6 +465,61 @@
                 </div>
             </div>
         </div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 无权限 --&gt;
+&lt;div class="empty-state-demo"&gt;
+    &lt;div class="empty-icon"&gt;🔒&lt;/div&gt;
+    &lt;div class="empty-title"&gt;暂无访问权限&lt;/div&gt;
+    &lt;div class="empty-desc"&gt;您没有查看此内容的权限，如需访问请联系管理员开通。&lt;/div&gt;
+    &lt;div class="empty-action"&gt;
+        &lt;button class="btn btn-primary"&gt;申请权限&lt;/button&gt;
+        &lt;button class="btn btn-secondary"&gt;返回&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 网络异常 --&gt;
+&lt;div class="empty-state-demo"&gt;
+    &lt;div class="empty-icon"&gt;📡&lt;/div&gt;
+    &lt;div class="empty-title"&gt;网络连接失败&lt;/div&gt;
+    &lt;div class="empty-desc"&gt;请检查您的网络设置，确认连接正常后重试。&lt;/div&gt;
+    &lt;div class="empty-action"&gt;
+        &lt;button class="btn btn-primary"&gt;🔄 重新加载&lt;/button&gt;
+        &lt;button class="btn btn-secondary"&gt;诊断网络&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// 网络状态检测与重试
+async function fetchWithRetry(url, retries = 3) {
+    for (let i = 0; i &lt; retries; i++) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (err) {
+            if (i === retries - 1) throw err;  // 最后一次失败则抛出
+            await new Promise(r => setTimeout(r, 1000 * (i + 1)));  // 递增延迟
+        }
+    }
+}
+
+// 监听网络状态变化
+window.addEventListener('online',  () => hideNetworkError());
+window.addEventListener('offline', () => showNetworkError());
+
+function showNetworkError() {
+    document.body.insertAdjacentHTML('afterbegin', `
+        &lt;div class="network-banner"&gt;
+            📡 网络连接已断开，部分功能可能不可用。
+            &lt;button onclick="location.reload()"&gt;重试&lt;/button&gt;
+        &lt;/div&gt;
+    `);
+}
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 六、内联错误提示 -->
@@ -277,6 +541,76 @@
             </div>
         </div>
         <div class="tip-info tip-block">📐 <strong>规范：</strong>内边距 12px 16px | 圆角 8px | 图标 18px | 标题 14px 加粗 | 描述 13px #6B7280</div>
+
+        <h3>代码示例</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 错误提示 --&gt;
+&lt;div class="inline-tip inline-tip-error"&gt;
+    &lt;span class="tip-icon"&gt;❌&lt;/span&gt;
+    &lt;div&gt;
+        &lt;strong&gt;操作失败&lt;/strong&gt;
+        &lt;span class="tip-text"&gt;数据提交失败，请检查必填项是否正确填写。&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 警告提示 --&gt;
+&lt;div class="inline-tip inline-tip-warn"&gt;
+    &lt;span class="tip-icon"&gt;⚠️&lt;/span&gt;
+    &lt;div&gt;
+        &lt;strong&gt;请注意&lt;/strong&gt;
+        &lt;span class="tip-text"&gt;此操作将影响 12 条关联数据，确认继续？&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 成功提示 --&gt;
+&lt;div class="inline-tip inline-tip-success"&gt;
+    &lt;span class="tip-icon"&gt;✅&lt;/span&gt;
+    &lt;div&gt;
+        &lt;strong&gt;操作成功&lt;/strong&gt;
+        &lt;span class="tip-text"&gt;数据已成功保存，页面即将刷新。&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+.inline-tip {
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+}
+.inline-tip-error   { background: #FEF2F2; border: 1px solid #FECACA; }
+.inline-tip-warn    { background: #FFFBEB; border: 1px solid #FDE68A; }
+.inline-tip-success { background: #ECFDF5; border: 1px solid #A7F3D0; }
+.tip-icon { font-size: 18px; line-height: 1.4; }
+.tip-text { display: block; color: #6B7280; font-size: 13px; margin-top: 2px; }
+&lt;/style&gt;
+
+&lt;script&gt;
+// 通用内联提示函数
+function showInlineTip(container, type, title, message, duration) {
+    const icons = { error: '❌', warn: '⚠️', success: '✅', info: 'ℹ️' };
+    const tip = document.createElement('div');
+    tip.className = `inline-tip inline-tip-${type}`;
+    tip.innerHTML = `
+        &lt;span class="tip-icon"&gt;${icons[type] || 'ℹ️'}&lt;/span&gt;
+        &lt;div&gt;
+            &lt;strong&gt;${title}&lt;/strong&gt;
+            &lt;span class="tip-text"&gt;${message}&lt;/span&gt;
+        &lt;/div&gt;
+    `;
+    container.prepend(tip);
+    if (duration) setTimeout(() => tip.remove(), duration);
+    return tip;
+}
+
+// 使用示例
+showInlineTip(formEl, 'error', '操作失败', '数据提交失败，请检查必填项。');
+showInlineTip(formEl, 'success', '操作成功', '数据已保存。', 3000);
+&lt;/script&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 七、设计令牌 -->
@@ -317,5 +651,12 @@
     </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图标规范 | Icon 库 · 尺寸 · 风格 · 使用场景</title>
     <link rel="stylesheet" href="standard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
             --primary:#F59E0B; --primary-hover:#D97706; --primary-light:#FFFBEB; --primary-border:#FDE68A;
@@ -30,6 +31,9 @@
         .color-variants { display:flex; gap:16px; flex-wrap:wrap; }
         .color-var { display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:8px; background:var(--gray-50); }
 
+        .code-block { background:#1E293B; border-radius:8px; overflow:hidden; margin:12px 0; }
+        .code-block pre { padding:16px 20px; margin:0; overflow-x:auto; font-family:'JetBrains Mono','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+        .code-block .hljs { background:transparent; padding:0; }
     </style>
 </head>
 <body>
@@ -92,6 +96,24 @@
             <div class="icon-cell"><div class="icon-svg">⚠️</div><div class="icon-name">warning / 警告</div></div>
             <div class="icon-cell"><div class="icon-svg">ℹ️</div><div class="icon-name">info / 信息</div></div>
         </div>
+
+        <h3>代码示例：SVG 图标引入方式</h3>
+        <div class="code-block">
+<pre><code class="language-html">&lt;!-- 方式一：内联 SVG（推荐，支持 CSS 控制颜色） --&gt;
+&lt;svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round"&gt;
+    &lt;path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/&gt;
+    &lt;polyline points="9 22 9 12 15 12 15 22"/&gt;
+&lt;/svg&gt;
+
+&lt;!-- 方式二：CSS 类 + Emoji/Unicode（快速原型） --&gt;
+&lt;span class="icon-svg"&gt;🏠&lt;/span&gt;
+
+&lt;!-- 方式三：SVG Sprite（项目级批量管理） --&gt;
+&lt;svg class="icon"&gt;
+    &lt;use href="icons.svg#icon-home"&gt;&lt;/use&gt;
+&lt;/svg&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 二、尺寸规范 -->
@@ -115,6 +137,24 @@
                 <tr><td><span class="tag tag-gray">xl</span></td><td>40px</td><td>品牌标识、页面级大图标、Hero区域</td></tr>
             </tbody>
         </table>
+
+        <h3>CSS 尺寸变量</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">/* 图标尺寸梯度（CSS 变量） */
+--icon-xs: 14px;   /* 标签内、角标 */
+--icon-sm: 18px;   /* 按钮内嵌、状态指示 */
+--icon-md: 24px;   /* 导航菜单、工具栏（默认） */
+--icon-lg: 32px;   /* 空状态、功能入口 */
+--icon-xl: 40px;   /* 品牌标识、Hero 区域 */
+
+/* 使用示例 */
+.icon-xs { width: var(--icon-xs); height: var(--icon-xs); }
+.icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
+.icon-md { width: var(--icon-md); height: var(--icon-md); }
+.icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
+.icon-xl { width: var(--icon-xl); height: var(--icon-xl); }</code></pre>
+        </div>
     </div>
 
     <!-- 三、颜色与语义 -->
@@ -130,6 +170,21 @@
             <div class="color-var"><div class="icon-svg" style="color:var(--gray-500);">⬤</div><span>禁用 / Disabled<br><small style="color:var(--gray-500)">#6B7280</small></span></div>
         </div>
         <div class="tip-info tip-block" style="margin-top:20px;">💡 <strong>原则：</strong>一个页面内图标颜色不超过 3 种；语义色仅用于反馈/状态场景，导航类统一使用默认色或主色。</div>
+
+        <h3>CSS 颜色类</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 standard.css</div>
+<pre><code class="language-css">/* 图标颜色语义类 */
+.icon-color-default  { color: var(--gray-900); }   /* 导航、操作 */
+.icon-color-primary  { color: var(--primary); }     /* 主要功能 */
+.icon-color-success  { color: var(--success); }     /* 成功状态 */
+.icon-color-warning  { color: var(--warning); }     /* 警告提示 */
+.icon-color-error    { color: var(--error); }       /* 错误/危险 */
+.icon-color-disabled { color: var(--gray-400); }    /* 禁用状态 */
+
+/* SVG 继承父色 */
+svg.icon { width: 1em; height: 1em; fill: currentColor; }</code></pre>
+        </div>
     </div>
 
     <!-- 四、风格定义 -->
@@ -147,6 +202,25 @@
                 <tr><td>风格</td><td>线性 / 面性</td><td>默认线性；激活/选中状态可使用面性</td></tr>
             </tbody>
         </table>
+
+        <h3>SVG 图标绘制示例</h3>
+        <div class="code-block">
+<pre><code class="language-xml">&lt;!-- 线性图标模板：24px 网格，2px 描边 --&gt;
+&lt;svg width="24" height="24" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round"
+     stroke-linejoin="round"&gt;
+    &lt;!-- 图标路径内容（保留 2px 内边距） --&gt;
+    &lt;circle cx="12" cy="12" r="10"/&gt;
+    &lt;path d="M12 6v6l4 2"/&gt;
+&lt;/svg&gt;
+
+&lt;!-- 面性图标模板（选中/激活态） --&gt;
+&lt;svg width="24" height="24" viewBox="0 0 24 24"
+     fill="currentColor"&gt;
+    &lt;path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/&gt;
+&lt;/svg&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 五、使用规范 -->
@@ -173,6 +247,49 @@
                 <tr><td>空状态</td><td>lg (32px)</td><td>16px（上下排列）</td><td>图标在上，文字在下</td></tr>
             </tbody>
         </table>
+
+        <h3>图标+文字组合代码</h3>
+        <div class="code-block">
+<div class="code-block-header">📄 HTML + CSS</div>
+<pre><code class="language-html">&lt;!-- 按钮内嵌图标 --&gt;
+&lt;button class="btn"&gt;
+    &lt;svg class="icon icon-sm"&gt;...&lt;/svg&gt;
+    &lt;span&gt;确认&lt;/span&gt;
+&lt;/button&gt;
+
+&lt;!-- 导航菜单图标 --&gt;
+&lt;a class="nav-item"&gt;
+    &lt;svg class="icon icon-md"&gt;...&lt;/svg&gt;
+    &lt;span&gt;菜单项&lt;/span&gt;
+&lt;/a&gt;
+
+&lt;!-- 空状态图标 --&gt;
+&lt;div class="empty-state"&gt;
+    &lt;svg class="icon icon-lg"&gt;...&lt;/svg&gt;
+    &lt;p&gt;暂无数据&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+/* 图标+文字 flex 布局 */
+.icon-text-row {
+    display: flex;
+    align-items: center;
+    gap: var(--icon-gap-md);  /* 6px 默认 */
+}
+/* 间距变量 */
+--icon-gap-sm: 4px;   /* 标签/角标 */
+--icon-gap-md: 6px;   /* 按钮内嵌 */
+--icon-gap-lg: 10px;  /* 导航菜单 */
+
+/* 空状态（上下排列） */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+&lt;/style&gt;</code></pre>
+        </div>
     </div>
 
     <!-- 六、设计令牌速查 -->
@@ -216,5 +333,12 @@
     </div>
 
 </div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    hljs.highlightAll();
+});
+</script>
 </body>
 </html>
